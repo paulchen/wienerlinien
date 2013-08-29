@@ -15,8 +15,13 @@ write_log("Starting import script...");
 
 // TODO check for existing files, do not refetch if a sufficiently new file exists
 
-import_stations($stations_data);
+$imported_stations = array();
+$imported_lines = array();
+$imported_line_station = array();
+$imported_line_segment = array();
+
 import_lines($lines_data);
+import_stations($stations_data);
 
 write_log("Import script successfully completed.");
 
@@ -65,11 +70,42 @@ function download($url, $prefix) {
 	return json_decode(iconv('ISO-8859-15', 'UTF-8', $data));
 }
 
+function fetch_line($name) {
+	// TODO
+}
+
+function process_line($name, $type) {
+	// TODO
+}
+
+function process_line_station($line, $station) {
+	// TODO
+}
+
+function process_station($name, $short_name, $lines, $lat, $lon) {
+	global $imported_stations;
+
+	write_log("Processing station $name ($short_name, $lines, $lat, $lon)...");
+
+	// TODO query for station with $name, $short_name, $lat, $lon
+	// TODO add new station
+	
+	foreach(explode(', ', $lines) as $line) {
+		$line_id = fetch_line($line);
+//		process_line_station($line_id, $id);
+	}
+
+	// TODO
+	// $imported_stations[] = $id;
+}
+
 function import_stations($data) {
 	write_log("Importing stations...");
 
-	// TODO
-	
+	foreach($data->features as $feature) {
+		process_station($feature->properties->HTXT, $feature->properties->HTXTK, $feature->properties->HLINIEN, $feature->geometry->coordinates[1], $feature->geometry->coordinates[0]);
+	}
+
 	write_log("Stations successfully imported.");
 }
 
