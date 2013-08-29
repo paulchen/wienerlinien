@@ -100,8 +100,18 @@ function process_line($name, $type) {
 function process_line_station($line, $station) {
 	global $imported_line_station;
 
-//	$data = db_query('SELECT
-	// TODO
+	$data = db_query('SELECT id FROM line_station WHERE deleted = 0 AND station = ? AND line = ?', array($station, $line));
+	if(count($data) == 0) {
+		db_query('INSERT INTO line_station (station, line) VALUES (?, ?)', array($station, $line));
+		$id = db_last_insert_id();
+
+		write_log("Added line/station association $id ($line/$station)");
+	}
+	else {
+		$id = $data[0]['id'];
+	}
+
+	$imported_line_station[] = $id;
 }
 
 function process_point($lat, $lon) {
