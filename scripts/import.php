@@ -85,7 +85,7 @@ function process_line_station($line, $station) {
 }
 
 function process_point($lat, $lon) {
-	$data = db_query('SELECT id FROM segment_point WHERE lat=? AND lon=?', array($lat, $lon));
+	$data = db_query('SELECT id FROM segment_point WHERE lat = ? AND lon = ?', array($lat, $lon));
 	if(count($data) == 1) {
 		return $data[0]['id'];
 	}
@@ -99,7 +99,17 @@ function process_point($lat, $lon) {
 }
 
 function process_segment($point1, $point2) {
-	// TODO
+	$data = db_query('SELECT id FROM segment WHERE point1 = ? AND point2 = ?', array($point1, $point2));
+	if(count($data) == 1) {
+		return $data[0]['id'];
+	}
+
+	db_query('INSERT INTO segment (point1, point2) VALUES (?, ?)', array($point1, $point2));
+	$id = db_last_insert_id();
+
+	write_log("Added segment $id ($point1-$point2)");
+
+	return $id;
 }
 
 function process_line_segment($line, $segment) {
