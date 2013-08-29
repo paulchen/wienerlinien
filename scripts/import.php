@@ -98,6 +98,9 @@ function process_line($name, $type) {
 }
 
 function process_line_station($line, $station) {
+	global $imported_line_station;
+
+//	$data = db_query('SELECT
 	// TODO
 }
 
@@ -132,15 +135,18 @@ function process_segment($point1, $point2) {
 function process_line_segment($line, $segment) {
 	global $imported_line_segment;
 
-	$data = db_query('SELECT segment, line FROM line_segment WHERE deleted = 0 AND segment = ? AND line = ?', array($segment, $line));
+	$data = db_query('SELECT id FROM line_segment WHERE deleted = 0 AND segment = ? AND line = ?', array($segment, $line));
 	if(count($data) == 0) {
 		db_query('INSERT INTO line_segment (segment, line) VALUES (?, ?)', array($segment, $line));
 		$id = db_last_insert_id();
 
-		write_log("Added line/segment association $line/$segment");
+		write_log("Added line/segment association $id ($line/$segment)");
+	}
+	else {
+		$id = $data[0]['id'];
 	}
 
-	$imported_line_segment[] = "$line-$segment";
+	$imported_line_segment[] = $id;
 }
 
 function process_station($name, $short_name, $lines, $lat, $lon) {
@@ -153,7 +159,7 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 	
 	foreach(explode(', ', $lines) as $line) {
 		$line_id = fetch_line($line);
-//		process_line_station($line_id, $id);
+		process_line_station($line_id, $id);
 	}
 
 	// TODO
