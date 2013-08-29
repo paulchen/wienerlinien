@@ -9,9 +9,11 @@ require_once(dirname(__FILE__) . '/../lib/common.php');
 
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
 $url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
+$url_station_ids = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:HALTESTELLEWLOGD&srsName=EPSG:4326&outputFormat=json';
 
 $lines_data = download($url_lines, 'lines');
 $stations_data = download($url_stations, 'stations');
+$station_id_data = download($url_station_ids, 'station_ids');
 
 write_log("Starting import script...");
 
@@ -21,6 +23,7 @@ $imported_line_station = array();
 $imported_line_segment = array();
 
 import_lines($lines_data);
+import_station_ids($station_id_data);
 import_stations($stations_data);
 
 // TODO check for outdated data
@@ -180,6 +183,27 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 	}
 
 	$imported_stations[] = $id;
+}
+
+function import_station_ids($data) {
+	write_log("Importing station IDs...");
+
+	foreach($data->features as $feature) {
+		$lat = $feature->geometry->coordinates[1];
+		$lon = $feature->geometry->coordinates[0];
+
+		$id = $feature->properties->WL_NUMMER;
+		$name = $feature->properties->BEZEICHNUNG;
+
+		$data = db_query('SELECT id FROM station_id WHERE id = ?', array($id));
+		if(count($data) == 0) {
+			db_query('INSERT INTO station_id (id, name, lat, lon) VALUES (?, ?, ?, ?)', array($id, $name, $lat, $lon));
+
+			write_log("Imported station $id ($name)");
+		}
+	}
+
+	write_log("Station IDs successfully imported.");
 }
 
 function import_stations($data) {
