@@ -21,8 +21,36 @@ function show_lines($type) {
 	<script type="text/javascript">
 	<!--
 	var line_data = new Array();
+	var segments = new Array();
+	var shown = new Array();
+
+	function show_hide(id) {
+		if((id in shown) && shown[id]) {
+			hide(id);
+		}
+		else {
+			show(id);
+		}
+	}
+
+	function hide(id) {
+		$.each(segments[id], function(index, value) {
+			value.setVisible(false);
+		});
+		shown[id] = false;
+	}
 
 	function show(id) {
+		shown[id] = true;
+		if(id in segments) {
+			$.each(segments[id], function(index, value) {
+				value.setVisible(true);
+			});
+
+			return;
+		}
+
+		segments[id] = new Array();
 		$.each(line_data[id], function(index, value) {
 			var lat1 = value[0][0];
 			var lon1 = value[0][1];
@@ -41,6 +69,7 @@ function show_lines($type) {
 			});
 
 			segment.setMap(googleMap);
+			segments[id].push(segment);
 		});
 	}
 
@@ -51,9 +80,12 @@ function show_lines($type) {
 				dataType: 'json',
 				success: function(data, text, xhr) {
 					line_data[id] = data;
-					show(id);
+					show_hide(id);
 				}
 			});
+		}
+		else {
+			show_hide(id);
 		}
 	}
 	// -->
