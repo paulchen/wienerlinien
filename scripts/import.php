@@ -73,7 +73,9 @@ function download($url, $prefix) {
 }
 
 function fetch_line($name) {
-	// TODO
+	// TODO what if the line does not exist?
+	$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($name));
+	return $data[0]['id'];
 }
 
 function process_line($name, $type) {
@@ -130,7 +132,15 @@ function process_segment($point1, $point2) {
 function process_line_segment($line, $segment) {
 	global $imported_line_segment;
 
-	// TODO
+	$data = db_query('SELECT segment, line FROM line_segment WHERE deleted = 0 AND segment = ? AND line = ?', array($segment, $line));
+	if(count($data) == 0) {
+		db_query('INSERT INTO line_segment (segment, line) VALUES (?, ?)', array($segment, $line));
+		$id = db_last_insert_id();
+
+		write_log("Added line/segment association $line/$segment");
+	}
+
+	$imported_line_segment[] = "$line-$segment";
 }
 
 function process_station($name, $short_name, $lines, $lat, $lon) {
@@ -168,7 +178,7 @@ function import_lines($data) {
 		$lines = $feature->properties->LBEZEICHNUNG;
 		$type = $feature->properties->LTYP;
 
-		$line_ids[] = array();
+		$line_ids = array();
 		foreach(explode(', ', $lines) as $line) {
 			$line_ids[] = process_line($line, $type);
 		}
@@ -185,7 +195,6 @@ function import_lines($data) {
 			}
 		}
 	}
-	// TODO
 
 	write_log("Lines successfully imported.");
 }
