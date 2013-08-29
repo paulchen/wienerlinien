@@ -1,3 +1,5 @@
+var googleMap;
+
 function initialize() {
 	var mapOptions = {
 		center: new google.maps.LatLng(48.21, 16.37),
@@ -5,6 +7,6 @@ function initialize() {
 		mapTypeId: google.maps.MapTypeId.ROADMAP,
 		streetViewControl: false
 	};
-	var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+	googleMap = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 }
 
