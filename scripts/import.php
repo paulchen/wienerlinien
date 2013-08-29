@@ -15,8 +15,6 @@ $stations_data = download($url_stations, 'stations');
 
 write_log("Starting import script...");
 
-// TODO check for existing files, do not refetch if a sufficiently new file exists
-
 $imported_lines = array();
 $imported_stations = array();
 $imported_line_station = array();
@@ -24,6 +22,8 @@ $imported_line_segment = array();
 
 import_lines($lines_data);
 import_stations($stations_data);
+
+// TODO check for outdated data
 
 write_log("Import script successfully completed.");
 
