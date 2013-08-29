@@ -77,7 +77,22 @@ function fetch_line($name) {
 }
 
 function process_line($name, $type) {
-	// TODO
+	global $imported_lines;
+
+	$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($name));
+	if(count($data) == 1) {
+		$id = $data[0]['id'];
+	}
+	else {
+		db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type));
+		$id = db_last_insert_id();
+
+		write_log("Added line $name (type $type)");
+	}
+
+	$imported_lines[] = $id;
+
+	return $id;
 }
 
 function process_line_station($line, $station) {
@@ -113,6 +128,8 @@ function process_segment($point1, $point2) {
 }
 
 function process_line_segment($line, $segment) {
+	global $imported_line_segment;
+
 	// TODO
 }
 
