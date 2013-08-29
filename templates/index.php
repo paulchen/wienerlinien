@@ -5,7 +5,7 @@ function show_lines($type) {
 	echo "<h2>" . htmlentities($lines[$type]['name'], ENT_QUOTES, 'UTF-8') . "</h2>";
 
 	foreach($lines[$type]['lines'] as $line) {
-		echo "<input type='checkbox' name='checkbox_line_{$line['id']}' onclick='toggle({$line['id']});'>&nbsp;{$line['name']}<br />";
+		echo "<input type='checkbox' name='checkbox_line_{$line['id']}' id='checkbox_line_{$line['id']}' onclick='toggle({$line['id']});'>&nbsp;<label for='checkbox_line_{$line['id']}'>{$line['name']}</label><br />";
 	}
 }
 ?>
