@@ -2,6 +2,9 @@
 
 // TODO check: only run as standalone script from command line
 
+// TODO -> config file
+$debug = true;
+
 $url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
 
@@ -19,8 +22,34 @@ write_log("Import script successfully completed.");
 
 function download($url, $prefix) {
 	$cache_dir = dirname(__FILE__) . '/../cache/';
-	$timestamp = date('YmdHi');
+	$timestamp = date('YmdHis');
 	$filename = "$cache_dir${prefix}_$timestamp.json";
+
+	$dir = opendir($cache_dir);
+	$found_file = null;
+	$found_timestamp = 0;
+	while(($file = readdir($dir)) !== false) {
+		if(mb_substr($file, 0, mb_strlen($prefix, 'UTF-8')+1, 'UTF-8') == "${prefix}_") {
+			$timestamp = mb_substr($file, mb_strlen($prefix, 'UTF-8')+1, mb_strlen($file, 'UTF-8')-mb_strlen($prefix, 'UTF-8')-6);
+			$date = DateTime::createFromFormat('YmdHis', $timestamp);
+			$time = $date->getTimestamp();
+
+			// TODO customizable threshold for outdated data
+			if(time() - $time < 3600 && $found_timestamp < $time) {
+				$found_file = $file;
+				$found_timestamp = $time;
+			}
+		}
+	}
+	closedir($dir);
+
+	if($found_file != null) {
+		write_log("Using cached file $found_file");
+
+		$data = file_get_contents("$cache_dir$found_file");
+
+		return json_decode(iconv('ISO-8859-15', 'UTF-8', $data));
+	}
 
 	write_log("Fetching $url to $filename...");
 
@@ -32,6 +61,8 @@ function download($url, $prefix) {
 	file_put_contents($filename, $data);
 
 	write_log("Fetching completed");
+
+	return json_decode(iconv('ISO-8859-15', 'UTF-8', $data));
 }
 
 function import_stations($data) {
@@ -51,12 +82,18 @@ function import_lines($data) {
 }
 
 function write_log($message) {
+	global $debug;
+
 	$logfile = dirname(__FILE__) . '/../log/log';
 	$timestamp = date('Y-m-d H:i:s');
 
 	$file = fopen($logfile, 'a');
 	fputs($file, "[$timestamp] - $message\n");
 	fclose($file);
+
+	if($debug) {
+		echo "[$timestamp] - $message\n";
+	}
 }
 
 
