@@ -68,7 +68,8 @@ function dump_r($variable) {
 function db_last_insert_id() {
 	global $db;
 
-	$data = db_query('SELECT lastval() id');
-	return $data[0]['id'];
+	return $db->lastInsertId();
+//	$data = db_query('SELECT lastval() id');
+//	return $data[0]['id'];
 }
 

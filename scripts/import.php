@@ -7,18 +7,18 @@ $debug = true;
 
 require_once(dirname(__FILE__) . '/../lib/common.php');
 
-$url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
+$url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
 
-$stations_data = download($url_stations, 'stations');
 $lines_data = download($url_lines, 'lines');
+$stations_data = download($url_stations, 'stations');
 
 write_log("Starting import script...");
 
 // TODO check for existing files, do not refetch if a sufficiently new file exists
 
-$imported_stations = array();
 $imported_lines = array();
+$imported_stations = array();
 $imported_line_station = array();
 $imported_line_segment = array();
 
@@ -84,6 +84,28 @@ function process_line_station($line, $station) {
 	// TODO
 }
 
+function process_point($lat, $lon) {
+	$data = db_query('SELECT id FROM segment_point WHERE lat=? AND lon=?', array($lat, $lon));
+	if(count($data) == 1) {
+		return $data[0]['id'];
+	}
+
+	db_query('INSERT INTO segment_point (lat, lon) VALUES (?, ?)', array($lat, $lon));
+	$id = db_last_insert_id();
+
+	write_log("Added point $id ($lat, $lon)");
+
+	return $id;
+}
+
+function process_segment($point1, $point2) {
+	// TODO
+}
+
+function process_line_segment($line, $segment) {
+	// TODO
+}
+
 function process_station($name, $short_name, $lines, $lat, $lon) {
 	global $imported_stations;
 
@@ -114,6 +136,28 @@ function import_stations($data) {
 function import_lines($data) {
 	write_log("Importing lines...");
 
+	foreach($data->features as $feature) {
+		$coordinates = $feature->geometry->coordinates;
+		$lines = $feature->properties->LBEZEICHNUNG;
+		$type = $feature->properties->LTYP;
+
+		$line_ids[] = array();
+		foreach(explode(', ', $lines) as $line) {
+			$line_ids[] = process_line($line, $type);
+		}
+
+		$point_ids = array();
+		foreach($coordinates as $point) {
+			$point_ids[] = process_point($point[1], $point[0]);
+		}
+
+		for($a=0; $a<count($point_ids)-1;$a++) {
+			$segment_id = process_segment($point_ids[$a], $point_ids[$a+1]);
+			foreach($line_ids as $line_id) {
+				process_line_segment($line_id, $segment_id);
+			}
+		}
+	}
 	// TODO
 
 	write_log("Lines successfully imported.");
