@@ -1,6 +1,6 @@
 <?php
 
-$template_dir = dirname(__FILE__) . '/../templates/';
+require_once(dirname(__FILE__) . '/common.php');
 
 require_once("$template_dir/index.php");
 

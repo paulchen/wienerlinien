@@ -1,0 +1,6 @@
+<?php
+$db_host = 'localhost';
+$db_user = 'wienerlinien';
+$db_pass = '';
+$db_name = 'wienerlinien';
+
