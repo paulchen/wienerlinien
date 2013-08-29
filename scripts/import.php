@@ -173,7 +173,14 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 	else {
 		write_log("Added station $name ($short_name, $lines, $lat, $lon)...");
 
-		db_query('INSERT INTO station (name, short_name, lat, lon) VALUES (?, ?, ?, ?)', array($name, $short_name, $lat, $lon));
+		$data = db_query('SELECT id FROM station_id WHERE name = ?', array($name));
+		if(count($data) == 0) {
+			db_query('INSERT INTO station (name, short_name, lat, lon, station_id) VALUES (?, ?, ?, ?, NULL)', array($name, $short_name, $lat, $lon));
+		}
+		else {
+			$station_id = $data[0]['id'];
+			db_query('INSERT INTO station (name, short_name, lat, lon, station_id) VALUES (?, ?, ?, ?, ?)', array($name, $short_name, $lat, $lon, $station_id));
+		}
 		$id = db_last_insert_id();
 	}
 	
