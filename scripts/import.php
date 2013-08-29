@@ -162,13 +162,14 @@ function process_line_segment($line, $segment) {
 function process_station($name, $short_name, $lines, $lat, $lon) {
 	global $imported_stations;
 
-	write_log("Processing station $name ($short_name, $lines, $lat, $lon)...");
 
 	$data = db_query('SELECT id FROM station WHERE deleted = 0 AND name = ? AND short_name = ? AND lat = ? AND lon = ?', array($name, $short_name, $lat, $lon));
 	if(count($data) == 1) {
 		$id = $data[0]['id'];
 	}
 	else {
+		write_log("Added station $name ($short_name, $lines, $lat, $lon)...");
+
 		db_query('INSERT INTO station (name, short_name, lat, lon) VALUES (?, ?, ?, ?)', array($name, $short_name, $lat, $lon));
 		$id = db_last_insert_id();
 	}
