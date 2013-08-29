@@ -164,16 +164,21 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 
 	write_log("Processing station $name ($short_name, $lines, $lat, $lon)...");
 
-	// TODO query for station with $name, $short_name, $lat, $lon
-	// TODO add new station
+	$data = db_query('SELECT id FROM station WHERE deleted = 0 AND name = ? AND short_name = ? AND lat = ? AND lon = ?', array($name, $short_name, $lat, $lon));
+	if(count($data) == 1) {
+		$id = $data[0]['id'];
+	}
+	else {
+		db_query('INSERT INTO station (name, short_name, lat, lon) VALUES (?, ?, ?, ?)', array($name, $short_name, $lat, $lon));
+		$id = db_last_insert_id();
+	}
 	
 	foreach(explode(', ', $lines) as $line) {
 		$line_id = fetch_line($line);
 		process_line_station($line_id, $id);
 	}
 
-	// TODO
-	// $imported_stations[] = $id;
+	$imported_stations[] = $id;
 }
 
 function import_stations($data) {
