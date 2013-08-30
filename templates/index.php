@@ -15,7 +15,7 @@ function show_lines($type) {
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien</title>
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
-	<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&sensor=false"></script>
+	<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&sensor=false"></script>
 	<script type="text/javascript" src="js/main.js"></script>
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript">
