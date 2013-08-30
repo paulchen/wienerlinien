@@ -2,8 +2,8 @@
 
 // TODO check: only run as standalone script from command line
 
-// TODO -> config file
 require_once(dirname(__FILE__) . '/../lib/common.php');
+require_once(dirname(__FILE__) . '/../lib/Csv.class.php');
 
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
 $url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
@@ -31,14 +31,43 @@ $imported_line_segment = array();
 import_lines($lines_data);
 import_station_ids($station_id_data);
 import_stations($stations_data);
+import_wl_lines($wl_lines_data);
+import_wl_stations($wl_stations_data);
+import_wl_platforms($wl_platforms_data);
 
 check_outdated($imported_lines, 'line', array('id'));
 check_outdated($imported_stations, 'station', array('id'));
 check_outdated($imported_station_ids, 'station_id', array('id'));
 check_outdated($imported_line_station, 'line_station', array('id'));
 check_outdated($imported_line_segment, 'line_segment', array('id'));
+// TODO outdated WL data
 
 write_log("Import script successfully completed.");
+
+function import_wl_lines($data) {
+	write_log("Import lines data from Wiener Linien...");
+
+	// TODO
+	print_r($data);
+
+	write_log("Line data successfully imported.");
+}
+
+function import_wl_stations($data) {
+	write_log("Import stations data from Wiener Linien...");
+
+	// TODO
+	
+	write_log("Stations data successfully imported.");
+}
+
+function import_wl_platforms($data) {
+	write_log("Import platforms data from Wiener Linien...");
+
+	// TODO
+
+	write_log("Platforms data successfully imported.");
+}
 
 function check_outdated($current_ids, $table) {
 	write_log("Searching for outdated entries in table '$table'...");
@@ -57,10 +86,16 @@ function download_json($url, $prefix) {
 }
 
 function download_csv($url, $prefix) {
-	return download($url, $prefix, 'csv');
+	// TODO use first line in data for column names
+	$csv_file = download($url, $prefix, 'csv', true);
+	$csv = new Csv();
+	$csv->separator = ';';
+	$csv->parse($csv_file);
+
+	return $csv;
 }
 
-function download($url, $prefix, $extension) {
+function download($url, $prefix, $extension, $return_filename = false) {
 	global $cache_expiration;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
@@ -82,6 +117,8 @@ function download($url, $prefix, $extension) {
 			if(time() - $time < $cache_expiration && $found_timestamp < $time) {
 				$found_file = $file;
 				$found_timestamp = $time;
+
+				$filename =  "$cache_dir$file";
 			}
 		}
 	}
@@ -90,6 +127,9 @@ function download($url, $prefix, $extension) {
 	if($found_file != null) {
 		write_log("Using cached file $found_file");
 
+		if($return_filename) {
+			return $filename;
+		}
 		return file_get_contents("$cache_dir$found_file");
 	}
 
@@ -104,6 +144,9 @@ function download($url, $prefix, $extension) {
 
 	write_log("Fetching completed");
 
+	if($return_filename) {
+		return $filename;
+	}
 	return $data;
 }
 
