@@ -3,7 +3,7 @@
 require_once(dirname(__FILE__) . '/common.php');
 
 $lines = array();
-$data = db_query('SELECT id, name FROM line_type');
+$data = db_query('SELECT id, name FROM line_type ORDER BY pos ASC');
 foreach($data as $row) {
 	$lines[$row['id']] = array('name' => $row['name'], 'lines' => array());
 }

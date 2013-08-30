@@ -1,11 +1,11 @@
 <?php
-function show_lines($type) {
-	global $lines;
+function show_lines($lines) {
+	foreach($lines as $line_type) {
+		echo "<h2>" . htmlentities($line_type['name'], ENT_QUOTES, 'UTF-8') . "</h2>";
 
-	echo "<h2>" . htmlentities($lines[$type]['name'], ENT_QUOTES, 'UTF-8') . "</h2>";
-
-	foreach($lines[$type]['lines'] as $line) {
-		echo "<input type='checkbox' name='checkbox_line_{$line['id']}' id='checkbox_line_{$line['id']}' onclick='toggle({$line['id']});'>&nbsp;<label for='checkbox_line_{$line['id']}'>{$line['name']}</label><br />";
+		foreach($line_type['lines'] as $line) {
+			echo "<input type='checkbox' name='checkbox_line_{$line['id']}' id='checkbox_line_{$line['id']}' onclick='toggle({$line['id']});'>&nbsp;<label for='checkbox_line_{$line['id']}'>{$line['name']}</label><br />";
+		}
 	}
 }
 ?>
@@ -21,9 +21,7 @@ function show_lines($type) {
 </head>
 <body onload="initialize();">
 	<div id="options_pane" style="width: 20%; height: 100%; position: absolute; overflow: scroll;">
-		<?php show_lines(4); ?>
-		<?php show_lines(1); ?>
-		<?php show_lines(2); ?>
+		<?php show_lines($lines); ?>
 	</div>
 	<div id="map_canvas" style="position: absolute; width:80%; left: 20%; height:100%"></div>
 </body>
