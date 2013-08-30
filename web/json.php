@@ -6,6 +6,10 @@ if(!isset($_REQUEST['line'])) {
 	die();
 }
 
+// TODO check for line being an integer number > 0
+// TODO check for non-existance of line (move queries for type and colors up here)
+
+// TODO replace $_REQUEST['line'] by $line in all queries
 $data = db_query('SELECT sp1.lat lat1, sp1.lon lon1, sp2.lat lat2, sp2.lon lon2
 		FROM line l
 			JOIN line_segment ls ON (l.id = ls.line)
@@ -43,7 +47,19 @@ while($changed) {
 	}
 }
 
-$result = array('segments' => $segments);
+$data = db_query('SELECT type FROM line WHERE id = ?', array($_REQUEST['line']));
+$type = $data[0]['type'];
+
+$data = db_query('SELECT color, line_thickness FROM line_type WHERE id = ?', array($type));
+$color = $data[0]['color'];
+$line_thickness = $data[0]['line_thickness'];
+
+$data = db_query('SELECT color FROM line_color WHERE line = ?', array($_REQUEST['line']));
+if(count($data) == 1) {
+	$color = $data[0]['color'];
+}
+
+$result = array('segments' => $segments, 'color' => $color, 'line_thickness' => $line_thickness);
 
 header('Content-Type: application/json');
 echo json_encode($result);

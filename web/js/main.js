@@ -52,9 +52,9 @@ function show(id) {
 		});
 		var segment = new google.maps.Polyline({
 			path: coordinates,
-			strokeColor: '#FF0000',
+			strokeColor: '#' + line_data[id]["color"],
 			strokeOpacity: 1.0,
-			strokeWeight: 2
+			strokeWeight: line_data[id]["line_thickness"]
 		});
 
 		segment.setMap(googleMap);
