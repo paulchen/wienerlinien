@@ -40,7 +40,7 @@ function show(id) {
 	}
 
 	segments[id] = new Array();
-	$.each(line_data[id], function(index, value) {
+	$.each(line_data[id]["segments"], function(index, value) {
 		var lat1 = value[0][0];
 		var lon1 = value[0][1];
 		var lat2 = value[1][0];
