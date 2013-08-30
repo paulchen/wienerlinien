@@ -53,28 +53,30 @@ function check_outdated($current_ids, $table) {
 }
 
 function download_json($url, $prefix) {
-	return json_decode(iconv('ISO-8859-15', 'UTF-8', download($url, $prefix)));
+	return json_decode(iconv('ISO-8859-15', 'UTF-8', download($url, $prefix, 'json')));
 }
 
 function download_csv($url, $prefix) {
-	// TODO
-	return download($url, $prefix);
+	return download($url, $prefix, 'csv');
 }
 
-function download($url, $prefix) {
+function download($url, $prefix, $extension) {
 	global $cache_expiration;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
-	$filename = "$cache_dir${prefix}_$timestamp.json";
+	$filename = "$cache_dir${prefix}_$timestamp.$extension";
 
 	$dir = opendir($cache_dir);
 	$found_file = null;
 	$found_timestamp = 0;
 	while(($file = readdir($dir)) !== false) {
 		if(mb_substr($file, 0, mb_strlen($prefix, 'UTF-8')+1, 'UTF-8') == "${prefix}_") {
-			$timestamp = mb_substr($file, mb_strlen($prefix, 'UTF-8')+1, mb_strlen($file, 'UTF-8')-mb_strlen($prefix, 'UTF-8')-6);
+			$timestamp = mb_substr($file, mb_strlen($prefix, 'UTF-8')+1, mb_strlen($file, 'UTF-8')-mb_strlen($prefix, 'UTF-8')-2-mb_strlen($extension, 'UTF-8'));
 			$date = DateTime::createFromFormat('YmdHis', $timestamp);
+			if(!$date) {
+				continue;
+			}
 			$time = $date->getTimestamp();
 
 			if(time() - $time < $cache_expiration && $found_timestamp < $time) {
