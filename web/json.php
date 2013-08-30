@@ -19,6 +19,30 @@ foreach($data as $row) {
 }
 unset($data);
 
+$changed = true;
+while($changed) {
+	$changed = false;
+
+	for($a=0; $a<count($result); $a++) {
+		for($b=0; $b<count($result); $b++) {
+			if($a == $b) {
+				continue;
+			}
+
+			if($result[$a][count($result[$a])-1][0] == $result[$b][0][0] && $result[$a][count($result[$a])-1][1] == $result[$b][0][1]) {
+				for($c=1; $c<count($result[$b]); $c++) {
+					$result[$a][] = $result[$b][$c];
+				}
+
+				unset($result[$b]);
+				$result = array_values($result);
+				$changed = true;
+				continue 3;
+			}
+		}
+	}
+}
+
 header('Content-Type: application/json');
 echo json_encode($result);
 

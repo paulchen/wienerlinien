@@ -46,10 +46,10 @@ function show(id) {
 		var lat2 = value[1][0];
 		var lon2 = value[1][1];
 
-		var coordinates = [
-			new google.maps.LatLng(lat1, lon1),
-			new google.maps.LatLng(lat2, lon2)
-		];
+		var coordinates = new Array();
+		$.each(value, function(value_index, lat_lon) {
+			coordinates.push(new google.maps.LatLng(lat_lon[0], lat_lon[1]));
+		});
 		var segment = new google.maps.Polyline({
 			path: coordinates,
 			strokeColor: '#FF0000',
@@ -60,6 +60,7 @@ function show(id) {
 		segment.setMap(googleMap);
 		segments[id].push(segment);
 	});
+
 }
 
 function toggle(id) {
