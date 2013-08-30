@@ -45,10 +45,35 @@ check_outdated($imported_line_segment, 'line_segment', array('id'));
 write_log("Import script successfully completed.");
 
 function import_wl_lines($data) {
+	global $imported_lines;
+
 	write_log("Import lines data from Wiener Linien...");
 
-	// TODO
-	print_r($data);
+	$types_data = db_query('SELECT id, wl_name FROM line_type');
+	$types = array();
+	foreach($types_data as $row) {
+		$types[$row['wl_name']] = $row['id'];
+	}
+
+	foreach($data as $row) {
+		$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($row['BEZEICHNUNG']));
+		if(count($data) == 1) {
+			$id = $data[0]['id'];
+		}
+		else {
+			$type = $types[$row['VERKEHRSMITTEL']];
+			db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($row['BEZEICHNUNG'], $type));
+			$id = db_last_insert_id();
+
+			write_log("Added line {$row['BEZEICHNUNG']}");
+		}
+
+		$timestamp = strtotime($row['STAND']);
+		db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ?, wl_updated = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $timestamp));
+
+		write_log("Updated line {$row['BEZEICHNUNG']}");
+		$imported_lines[] = $id;
+	}
 
 	write_log("Line data successfully imported.");
 }
@@ -86,14 +111,13 @@ function download_json($url, $prefix) {
 }
 
 function download_csv($url, $prefix) {
-	// TODO use first line in data for column names
 	$csv_file = download($url, $prefix, 'csv', true);
 	$csv = new Csv();
 	$csv->separator = ';';
 	$csv->parse($csv_file);
 	$csv->first_row_headers();
 
-	return $csv;
+	return $csv->rows;
 }
 
 function download($url, $prefix, $extension, $return_filename = false) {
