@@ -10,10 +10,17 @@ require_once(dirname(__FILE__) . '/../lib/common.php');
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
 $url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
 $url_station_ids = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:HALTESTELLEWLOGD&srsName=EPSG:4326&outputFormat=json';
+$url_wl_lines = 'http://data.wien.gv.at/csv/wienerlinien-ogd-linien.csv';
+$url_wl_stations = 'http://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv';
+$url_wl_platforms = 'http://data.wien.gv.at/csv/wienerlinien-ogd-steige.csv';
 
-$lines_data = download($url_lines, 'lines');
-$stations_data = download($url_stations, 'stations');
-$station_id_data = download($url_station_ids, 'station_ids');
+$lines_data = download_json($url_lines, 'lines');
+$stations_data = download_json($url_stations, 'stations');
+$station_id_data = download_json($url_station_ids, 'station_ids');
+
+$wl_lines_data = download_csv($url_wl_lines, 'wl_lines');
+$wl_stations_data = download_csv($url_wl_stations, 'wl_stations');
+$wl_platforms_data = download_csv($url_wl_platforms, 'wl_platforms');
 
 write_log("Starting import script...");
 
@@ -47,6 +54,15 @@ function check_outdated($current_ids, $table) {
 	}
 }
 
+function download_json($url, $prefix) {
+	return json_decode(iconv('ISO-8859-15', 'UTF-8', download($url, $prefix)));
+}
+
+function download_csv($url, $prefix) {
+	// TODO
+	return download($url, $prefix);
+}
+
 function download($url, $prefix) {
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
@@ -73,9 +89,7 @@ function download($url, $prefix) {
 	if($found_file != null) {
 		write_log("Using cached file $found_file");
 
-		$data = file_get_contents("$cache_dir$found_file");
-
-		return json_decode(iconv('ISO-8859-15', 'UTF-8', $data));
+		return file_get_contents("$cache_dir$found_file");
 	}
 
 	write_log("Fetching $url to $filename...");
@@ -89,7 +103,7 @@ function download($url, $prefix) {
 
 	write_log("Fetching completed");
 
-	return json_decode(iconv('ISO-8859-15', 'UTF-8', $data));
+	return $data;
 }
 
 function fetch_line($name) {
