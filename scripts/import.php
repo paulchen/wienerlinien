@@ -19,6 +19,7 @@ write_log("Starting import script...");
 
 $imported_lines = array();
 $imported_stations = array();
+$imported_station_ids = array();
 $imported_line_station = array();
 $imported_line_segment = array();
 
@@ -26,9 +27,25 @@ import_lines($lines_data);
 import_station_ids($station_id_data);
 import_stations($stations_data);
 
-// TODO check for outdated data
+check_outdated($imported_lines, 'line', array('id'));
+check_outdated($imported_stations, 'station', array('id'));
+check_outdated($imported_station_ids, 'station_id', array('id'));
+check_outdated($imported_line_station, 'line_station', array('id'));
+check_outdated($imported_line_segment, 'line_segment', array('id'));
 
 write_log("Import script successfully completed.");
+
+function check_outdated($current_ids, $table) {
+	write_log("Searching for outdated entries in table '$table'...");
+
+	$result = db_query("SELECT id FROM $table");
+	foreach($result as $row) {
+		if(!in_array($row['id'], $current_ids)) {
+			write_log("Found outdated item with id $id");
+			db_query('UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?', array($id));
+		}
+	}
+}
 
 function download($url, $prefix) {
 	$cache_dir = dirname(__FILE__) . '/../cache/';
@@ -193,6 +210,8 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 }
 
 function import_station_ids($data) {
+	global $imported_station_ids;
+
 	write_log("Importing station IDs...");
 
 	foreach($data->features as $feature) {
@@ -202,7 +221,9 @@ function import_station_ids($data) {
 		$id = $feature->properties->WL_NUMMER;
 		$name = $feature->properties->BEZEICHNUNG;
 
-		$data = db_query('SELECT id FROM station_id WHERE id = ?', array($id));
+		$imported_station_ids[] = $id;
+
+		$data = db_query('SELECT id FROM station_id WHERE id = ? AND deleted = 0', array($id));
 		if(count($data) == 0) {
 			db_query('INSERT INTO station_id (id, name, lat, lon) VALUES (?, ?, ?, ?)', array($id, $name, $lat, $lon));
 
