@@ -52,6 +52,17 @@ class Csv {
 		}
 	}
 
+	public function first_row_headers() {
+		$this->column_names = array_shift($this->rows);
+
+		foreach($this->rows as &$row) {
+			foreach($this->column_names as $index => $col) {
+				$row[$col] = $row[$index];
+				unset($row[$index]);
+			}
+		}
+	}
+
 	public function build($header = false) {
 		$output = '';
 

@@ -91,6 +91,7 @@ function download_csv($url, $prefix) {
 	$csv = new Csv();
 	$csv->separator = ';';
 	$csv->parse($csv_file);
+	$csv->first_row_headers();
 
 	return $csv;
 }
