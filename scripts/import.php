@@ -106,6 +106,10 @@ function process_line($name, $type) {
 		$id = $data[0]['id'];
 	}
 	else {
+		if($type == 5 && preg_match('/^S[0-9]+$/', $name)) {
+			$type = 7;
+		}
+
 		db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type));
 		$id = db_last_insert_id();
 
