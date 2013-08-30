@@ -4,3 +4,5 @@ $db_user = 'wienerlinien';
 $db_pass = '';
 $db_name = 'wienerlinien';
 
+$cache_expiration = 86400;
+$debug = false;

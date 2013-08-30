@@ -3,8 +3,6 @@
 // TODO check: only run as standalone script from command line
 
 // TODO -> config file
-$debug = true;
-
 require_once(dirname(__FILE__) . '/../lib/common.php');
 
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
@@ -64,6 +62,8 @@ function download_csv($url, $prefix) {
 }
 
 function download($url, $prefix) {
+	global $cache_expiration;
+
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
 	$filename = "$cache_dir${prefix}_$timestamp.json";
@@ -77,8 +77,7 @@ function download($url, $prefix) {
 			$date = DateTime::createFromFormat('YmdHis', $timestamp);
 			$time = $date->getTimestamp();
 
-			// TODO customizable threshold for outdated data
-			if(time() - $time < 3600 && $found_timestamp < $time) {
+			if(time() - $time < $cache_expiration && $found_timestamp < $time) {
 				$found_file = $file;
 				$found_timestamp = $time;
 			}
