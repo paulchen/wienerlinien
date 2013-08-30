@@ -15,13 +15,15 @@ function show_lines($lines) {
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien</title>
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
-	<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&sensor=false"></script>
+	<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&amp;sensor=false"></script>
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/main.js"></script>
 </head>
 <body onload="initialize();">
 	<div id="options_pane" style="width: 20%; height: 100%; position: absolute; overflow: scroll;">
 		<?php show_lines($lines); ?>
+		<hr />
+		Datenquelle: Stadt Wien - <a href="http://data.wien.gv.at/">data.wien.gv.at</a>
 	</div>
 	<div id="map_canvas" style="position: absolute; width:80%; left: 20%; height:100%"></div>
 </body>
