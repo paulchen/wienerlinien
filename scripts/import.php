@@ -78,9 +78,8 @@ function import_wl_lines($data) {
 
 		$timestamp = strtotime($row['STAND']);
 		$data = db_query('SELECT wl_id, wl_order, realtime, UNIX_TIMESTAMP(wl_updated) wl_updated FROM line WHERE id = ?', array($id));
-		if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE']) {
-		// if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT'] || $data[0]['wl_updated'] != $timestamp) {
-			db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ?, wl_updated = ? WHERE id = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $timestamp, $id));
+		if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT'] || $data[0]['wl_updated'] != $timestamp) {
+			db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ?, wl_updated = FROM_UNIXTIME(?) WHERE id = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $timestamp, $id));
 
 			write_log("Updated line {$row['BEZEICHNUNG']}");
 		}
