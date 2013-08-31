@@ -151,8 +151,8 @@ function import_wl_platforms($data) {
 			// TODO wtf
 		}
 
-		$line_id = $data1[0]['id'];
-		$station_id = $data2[0]['id'];
+		$station_id = $data1[0]['id'];
+		$line_id = $data2[0]['id'];
 
 		$direction = ($row['RICHTUNG'] == 'H') ? 1 : 2;
 		$pos = $row['REIHENFOLGE'];
