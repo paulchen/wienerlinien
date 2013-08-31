@@ -91,12 +91,43 @@ function import_wl_lines($data) {
 }
 
 function import_wl_stations($data) {
+	global $imported_stations;
+
 	write_log("Import stations data from Wiener Linien...");
 
 	foreach($data as $row) {
-		check_municipality($row['GEMEINDE_ID'], $row['GEMEINDE']);
+		$municipality = check_municipality($row['GEMEINDE_ID'], $row['GEMEINDE']);
 
-		// TODO
+		if($row['TYP'] != 'stop') {
+			continue;
+		}
+
+		$existing_station = db_query('SELECT id FROM station WHERE name = ?', array($row['NAME']));
+		if(count($existing_station) == 0) {
+			db_query('INSERT INTO station (name, municipality) VALUES (?, ?)', array($row['NAME'], $municipality));
+			$id = db_last_insert_id();
+
+			write_log("Added station $id ({$row['NAME']}, {$row['GEMEINDE']})");
+		}
+		else {
+			$id = $existing_station[0]['id'];
+		}
+
+		$existing_station = db_query('SELECT wl_id, wl_diva, wl_lat, wl_lon, TIMESTAMP(wl_updated) wl_updated FROM station WHERE id = ?', array($id));
+		$station = $existing_station[0];
+
+		$timestamp = strtotime($row['STAND']);
+		if($station['wl_id'] != $row['HALTESTELLEN_ID']
+				|| $station['diva'] != $row['DIVA']
+				|| $station['wl_lat'] != $row['WGS84_LAT']
+				|| $station['wl_lon'] != $row['WGS84_LON']
+				|| $station['wl_updated'] != $timestamp) {
+			db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ?, wl_updated = FROM_UNIXTIME(?) WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $timestamp, $id));
+
+			write_log("Updated station $id ({$row['NAME']}, {$row['GEMEINDE']})");
+		}
+
+		$imported_stations[] = $id;
 	}
 	
 	write_log("Stations data successfully imported.");
