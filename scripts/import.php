@@ -38,14 +38,12 @@ import_wl_lines($wl_lines_data);
 import_wl_stations($wl_stations_data);
 import_wl_platforms($wl_platforms_data);
 
-/*
-check_outdated($imported_lines, 'line', array('id'));
-check_outdated($imported_stations, 'station', array('id'));
-check_outdated($imported_station_ids, 'station_id', array('id'));
-check_outdated($imported_line_station, 'line_station', array('id'));
-check_outdated($imported_line_segment, 'line_segment', array('id'));
- */
-// TODO outdated WL data
+check_outdated($imported_lines, 'line');
+check_outdated($imported_stations, 'station');
+check_outdated($imported_station_ids, 'station_id');
+check_outdated($imported_line_station, 'line_station');
+check_outdated($imported_line_segment, 'line_segment');
+check_outdated($imported_platforms, 'wl_platform');
 
 write_log("Import script successfully completed.");
 
@@ -167,7 +165,7 @@ function import_wl_platforms($data) {
 
 		$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND wl_updated = FROM_UNIXTIME(?) AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
 		if(count($data3) == 0) {
-			db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon, wl_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(?))', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+			db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon, wl_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
 			$id = db_last_insert_id();
 
 			$imported_platforms[] = $id;
