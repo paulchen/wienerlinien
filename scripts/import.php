@@ -93,7 +93,11 @@ function import_wl_lines($data) {
 function import_wl_stations($data) {
 	write_log("Import stations data from Wiener Linien...");
 
-	// TODO
+	foreach($data as $row) {
+		check_municipality($row['GEMEINDE_ID'], $row['GEMEINDE']);
+
+		// TODO
+	}
 	
 	write_log("Stations data successfully imported.");
 }
@@ -279,17 +283,24 @@ function process_line_segment($line, $segment) {
 }
 
 function check_municipality($id, $name) {
-	$data = db_query('SELECT id FROM municipality WHERE id = ? AND name = ?', array($id, $name));
-	if(count($data) != 1) {
-		db_query('INSERT INTO municipality (id, name) VALUES (?, ?)', array($id, $name));
+	$data = db_query('SELECT id FROM municipality WHERE wl_id = ? AND name = ?', array($id, $name));
+	if(count($data) == 1) {
+		return $data[0]['id'];
 	}
+
+	db_query('INSERT INTO municipality (wl_id, name) VALUES (?, ?)', array($id, $name));
+	$db_id = db_last_insert_id();
+
+	write_log("Added municipality $db_id ($id, $name)");
+	return $db_id;
 }
 
 function process_station($name, $short_name, $lines, $lat, $lon) {
 	global $imported_stations;
 
-	$municipality_id = 90000;
+	$municipality_wl_id = 90000;
 	$municipality_name = 'Wien';
+	$municipality_id = check_municipality($municipality_wl_id, $municipality_name);
 
 	$data = db_query('SELECT id FROM station WHERE deleted = 0 AND name = ? AND short_name = ? AND lat = ? AND lon = ? AND municipality = ?', array($name, $short_name, $lat, $lon, $municipality_id));
 	if(count($data) == 1) {
@@ -297,8 +308,6 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 	}
 	else {
 		write_log("Added station $name ($municipality_name, $short_name, $lines, $lat, $lon)...");
-
-		check_municipality($municipality_id, $municipality_name);
 
 		$data = db_query('SELECT id FROM station_id WHERE name = ?', array($name));
 		if(count($data) == 0) {
