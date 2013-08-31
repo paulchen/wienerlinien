@@ -29,6 +29,7 @@ $imported_stations = array();
 $imported_station_ids = array();
 $imported_line_station = array();
 $imported_line_segment = array();
+$imported_platforms = array();
 
 import_lines($lines_data);
 import_station_ids($station_id_data);
@@ -104,7 +105,7 @@ function import_wl_stations($data) {
 			continue;
 		}
 
-		$existing_station = db_query('SELECT id FROM station WHERE name = ?', array($row['NAME']));
+		$existing_station = db_query('SELECT id FROM station WHERE name = ? AND deleted = 0', array($row['NAME']));
 		if(count($existing_station) == 0) {
 			db_query('INSERT INTO station (name, municipality) VALUES (?, ?)', array($row['NAME'], $municipality));
 			$id = db_last_insert_id();
@@ -136,9 +137,46 @@ function import_wl_stations($data) {
 }
 
 function import_wl_platforms($data) {
+	global $imported_platforms;
+
 	write_log("Import platforms data from Wiener Linien...");
 
-	// TODO
+	foreach($data as $row) {
+		$line_wl_id = $row['FK_LINIEN_ID'];
+		$station_wl_id = $row['FK_HALTESTELLEN_ID'];
+		$wl_id = $row['STEIG_ID'];
+
+		$data1 = db_query('SELECT id, name FROM station WHERE wl_id = ? AND deleted = 0', array($station_wl_id));
+		$data2 = db_query('SELECT id, name FROM line WHERE wl_id = ? AND deleted = 0', array($line_wl_id));
+
+		if(count($data1) != 1 || count($data2) != 1) {
+			// TODO wtf
+		}
+
+		$line_id = $data1[0]['id'];
+		$station_id = $data2[0]['id'];
+
+		$direction = ($row['RICHTUNG'] == 'H') ? 1 : 2;
+		$pos = $row['REIHENFOLGE'];
+		$rbl = $row['RBL_NUMMER'];
+		$area = $row['BEREICH'];
+		$platform = $row['STEIG'];
+		$lat = $row['STEIG_WGS84_LAT'];
+		$lon = $row['STEIG_WGS84_LON'];
+		$updated = strtotime($row['STAND']);
+
+		$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND wl_updated = FROM_UNIXTIME(?) AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+		if(count($data3) == 0) {
+			db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon, wl_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(?))', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+			$id = db_last_insert_id();
+
+			$imported_platforms[] = $id;
+			write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
+		}
+		else {
+			$imported_platforms[] = $data3[0]['id'];
+		}
+	}
 
 	write_log("Platforms data successfully imported.");
 }
