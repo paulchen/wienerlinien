@@ -278,24 +278,35 @@ function process_line_segment($line, $segment) {
 	$imported_line_segment[] = $id;
 }
 
+function check_municipality($id, $name) {
+	$data = db_query('SELECT id FROM municipality WHERE id = ? AND name = ?', array($id, $name));
+	if(count($data) != 1) {
+		db_query('INSERT INTO municipality (id, name) VALUES (?, ?)', array($id, $name));
+	}
+}
+
 function process_station($name, $short_name, $lines, $lat, $lon) {
 	global $imported_stations;
 
+	$municipality_id = 90000;
+	$municipality_name = 'Wien';
 
-	$data = db_query('SELECT id FROM station WHERE deleted = 0 AND name = ? AND short_name = ? AND lat = ? AND lon = ?', array($name, $short_name, $lat, $lon));
+	$data = db_query('SELECT id FROM station WHERE deleted = 0 AND name = ? AND short_name = ? AND lat = ? AND lon = ? AND municipality = ?', array($name, $short_name, $lat, $lon, $municipality_id));
 	if(count($data) == 1) {
 		$id = $data[0]['id'];
 	}
 	else {
-		write_log("Added station $name ($short_name, $lines, $lat, $lon)...");
+		write_log("Added station $name ($municipality_name, $short_name, $lines, $lat, $lon)...");
+
+		check_municipality($municipality_id, $municipality_name);
 
 		$data = db_query('SELECT id FROM station_id WHERE name = ?', array($name));
 		if(count($data) == 0) {
-			db_query('INSERT INTO station (name, short_name, lat, lon, station_id) VALUES (?, ?, ?, ?, NULL)', array($name, $short_name, $lat, $lon));
+			db_query('INSERT INTO station (name, short_name, lat, lon, station_id, municipality) VALUES (?, ?, ?, ?, NULL, ?)', array($name, $short_name, $lat, $lon, $municipality_id));
 		}
 		else {
 			$station_id = $data[0]['id'];
-			db_query('INSERT INTO station (name, short_name, lat, lon, station_id) VALUES (?, ?, ?, ?, ?)', array($name, $short_name, $lat, $lon, $station_id));
+			db_query('INSERT INTO station (name, short_name, lat, lon, station_id, municipality) VALUES (?, ?, ?, ?, ?, ?)', array($name, $short_name, $lat, $lon, $station_id, $municipality_id));
 		}
 		$id = db_last_insert_id();
 	}
