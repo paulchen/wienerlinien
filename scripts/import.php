@@ -5,6 +5,8 @@
 require_once(dirname(__FILE__) . '/../lib/common.php');
 require_once(dirname(__FILE__) . '/../lib/Csv.class.php');
 
+$start_time = microtime(true);
+
 $url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
 $url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
 $url_station_ids = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:HALTESTELLEWLOGD&srsName=EPSG:4326&outputFormat=json';
@@ -44,6 +46,12 @@ check_outdated($imported_line_segment, 'line_segment', array('id'));
 
 write_log("Import script successfully completed.");
 
+$end_time = microtime(true);
+$total_time = round($end_time-$start_time, 2);
+$queries = count($db_queries);
+$queries_per_sec = $queries/$total_time;
+write_log("$queries queries in $total_time seconds ($queries_per_sec queries/sec)");
+
 function import_wl_lines($data) {
 	global $imported_lines;
 
@@ -56,9 +64,9 @@ function import_wl_lines($data) {
 	}
 
 	foreach($data as $row) {
-		$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($row['BEZEICHNUNG']));
-		if(count($data) == 1) {
-			$id = $data[0]['id'];
+		$line_data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($row['BEZEICHNUNG']));
+		if(count($line_data) == 1) {
+			$id = $line_data[0]['id'];
 		}
 		else {
 			$type = $types[$row['VERKEHRSMITTEL']];
@@ -69,9 +77,14 @@ function import_wl_lines($data) {
 		}
 
 		$timestamp = strtotime($row['STAND']);
-		db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ?, wl_updated = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $timestamp));
+		$data = db_query('SELECT wl_id, wl_order, realtime, UNIX_TIMESTAMP(wl_updated) wl_updated FROM line WHERE id = ?', array($id));
+		if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE']) {
+		// if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT'] || $data[0]['wl_updated'] != $timestamp) {
+			db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ?, wl_updated = ? WHERE id = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $timestamp, $id));
 
-		write_log("Updated line {$row['BEZEICHNUNG']}");
+			write_log("Updated line {$row['BEZEICHNUNG']}");
+		}
+
 		$imported_lines[] = $id;
 	}
 
@@ -100,8 +113,8 @@ function check_outdated($current_ids, $table) {
 	$result = db_query("SELECT id FROM $table");
 	foreach($result as $row) {
 		if(!in_array($row['id'], $current_ids)) {
-			write_log("Found outdated item with id $id");
-			db_query('UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?', array($id));
+			write_log("Found outdated item with id {$row['id']}");
+			db_query("UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?", array($row['id']));
 		}
 	}
 }
