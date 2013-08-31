@@ -37,11 +37,13 @@ import_wl_lines($wl_lines_data);
 import_wl_stations($wl_stations_data);
 import_wl_platforms($wl_platforms_data);
 
+/*
 check_outdated($imported_lines, 'line', array('id'));
 check_outdated($imported_stations, 'station', array('id'));
 check_outdated($imported_station_ids, 'station_id', array('id'));
 check_outdated($imported_line_station, 'line_station', array('id'));
 check_outdated($imported_line_segment, 'line_segment', array('id'));
+ */
 // TODO outdated WL data
 
 write_log("Import script successfully completed.");
@@ -118,10 +120,10 @@ function import_wl_stations($data) {
 
 		$timestamp = strtotime($row['STAND']);
 		if($station['wl_id'] != $row['HALTESTELLEN_ID']
-				|| $station['diva'] != $row['DIVA']
+				|| $station['wl_diva'] != $row['DIVA']
 				|| $station['wl_lat'] != $row['WGS84_LAT']
 				|| $station['wl_lon'] != $row['WGS84_LON']
-				|| $station['wl_updated'] != $timestamp) {
+				|| strtotime($station['wl_updated']) != $timestamp) {
 			db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ?, wl_updated = FROM_UNIXTIME(?) WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $timestamp, $id));
 
 			write_log("Updated station $id ({$row['NAME']}, {$row['GEMEINDE']})");
