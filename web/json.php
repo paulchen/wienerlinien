@@ -65,7 +65,48 @@ while($changed) {
 	}
 }
 
-$result = array('segments' => $segments, 'color' => $color, 'line_thickness' => $line_thickness);
+$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, s.lat, s.lon
+	FROM wl_platform p
+		JOIN station s ON (p.station = s.id)
+	WHERE p.line = ?
+	ORDER BY p.direction ASC, p.pos ASC', array($line));
+$stations = array();
+$known_station_ids = array();
+foreach($data as $row) {
+	$station_id = $row['id'];
+	if(in_array($station_id, $known_station_ids)) {
+		continue;
+	}
+	$known_station_ids[] = $station_id;
+
+	unset($row['direction']);
+	unset($row['pos']);
+	$stations[] = $row;
+}
+
+$directions_difference = false;
+for($a=0; $a<count($data)/2; $a++) {
+	if($data[$a] != $data[count($data)-1-$a]) {
+		$directions_difference = true;
+	}
+}
+
+$routes = array(array());
+if($directions_difference) {
+	$routes[] = array();
+}
+foreach($data as $row) {
+	$direction = $row['direction'];
+	unset($row['direction']);
+	if($direction == 1) {
+		$routes[0][] = $row;
+	}
+	else if($directions_difference) {
+		$routes[1][] = $row;
+	}
+}
+
+$result = array('segments' => $segments, 'color' => $color, 'line_thickness' => $line_thickness, 'stations' => $stations, 'routes' => $routes);
 
 header('Content-Type: application/json');
 echo json_encode($result);
