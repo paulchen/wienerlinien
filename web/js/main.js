@@ -14,92 +14,105 @@ function initialize() {
 	googleMap = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 }
 
-function show_hide(id) {
-	if((id in shown) && shown[id]) {
-		hide(id);
-	}
-	else {
-		show(id);
-	}
-}
-
-function hide(id) {
-	$.each(segments[id], function(index, value) {
-		value.setVisible(false);
-	});
-	$.each(stations[id], function(index, value) {
-		value.setVisible(false);
-	});
-	shown[id] = false;
-}
-
-function show(id) {
-	shown[id] = true;
-	if(id in segments) {
+function hide(ids) {
+	$.each(ids, function(index, id) {
 		$.each(segments[id], function(index, value) {
-			value.setVisible(true);
+			value.setVisible(false);
 		});
 		$.each(stations[id], function(index, value) {
-			value.setVisible(true);
+			value.setVisible(false);
 		});
+		shown[id] = false;
+	});
+}
 
+function load(ids) {
+	$.ajax({
+		url: 'json.php?lines=' + ids.join(','),
+		dataType: 'json',
+		success: function(data, text, xhr) {
+			$.each(data, function(index, line) {
+				line_data[line['line']] = line;
+			});
+			show(ids);
+		}
+	});
+}
+
+function show(ids) {
+	var missing_ids = new Array();
+	$.each(ids, function(index, id) {
+		if(!(id in line_data)) {
+			missing_ids.push(id);
+		}
+	});
+	if(missing_ids.length > 0) {
+		load(missing_ids);
 		return;
 	}
 
-	segments[id] = new Array();
-	stations[id] = new Array();
-	$.each(line_data[id]["segments"], function(index, value) {
-		var lat1 = value[0][0];
-		var lon1 = value[0][1];
-		var lat2 = value[1][0];
-		var lon2 = value[1][1];
+	$.each(ids, function(index, id) {
+		shown[id] = true;
+		if(id in segments) {
+			$.each(segments[id], function(index, value) {
+				value.setVisible(true);
+			});
+			$.each(stations[id], function(index, value) {
+				value.setVisible(true);
+			});
 
-		var coordinates = new Array();
-		$.each(value, function(value_index, lat_lon) {
-			coordinates.push(new google.maps.LatLng(lat_lon[0], lat_lon[1]));
-		});
-		var segment = new google.maps.Polyline({
-			path: coordinates,
-			strokeColor: '#' + line_data[id]["color"],
-			strokeOpacity: 1.0,
-			strokeWeight: line_data[id]["line_thickness"]
-		});
+			return;
+		}
 
-		segment.setMap(googleMap);
-		segments[id].push(segment);
+		segments[id] = new Array();
+		stations[id] = new Array();
+		$.each(line_data[id]["segments"], function(index, value) {
+			var lat1 = value[0][0];
+			var lon1 = value[0][1];
+			var lat2 = value[1][0];
+			var lon2 = value[1][1];
+
+			var coordinates = new Array();
+			$.each(value, function(value_index, lat_lon) {
+				coordinates.push(new google.maps.LatLng(lat_lon[0], lat_lon[1]));
+			});
+			var segment = new google.maps.Polyline({
+				path: coordinates,
+				strokeColor: '#' + line_data[id]["color"],
+				strokeOpacity: 1.0,
+				strokeWeight: line_data[id]["line_thickness"]
+			});
+
+			segment.setMap(googleMap);
+			segments[id].push(segment);
+		});
+		$.each(line_data[id]["stations"], function(index, value) {
+			var lat = value["lat"];
+			var lon = value["lon"];
+
+			var station = new google.maps.Marker({
+				position: new google.maps.LatLng(lat, lon),
+				map: googleMap,
+				icon: { // TODO adjust thickness relative to line thickness
+					path: 'm -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
+					strokeColor: '#' + line_data[id]["color"],
+					fillColor: '#' + line_data[id]["color"],
+					fillOpacity: 1.0
+				}
+			});
+			stations[id].push(station);
+		});
 	});
-	$.each(line_data[id]["stations"], function(index, value) {
-		var lat = value["lat"];
-		var lon = value["lon"];
-
-		var station = new google.maps.Marker({
-			position: new google.maps.LatLng(lat, lon),
-		    	map: googleMap,
-		    	icon: { // TODO adjust thickness relative to line thickness
-				path: 'm -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
-		    		strokeColor: '#' + line_data[id]["color"],
-		    		fillColor: '#' + line_data[id]["color"],
-		    		fillOpacity: 1.0
-			}
-		});
-		stations[id].push(station);
-	});
-
 }
 
 function toggle(id) {
-	if(!(id in line_data)) {
-		$.ajax({
-			url: 'json.php?line='+id,
-			dataType: 'json',
-			success: function(data, text, xhr) {
-				line_data[id] = data;
-				show_hide(id);
-			}
-		});
+	var ids = new Array(1);
+	ids[0] = id;
+	if(!(id in shown) || !shown[id]) {
+		show(ids);
 	}
 	else {
-		show_hide(id);
+		hide(ids);
 	}
 }
 
