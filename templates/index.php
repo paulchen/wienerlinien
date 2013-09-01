@@ -29,7 +29,11 @@ function show_lines($lines) {
 
 <?php if(isset($_REQUEST['lines'])): ?>
 	$(document).ready(function() {
-		show(new Array(<?php echo $_REQUEST['lines'] ?>));
+		var preselected_lines = new Array(<?php echo $_REQUEST['lines'] ?>);
+		$.each(preselected_lines, function(index, value) {
+			$('#checkbox_line_' + value).prop('checked', true);
+		});
+		show(preselected_lines);
 	});
 <?php endif; ?>
 	// -->
