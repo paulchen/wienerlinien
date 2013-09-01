@@ -75,7 +75,7 @@ function show(id) {
 		var station = new google.maps.Marker({
 			position: new google.maps.LatLng(lat, lon),
 		    	map: googleMap,
-		    	icon: {
+		    	icon: { // TODO adjust thickness relative to line thickness
 				path: 'm -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
 		    		strokeColor: '#' + line_data[id]["color"],
 		    		fillColor: '#' + line_data[id]["color"],
