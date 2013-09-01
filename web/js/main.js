@@ -27,6 +27,9 @@ function hide(id) {
 	$.each(segments[id], function(index, value) {
 		value.setVisible(false);
 	});
+	$.each(stations[id], function(index, value) {
+		value.setVisible(false);
+	});
 	shown[id] = false;
 }
 
@@ -36,11 +39,15 @@ function show(id) {
 		$.each(segments[id], function(index, value) {
 			value.setVisible(true);
 		});
+		$.each(stations[id], function(index, value) {
+			value.setVisible(true);
+		});
 
 		return;
 	}
 
 	segments[id] = new Array();
+	stations[id] = new Array();
 	$.each(line_data[id]["segments"], function(index, value) {
 		var lat1 = value[0][0];
 		var lon1 = value[0][1];
@@ -75,18 +82,7 @@ function show(id) {
 		    		fillOpacity: 1.0
 			}
 		});
-		/*
-		var station = new google.maps.Circle({
-			strokeColor: '#' + line_data[id]["color"],
-		    	strokeOpacity: 1.0,
-		    	strokeWeight: line_data[id]["line_thickness"],
-		    	fillColor: '#' + line_data[id]["color"],
-		    	fillOpacity: 1.0,
-		    	map: googleMap,
-		    	center: new google.maps.LatLng(lat, lon),
-		    	radius: parseFloat(line_data[id]["line_thickness"])*20
-		});
-		*/
+		stations[id].push(station);
 	});
 
 }
