@@ -6,17 +6,35 @@ if(!isset($_REQUEST['line'])) {
 	die();
 }
 
-// TODO check for line being an integer number > 0
-// TODO check for non-existance of line (move queries for type and colors up here)
+$line = $_REQUEST['line'];
+if(!preg_match('/^[0-9]+$/', $line)) {
+	// TODO HTTP response: illegal request
+	die();
+}
 
-// TODO replace $_REQUEST['line'] by $line in all queries
+$data = db_query('SELECT type FROM line WHERE id = ?', array($line));
+if(count($data) != 1) {
+	// TODO HTTP response: not found
+	die();
+}
+$type = $data[0]['type'];
+
+$data = db_query('SELECT color, line_thickness FROM line_type WHERE id = ?', array($type));
+$color = $data[0]['color'];
+$line_thickness = $data[0]['line_thickness'];
+
+$data = db_query('SELECT color FROM line_color WHERE line = ?', array($line));
+if(count($data) == 1) {
+	$color = $data[0]['color'];
+}
+
 $data = db_query('SELECT sp1.lat lat1, sp1.lon lon1, sp2.lat lat2, sp2.lon lon2
 		FROM line l
 			JOIN line_segment ls ON (l.id = ls.line)
 			JOIN segment s ON (ls.segment = s.id)
 			JOIN segment_point sp1 ON (s.point1 = sp1.id)
 			JOIN segment_point sp2 ON (s.point2 = sp2.id)
-		WHERE l.id = ?', array($_REQUEST['line']));
+		WHERE l.id = ?', array($line));
 $segments = array();
 foreach($data as $row) {
 	$segments[] = array(array($row['lat1'], $row['lon1']), array($row['lat2'], $row['lon2']));
@@ -45,18 +63,6 @@ while($changed) {
 			}
 		}
 	}
-}
-
-$data = db_query('SELECT type FROM line WHERE id = ?', array($_REQUEST['line']));
-$type = $data[0]['type'];
-
-$data = db_query('SELECT color, line_thickness FROM line_type WHERE id = ?', array($type));
-$color = $data[0]['color'];
-$line_thickness = $data[0]['line_thickness'];
-
-$data = db_query('SELECT color FROM line_color WHERE line = ?', array($_REQUEST['line']));
-if(count($data) == 1) {
-	$color = $data[0]['color'];
 }
 
 $result = array('segments' => $segments, 'color' => $color, 'line_thickness' => $line_thickness);
