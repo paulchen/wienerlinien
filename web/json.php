@@ -65,7 +65,7 @@ while($changed) {
 	}
 }
 
-$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, s.lat, s.lon
+$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, p.lat, p.lon
 	FROM wl_platform p
 		JOIN station s ON (p.station = s.id)
 	WHERE p.line = ?
