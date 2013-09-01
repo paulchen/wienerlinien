@@ -90,11 +90,16 @@ function show(ids) {
 			var lat = value["lat"];
 			var lon = value["lon"];
 
+			var point_radius = line_data[id]['line_thickness']*1.5;
+			var path = 'm -X, 0 a X,X 0 1,0 Y,0 a X,X 0 1,0 -Y,0'
+			path = path.replace(/X/g, point_radius);
+			path = path.replace(/Y/g, point_radius*2);
+
 			var station = new google.maps.Marker({
 				position: new google.maps.LatLng(lat, lon),
 				map: googleMap,
-				icon: { // TODO adjust thickness relative to line thickness
-					path: 'm -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
+				icon: {
+					path: path,
 					strokeColor: '#' + line_data[id]["color"],
 					fillColor: '#' + line_data[id]["color"],
 					fillOpacity: 1.0
