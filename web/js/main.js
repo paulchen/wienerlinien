@@ -121,3 +121,35 @@ function toggle(id) {
 	}
 }
 
+function show_group(group) {
+	$.each(groups[group], function(index, value) {
+		$('#checkbox_line_' + value).prop('checked', true);
+	});
+	show(groups[group]);
+}
+
+function hide_group(group) {
+	$.each(groups[group], function(index, value) {
+		$('#checkbox_line_' + value).prop('checked', false);
+	});
+	hide(groups[group]);
+}
+
+function invert_group(group) {
+	var show_ids = new Array();
+	var hide_ids = new Array();
+
+	$.each(groups[group], function(index, value) {
+		if(shown[value]) {
+			$('#checkbox_line_' + value).prop('checked', false);
+			hide_ids.push(value);
+		}
+		else {
+			$('#checkbox_line_' + value).prop('checked', true);
+			show_ids.push(value);
+		}
+	});
+	show(show_ids);
+	hide(hide_ids);
+}
+

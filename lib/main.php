@@ -34,13 +34,17 @@ function line_sorter($a, $b) {
 }
 
 $lines = array();
+$groups = array();
 $data = db_query('SELECT id, name FROM line_type ORDER BY pos ASC');
 foreach($data as $row) {
-	$lines[$row['id']] = array('name' => $row['name'], 'lines' => array());
+	$row['lines'] = array();
+	$lines[$row['id']] = $row;
+	$groups[$row['id']] = array();
 }
 $data = db_query('SELECT id, name, type FROM line ORDER BY name ASC');
 foreach($data as $row) {
 	$lines[$row['type']]['lines'][] = $row;
+	$groups[$row['type']][] = $row['id'];
 }
 foreach($lines as $type => &$value) {
 	usort($value['lines'], 'line_sorter');
