@@ -1,6 +1,7 @@
 var googleMap;
 var line_data = new Array();
 var segments = new Array();
+var stations = new Array();
 var shown = new Array();
 
 function initialize() {
@@ -59,6 +60,33 @@ function show(id) {
 
 		segment.setMap(googleMap);
 		segments[id].push(segment);
+	});
+	$.each(line_data[id]["stations"], function(index, value) {
+		var lat = value["lat"];
+		var lon = value["lon"];
+
+		var station = new google.maps.Marker({
+			position: new google.maps.LatLng(lat, lon),
+		    	map: googleMap,
+		    	icon: {
+				path: 'm -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
+		    		strokeColor: '#' + line_data[id]["color"],
+		    		fillColor: '#' + line_data[id]["color"],
+		    		fillOpacity: 1.0
+			}
+		});
+		/*
+		var station = new google.maps.Circle({
+			strokeColor: '#' + line_data[id]["color"],
+		    	strokeOpacity: 1.0,
+		    	strokeWeight: line_data[id]["line_thickness"],
+		    	fillColor: '#' + line_data[id]["color"],
+		    	fillOpacity: 1.0,
+		    	map: googleMap,
+		    	center: new google.maps.LatLng(lat, lon),
+		    	radius: parseFloat(line_data[id]["line_thickness"])*20
+		});
+		*/
 	});
 
 }
