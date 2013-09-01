@@ -113,7 +113,7 @@ foreach($line_ids as $line_id) {
 		}
 	}
 
-	$result[] = array('line' => $line_id, 'segments' => $segments, 'color' => $line_data[$line_id]['color'], 'line_thickness' => $line_data[$line_id]['thickness'], 'stations' => $stations, 'routes' => $routes);
+	$result[] = array('line' => $line_id, 'segments' => $segments, 'color' => $line_data[$line_id]['color'], 'line_thickness' => $line_data[$line_id]['line_thickness'], 'stations' => $stations, 'routes' => $routes);
 }
 
 header('Content-Type: application/json');
