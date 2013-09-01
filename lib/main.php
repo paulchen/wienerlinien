@@ -42,12 +42,24 @@ foreach($data as $row) {
 	$groups[$row['id']] = array();
 }
 $data = db_query('SELECT id, name, type FROM line ORDER BY name ASC');
+$line_ids = array();
 foreach($data as $row) {
 	$lines[$row['type']]['lines'][] = $row;
 	$groups[$row['type']][] = $row['id'];
+	$line_ids[] = $row['id'];
 }
 foreach($lines as $type => &$value) {
 	usort($value['lines'], 'line_sorter');
+}
+
+if(isset($_REQUEST['lines'])) {
+	$_lines = explode(',', $_REQUEST['lines']);
+	foreach($_lines as $id) {
+		if(!in_array($id, $line_ids)) {
+			// TODO 404
+			die();
+		}
+	}
 }
 
 require_once("$template_dir/index.php");

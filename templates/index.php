@@ -27,6 +27,11 @@ function show_lines($lines) {
 
 	var groups = <?php echo json_encode($groups); ?>;
 
+<?php if(isset($_REQUEST['lines'])): ?>
+	$(document).ready(function() {
+		show(new Array(<?php echo $_REQUEST['lines'] ?>));
+	});
+<?php endif; ?>
 	// -->
 	</script>
 </head>
