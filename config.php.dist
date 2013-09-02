@@ -6,3 +6,6 @@ $db_name = 'wienerlinien';
 
 $cache_expiration = 86400;
 $debug = false;
+
+$wl_api_key = '';
+
