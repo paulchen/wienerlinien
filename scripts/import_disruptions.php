@@ -19,9 +19,9 @@ function process_traffic_infos($infos) {
 	foreach($infos as $info) {
 		$priority = isset($info->priority) ? $info->priority : null;
 		$owner = isset($info->owner) ? $info->owner : null;
-		$start_time = isset($info->start_time) ? strtotime($info->start_time) : null;
-		$end_time = isset($info->end_time) ? strtotime($info->end_time) : null;
-		$resume_time = isset($info->resume_time) ? strtotime($info->resume_time) : null;
+		$start_time = (isset($info->time) && isset($info->time->start)) ? strtotime($info->time->start) : null;
+		$end_time = (isset($info->time) && isset($info->time->end)) ? strtotime($info->time->end) : null;
+		$resume_time = (isset($info->time) && isset($info->time->resume)) ? strtotime($info->time->resume) : null;
 
 		$data = db_query('SELECT id FROM traffic_info WHERE wl_id = ?', array($info->name));
 		if(count($data) == 0) {
