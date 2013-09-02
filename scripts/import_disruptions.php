@@ -27,10 +27,14 @@ function process_traffic_infos($infos) {
 		if(count($data) == 0) {
 			db_query('INSERT INTO traffic_info (wl_id, category, priority, owner, title, description, start_time, end_time, resume_time) VALUES (?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), FROM_UNIXTIME(?))', array($info->name, $info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $start_time, $end_time, $resume_time));
 			$id = db_last_insert_id();
+
+			write_log("Added disruption $id");
 		}
 		else {
 			$id = $data[0]['id'];
 			db_query('UPDATE traffic_info SET category = ?, priority = ?, owner = ?, title = ?, description = ?, start_time = FROM_UNIXTIME(?), end_time = FROM_UNIXTIME(?), resume_time = FROM_UNIXTIME(?) WHERE id = ?', array($info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $start_time, $end_time, $resume_time, $id));
+
+			write_log("Updated disruption $id");
 		}
 
 		if(isset($info->attributes)) {
@@ -43,6 +47,8 @@ function process_traffic_infos($infos) {
 			$towards = isset($info->attributes->towards) ? $info->attributes->towards : null;
 
 			db_query('INSERT INTO traffic_info_elevator (id, reason, location, station, status, start_time, end_time, towards) VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), ?) ON DUPLICATE KEY UPDATE reason = ?, location = ?, station = ?, status = ?, start_time = FROM_UNIXTIME(?), end_time = FROM_UNIXTIME(?), towards = ?', array($id, $reason, $location, $station, $status, $start_time, $end_time, $towards, $reason, $location, $station, $status, $start_time, $end_time, $towards));
+
+			write_log("Updated elevator data for disruption $id");
 		}
 
 		$data_lines = db_query('SELECT line FROM traffic_info_line WHERE traffic_info = ?', array($id));
@@ -92,6 +98,8 @@ function process_traffic_infos($infos) {
 				$placeholder_string = implode(', ', $placeholders);
 				db_query("INSERT INTO traffic_info_platform (traffic_info, platform) VALUES $placeholder_string", $parameters);
 			}
+
+			write_log("Updated platform data for disruption $id");
 		}
 
 		$placeholders = array();
@@ -132,6 +140,8 @@ function process_traffic_infos($infos) {
 				$placeholder_string = implode(', ', $placeholders);
 				db_query("INSERT INTO traffic_info_line (traffic_info, line) VALUES $placeholder_string", $parameters);
 			}
+
+			write_log("Updated line data for disruption $id");
 		}
 	}
 }
