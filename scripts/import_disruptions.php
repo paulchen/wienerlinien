@@ -11,11 +11,16 @@ $disruptions_url = "http://www.wienerlinien.at/ogd_realtime/trafficInfoList?send
 $cache_expiration = 290; // TODO configurable
 $data = download_json($disruptions_url, 'disruptions');
 
+$imported_disruptions = array();
+
 check_category_groups($data->data->trafficInfoCategoryGroups);
 check_categories($data->data->trafficInfoCategories);
 process_traffic_infos($data->data->trafficInfos);
+check_outdated($imported_disruptions, 'traffic_info');
 
 function process_traffic_infos($infos) {
+	global $imported_disruptions;
+
 	foreach($infos as $info) {
 		$priority = isset($info->priority) ? $info->priority : null;
 		$owner = isset($info->owner) ? $info->owner : null;
@@ -36,6 +41,8 @@ function process_traffic_infos($infos) {
 
 			write_log("Updated disruption $id");
 		}
+
+		$imported_disruptions[] = $id;
 
 		if(isset($info->attributes)) {
 			$reason = isset($info->attributes->reason) ? $info->attributes->reason : null;
