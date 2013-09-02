@@ -62,5 +62,5 @@ if(isset($_REQUEST['lines'])) {
 	}
 }
 
-require_once("$template_dir/index.php");
+require_once("$template_dir/map.php");
 
