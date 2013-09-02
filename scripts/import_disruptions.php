@@ -8,7 +8,7 @@ $input_encoding = 'UTF-8';
 
 // TODO configurable sender ID
 $disruptions_url = "http://www.wienerlinien.at/ogd_realtime/trafficInfoList?sender=BOGnmp092s";
-// $cache_expiration = 290; // TODO
+$cache_expiration = 290; // TODO configurable
 $data = download_json($disruptions_url, 'disruptions');
 
 check_category_groups($data->data->trafficInfoCategoryGroups);
