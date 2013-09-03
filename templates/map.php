@@ -40,7 +40,7 @@ function show_lines($lines) {
 	</script>
 </head>
 <body onload="initialize();">
-	<div id="options_pane" style="width: 20%; height: 100%; position: absolute; overflow: scroll;">
+	<div id="options_pane" style="width: 20%; height: 100%; position: absolute; overflow-y: scroll; overflow-x: hidden;">
 		<?php show_lines($lines); ?>
 		<hr />
 		Seiteninhaber: <a href="mailto:paulchen@rueckgr.at">Paul Staroch</a><br />
