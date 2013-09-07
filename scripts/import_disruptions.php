@@ -68,7 +68,7 @@ function process_traffic_infos($infos) {
 			$db_platform_ids[] = $row['rbl'];
 		}
 
-		$feed_platform_ids = $info->relatedStops;
+		$feed_platform_ids = isset($info->relatedStops) ? $info->relatedStops : array();
 		$difference = false;
 		foreach($feed_platform_ids as $feed_id) {
 			if(!in_array($feed_id, $db_platform_ids)) {
@@ -85,7 +85,7 @@ function process_traffic_infos($infos) {
 		if($difference) {
 			db_query('DELETE from traffic_info_platform WHERE traffic_info = ?', array($id));
 
-			if(count($info->relatedStops) > 0) {	
+			if(isset($info->relatedStops) && count($info->relatedStops) > 0) {	
 				$placeholders = array();
 				$parameters = array();
 				foreach($info->relatedStops as $stop) {
@@ -108,15 +108,17 @@ function process_traffic_infos($infos) {
 			write_log("Updated platform data for disruption $id");
 		}
 
-		$placeholders = array();
-		foreach($info->relatedLines as $line) {
-			$placeholders[] = '?';
-		}
-		$placeholder_string = implode(', ', $placeholders);
-		$data = db_query("SELECT id FROM line WHERE name IN ($placeholder_string)", $info->relatedLines);
 		$feed_line_ids = array();
-		foreach($data as $row) {
-			$feed_line_ids[] = $row['id'];
+		if(isset($info->relatedLines) && count($info->relatedLines) > 0) {
+			$placeholders = array();
+			foreach($info->relatedLines as $line) {
+				$placeholders[] = '?';
+			}
+			$placeholder_string = implode(', ', $placeholders);
+			$data = db_query("SELECT id FROM line WHERE name IN ($placeholder_string)", $info->relatedLines);
+			foreach($data as $row) {
+				$feed_line_ids[] = $row['id'];
+			}
 		}
 
 		$difference = false;
