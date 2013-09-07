@@ -6,7 +6,6 @@ require_once(dirname(__FILE__) . '/../lib/common.php');
 
 $input_encoding = 'UTF-8';
 
-// TODO configurable sender ID
 $disruptions_url = "http://www.wienerlinien.at/ogd_realtime/trafficInfoList?sender=$wl_api_key";
 $cache_expiration = 290; // TODO configurable
 $data = download_json($disruptions_url, 'disruptions');
