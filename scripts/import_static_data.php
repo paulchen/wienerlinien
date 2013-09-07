@@ -47,11 +47,7 @@ check_outdated($imported_platforms, 'wl_platform');
 
 write_log("Import script successfully completed.");
 
-$end_time = microtime(true);
-$total_time = round($end_time-$start_time, 2);
-$queries = count($db_queries);
-$queries_per_sec = $queries/$total_time;
-write_log("$queries queries in $total_time seconds ($queries_per_sec queries/sec)");
+log_query_stats();
 
 function import_wl_lines($data) {
 	global $imported_lines;
