@@ -17,6 +17,8 @@ check_categories($data->data->trafficInfoCategories);
 process_traffic_infos($data->data->trafficInfos);
 check_outdated($imported_disruptions, 'traffic_info');
 
+log_query_stats();
+
 function process_traffic_infos($infos) {
 	global $imported_disruptions;
 
