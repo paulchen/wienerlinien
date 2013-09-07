@@ -9,3 +9,6 @@ $debug = false;
 
 $wl_api_key = '';
 
+$email_from = 'from@example.com';
+$report_email = 'to@example.com';
+

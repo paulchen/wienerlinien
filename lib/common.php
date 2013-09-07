@@ -2,6 +2,8 @@
 $start_time = microtime(true);
 
 require_once(dirname(__FILE__) . '/../config.php');
+require_once('Mail/mime.php');
+require_once('Mail.php');
 
 $db = new PDO("mysql:dbname=$db_name;host=$db_host", $db_user, $db_pass);
 db_query('SET NAMES UTF8');
@@ -42,13 +44,10 @@ function db_query($query, $parameters = array()) {
 function db_error($error, $stacktrace, $query, $parameters) {
 	global $report_email, $email_from;
 
-	print_r($stacktrace);
+	@header('HTTP/1.1 500 Internal Server Error');
+	echo "A database error has just occurred. Please don't freak out, the administrator has already been notified.\n";
+	write_log('A database error has occurred.');
 
-	header('HTTP/1.1 500 Internal Server Error');
-	echo "A database error has just occurred. Please don't freak out, the administrator has already been notified.\n$error";
-	die();
-
-	/* TODO
 	$params = array(
 			'ERROR' => $error,
 			'STACKTRACE' => dump_r($stacktrace),
@@ -56,8 +55,7 @@ function db_error($error, $stacktrace, $query, $parameters) {
 			'PARAMETERS' => dump_r($parameters),
 			'REQUEST_URI' => (isset($_SERVER) && isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : 'none',
 		);
-	send_mail('db_error.php', 'Database error', $params, true);
-	 */
+	send_mail('db_error', 'Database error', $params, true);
 }
 
 function dump_r($variable) {
@@ -67,6 +65,45 @@ function dump_r($variable) {
 	ob_end_clean();
 
 	return $data;
+}
+
+function send_mail($template, $subject, $parameters = array(), $fatal = false, $attachments = array()) {
+	global $email_from, $report_email, $template_dir;
+
+	if(strpos($template, '..') !== false) {
+		die();
+	}
+
+	$message = file_get_contents("$template_dir/mails/$template.php");
+
+	$patterns = array();
+	$replacements = array();
+	foreach($parameters as $key => $value) {
+		$patterns[] = "[$key]";
+		$replacements[] = $value;
+	}
+	$message = str_replace($patterns, $replacements, $message);
+
+	$headers = array(
+			'From' => $email_from,
+			'To' => $report_email,
+			'Subject' => $subject,
+		);
+
+	$mime = &new Mail_Mime(array('text_charset' => 'UTF-8'));
+	$mime->setTXTBody($message);
+	$finfo = finfo_open(FILEINFO_MIME_TYPE);
+	foreach($attachments as $attachment) {
+		$mime->addAttachment($attachment, finfo_file($finfo, $attachment));
+	}
+
+	$mail =& Mail::factory('smtp');
+	$mail->send($report_email, $mime->headers($headers), $mime->get());
+
+	if($fatal) {
+		// TODO HTTP error code/message
+		die();
+	}
 }
 
 function db_last_insert_id() {
