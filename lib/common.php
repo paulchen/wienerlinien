@@ -1,4 +1,6 @@
 <?php
+$start_time = microtime(true);
+
 require_once(dirname(__FILE__) . '/../config.php');
 
 $db = new PDO("mysql:dbname=$db_name;host=$db_host", $db_user, $db_pass);
@@ -180,6 +182,8 @@ function check_outdated($current_ids, $table) {
 }
 
 function log_query_stats() {
+	global $db_queries, $start_time;
+
 	$end_time = microtime(true);
 	$total_time = round($end_time-$start_time, 2);
 	$queries = count($db_queries);
