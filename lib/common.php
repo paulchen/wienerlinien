@@ -10,13 +10,15 @@ db_query('SET NAMES UTF8');
 
 $template_dir = dirname(__FILE__) . '/../templates/';
 
-function db_query($query, $parameters = array()) {
+function db_query($query, $parameters = array(), $ignore_errors = false) {
 	global $db, $db_queries;
 
 	$query_start = microtime(true);
 	if(!($stmt = $db->prepare($query))) {
 		$error = $db->errorInfo();
-		db_error($error[2], debug_backtrace(), $query, $parameters);
+		if(!$ignore_errors) {
+			db_error($error[2], debug_backtrace(), $query, $parameters);
+		}
 	}
 	// see https://bugs.php.net/bug.php?id=40740 and https://bugs.php.net/bug.php?id=44639
 	foreach($parameters as $key => $value) {
@@ -24,12 +26,16 @@ function db_query($query, $parameters = array()) {
 	}
 	if(!$stmt->execute()) {
 		$error = $stmt->errorInfo();
-		db_error($error[2], debug_backtrace(), $query, $parameters);
+		if(!$ignore_errors) {
+			db_error($error[2], debug_backtrace(), $query, $parameters);
+		}
 	}
 	$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	if(!$stmt->closeCursor()) {
 		$error = $stmt->errorInfo();
-		db_error($error[2], debug_backtrace(), $query, $parameters);
+		if(!$ignore_errors) {
+			db_error($error[2], debug_backtrace(), $query, $parameters);
+		}
 	}
 	$query_end = microtime(true);
 
@@ -202,7 +208,7 @@ function write_log($message) {
 	fputs($file, "[$timestamp] - $message\n");
 	fclose($file);
 
-	db_query('INSERT INTO log (text) VALUES (?)', array($message));
+	db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
 	if($debug) {
 		echo "[$timestamp] - $message\n";
