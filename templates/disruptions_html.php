@@ -7,7 +7,7 @@
 <body>
 	<h1>Aktuelle Störungen</h1>
 	<?php foreach($disruptions as $disruption): ?>
-		<h2>[<?php echo htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></h2>
+		<h2><a href="?id=<?php echo $disruption['id'] ?>">[<?php echo htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></a></h2>
 		<?php echo htmlentities($disruption['description'], ENT_QUOTES, 'UTF-8') ?><br /><br />
 		<?php if(count($disruption['lines']) > 0): ?>
 			<?php if(count($disruption['lines']) > 1): ?>
@@ -41,6 +41,9 @@
 		<?php endif; ?>
 		<hr />
 	<?php endforeach; ?>
+	<?php if(isset($_REQUEST['id'])): ?>
+		<a href="?">Alle Störungen</a><hr />
+	<?php endif; ?>
 	<a href="mailto:paulchen@rueckgr.at">Paul Staroch</a><br />
 	<!-- TODO datenquelle -->
 </body>

@@ -237,8 +237,21 @@ function log_query_stats() {
 	write_log("$queries queries in $total_time seconds ($queries_per_sec queries/sec)");
 }
 
-function get_disruptions() {
-	$disruptions = db_query("SELECT i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(e.start_time, i.start_time, i.timestamp_created)) start_time,
+function get_disruptions($filter = array()) {
+	$filter_part = '1=1';
+	$filter_params = array();
+
+	if(count($filter) == 0) {
+		$filter_part = 'i.deleted = 0';
+	}
+	else {
+		if(isset($filter['id'])) {
+			$filter_part .= ' AND i.id = ?';
+			$filter_params[] = $filter['id'];
+		}
+	}
+
+	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(e.start_time, i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(COALESCE(e.end_time, i.resume_time, i.end_time)) end_time,
 					c.title category,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
@@ -251,9 +264,9 @@ function get_disruptions() {
 					LEFT JOIN wl_platform p ON (tip.platform = p.id)
 					LEFT JOIN station s ON (p.station = s.id)
 					JOIN traffic_info_category c ON (i.category = c.id)
-				WHERE i.deleted = 0
+				WHERE $filter_part
 				GROUP BY i.id, title, description, start_time, end_time
-				ORDER BY start_time ASC");
+				ORDER BY start_time ASC", $filter_params);
 	foreach($disruptions as $index => &$disruption) {
 		if($disruption['start_time'] > time()) {
 			unset($disruptions[$index]);
