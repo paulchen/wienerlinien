@@ -55,7 +55,7 @@ function db_error($error, $stacktrace, $query, $parameters) {
 			'PARAMETERS' => dump_r($parameters),
 			'REQUEST_URI' => (isset($_SERVER) && isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : 'none',
 		);
-	send_mail('db_error', 'Database error', $params, true);
+	send_mail('db_error', 'Wiener Linien - Database error', $params, true);
 }
 
 function dump_r($variable) {
