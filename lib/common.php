@@ -46,7 +46,6 @@ function db_error($error, $stacktrace, $query, $parameters) {
 
 	@header('HTTP/1.1 500 Internal Server Error');
 	echo "A database error has just occurred. Please don't freak out, the administrator has already been notified.\n";
-	write_log('A database error has occurred.');
 
 	$params = array(
 			'ERROR' => $error,
@@ -55,6 +54,8 @@ function db_error($error, $stacktrace, $query, $parameters) {
 			'PARAMETERS' => dump_r($parameters),
 			'REQUEST_URI' => (isset($_SERVER) && isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : 'none',
 		);
+	write_log("A database error has occurred: \n\nRequest URI: {$params['REQUEST_URI']}\n\nQuery: {$params['QUERY']}\n\nError message: $error\n\nParameters:\n{$params['PARAMETERS']}\n\nStack trace:\n{$params['QUERY']}\n\n");
+
 	send_mail('db_error', 'Wiener Linien - Database error', $params, true);
 }
 
