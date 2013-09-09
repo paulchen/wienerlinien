@@ -43,8 +43,7 @@ function show_lines($lines) {
 	<div id="options_pane" style="width: 20%; height: 100%; position: absolute; overflow-y: scroll; overflow-x: hidden;">
 		<?php show_lines($lines); ?>
 		<hr />
-		Seiteninhaber: <a href="mailto:paulchen@rueckgr.at">Paul Staroch</a><br />
-		Datenquelle: Stadt Wien - <a href="http://data.wien.gv.at/">data.wien.gv.at</a>
+		<?php require('footer.php'); ?>
 	</div>
 	<div id="map_canvas" style="position: absolute; width:80%; left: 20%; height:100%"></div>
 </body>

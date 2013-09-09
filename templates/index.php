@@ -14,8 +14,7 @@
 		</ul>
 	</div>
 	<hr />
-	<a href="mailto:paulchen@rueckgr.at">Paul Staroch</a><br />
-	<!-- TODO datenquelle -->
+	<?php require('footer.php'); ?>
 </body>
 </html>
 

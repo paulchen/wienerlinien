@@ -3,6 +3,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien -- Aktuelle Störungen</title>
+	<link rel="alternate" type="application/rss+xml" title="Wiener Linien -- Aktuelle Störungen -- RSS-Feed"  href="rss.php" />
 </head>
 <body>
 	<h1>Aktuelle Störungen</h1>
@@ -14,8 +15,7 @@
 	<?php if(isset($_REQUEST['id'])): ?>
 		<a href="?">Alle Störungen</a><hr />
 	<?php endif; ?>
-	<a href="mailto:paulchen@rueckgr.at">Paul Staroch</a><br />
-	<!-- TODO datenquelle -->
+	<?php require('footer.php'); ?>
 </body>
 </html>
 
