@@ -10,6 +10,7 @@
 	<div>
 		<ul>
 			<li><a href="disruptions">Aktuelle Störungen</a></li>
+			<li><a href="disruptions/rss.php">Aktuelle Störungen -- RSS-Feed</a></li>
 			<li><a href="map">Karte</a></li>
 		</ul>
 	</div>
