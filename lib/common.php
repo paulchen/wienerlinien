@@ -249,9 +249,22 @@ function get_disruptions($filter = array()) {
 			$filter_part .= ' AND i.id = ?';
 			$filter_params[] = $filter['id'];
 		}
+
 		if(isset($filter['group'])) {
 			$filter_part .= ' AND i.group = ?';
 			$filter_params[] = $filter['group'];
+		}
+
+		if(isset($filter['twitter']) && $filter['twitter'] == '0') {
+			$filter_part .= ' AND i.id NOT IN (SELECT id FROM traffic_info_twitter)';
+		}
+		else if(isset($filter['twitter']) && $filter['twitter'] == '1') {
+			$filter_part .= ' AND i.id IN (SELECT id FROM traffic_info_twitter)';
+		}
+
+		if(isset($filter['deleted'])) {
+			$filter_part .= ' AND i.deleted = ?';
+			$filter_params[] = $filter['deleted'];
 		}
 	}
 
@@ -278,6 +291,7 @@ function get_disruptions($filter = array()) {
 			continue;
 		}
 
+		$disruption['ids'] = array($disruption['id']);
 		if($disruption['lines'] == '') {
 			$disruption['lines'] = array();
 		}
@@ -298,6 +312,8 @@ function get_disruptions($filter = array()) {
 
 			$disruptions[$previous_disruption]['lines'] = array_unique(array_merge($disruptions[$previous_disruption]['lines'], $disruption['lines']));
 			usort($disruptions[$previous_disruption]['lines'], 'line_sorter');
+
+			$disruptions[$previous_disruption]['ids'][] = $disruption['id'];
 
 			unset($disruptions[$index]);
 			continue;
@@ -325,8 +341,14 @@ function get_disruptions($filter = array()) {
 }
 
 function line_sorter($a, $b) {
-	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a['name'], $matches_a);
-	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b['name'], $matches_b);
+	if(isset($a['name']) && isset($b['name'])) {
+		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a['name'], $matches_a);
+		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b['name'], $matches_b);
+	}
+	else {
+		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a, $matches_a);
+		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b, $matches_b);
+	}
 
 	if($matches_a[1] != '' && $matches_b[1] == '') {
 		return -1;

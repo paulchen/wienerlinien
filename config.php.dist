@@ -13,8 +13,8 @@ $email_from = 'from@example.com';
 $report_email = 'to@example.com';
 
 $twitter = false;
-$consumer_key = '';
-$consumer_secret = '';
-$oauth_token = '';
-$oauth_token_secret = '';
+$twitter_consumer_key = '';
+$twitter_consumer_secret = '';
+$twitter_oauth_token = '';
+$twitter_oauth_token_secret = '';
 

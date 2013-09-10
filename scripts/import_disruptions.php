@@ -3,6 +3,7 @@
 // TODO check: only run as standalone script from command line
 
 require_once(dirname(__FILE__) . '/../lib/common.php');
+require_once(dirname(__FILE__) . '/../lib/twitteroauth/twitteroauth.php');
 
 $input_encoding = 'UTF-8';
 
@@ -18,6 +19,8 @@ process_traffic_infos($data->data->trafficInfos);
 check_outdated($imported_disruptions, 'traffic_info');
 
 require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
+
+notify_twitter();
 
 log_query_stats();
 
@@ -178,4 +181,58 @@ function check_categories($categories) {
 	}
 }
 
+function notify_twitter() {
+	global $twitter, $twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret;
+
+	if(!$twitter) {
+		return;
+	}
+
+	$disruptions = array_reverse(get_disruptions(array('twitter' => 0, 'deleted' => 0)));
+	if(count($disruptions) > 0) {
+		write_log("Sending notifications about " . count($disruptions) . " disruptions to twitter.");
+	}
+
+	$connection = new TwitterOAuth($twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret);
+	$connection->get('account/verify_credentials');
+
+	$ids = array();
+	foreach($disruptions as $disruption) {
+		write_log("Sending notification for disruption(s) " . implode(', ', $disruption['ids']));
+
+		$link = "https://rueckgr.at/wienerlinien/disruptions/?id=" . $disruption['id'];
+
+		$disruption_text = '';
+		if(count($disruption['lines']) > 0) {
+			$disruption_text .= implode('/', $disruption['lines']) . ': ';
+		}
+		$disruption_text .= '[' . $disruption['category'] . '] ';
+		$disruption_text .= str_replace("\n", " ", $disruption['title']);
+		if(mb_strlen($disruption_text, 'UTF-8') > 110) {
+			$disruption_text = mb_substr($disruption_text, 0, 109, 'UTF-8') . '…';
+		}
+		$disruption_text .= " $link";
+
+		$connection->post('statuses/update', array('status' => $disruption_text));
+
+		if ($connection->http_code == 200) {
+			write_log("Sending notification succeeded.");
+			$ids = array_merge($ids, $disruption['ids']);
+		}
+		else {
+			write_log("Unable to send notification");
+		}
+	}
+
+	if(count($ids) > 0) {
+		write_log("Sending notifications completed.");
+
+		$placeholders = array();
+		foreach($ids as $id) {
+			$placeholders[] = '(?)';
+		}
+		$placeholder_string = implode(',', $placeholders);
+		db_query("INSERT INTO traffic_info_twitter (id) VALUES $placeholder_string", $ids);
+	}
+}
 
