@@ -253,7 +253,7 @@ function get_disruptions($filter = array()) {
 
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(e.start_time, i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(COALESCE(e.end_time, i.end_time)) end_time,
-					c.title category, i.group `group`,
+					COALESCE(c.short_name, c.title) category, i.group `group`,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
 					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
 				FROM traffic_info i
