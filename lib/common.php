@@ -253,7 +253,7 @@ function get_disruptions($filter = array()) {
 
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(e.start_time, i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(COALESCE(e.end_time, i.end_time)) end_time,
-					c.title category,
+					c.title category, i.group `group`,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
 					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
 				FROM traffic_info i
@@ -265,25 +265,41 @@ function get_disruptions($filter = array()) {
 					LEFT JOIN station s ON (p.station = s.id)
 					JOIN traffic_info_category c ON (i.category = c.id)
 				WHERE $filter_part
-				GROUP BY i.id, title, description, start_time, end_time
-				ORDER BY start_time ASC", $filter_params);
+				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, c.title, i.group
+				ORDER BY `group` ASC, start_time ASC", $filter_params);
+
 	foreach($disruptions as $index => &$disruption) {
 		if($disruption['start_time'] > time()) {
 			unset($disruptions[$index]);
 			continue;
 		}
+
 		if($disruption['lines'] == '') {
 			$disruption['lines'] = array();
 		}
 		else {
 			$disruption['lines'] = explode(',', $disruption['lines']);
 		}
+
 		if($disruption['stations'] == '') {
 			$disruption['stations'] = array();
 		}
 		else {
 			$disruption['stations'] = explode(',', $disruption['stations']);
 		}
+
+		if(isset($previous_disruption) && $disruption['group'] && $disruption['group'] == $disruptions[$previous_disruption]['group']) {
+			$disruptions[$previous_disruption]['stations'] = array_unique(array_merge($disruptions[$previous_disruption]['stations'], $disruption['stations']));
+			sort($disruptions[$previous_disruption]['stations']);
+
+			$disruptions[$previous_disruption]['lines'] = array_unique(array_merge($disruptions[$previous_disruption]['lines'], $disruption['lines']));
+			sort($disruptions[$previous_disruption]['lines']);
+
+			unset($disruptions[$index]);
+			continue;
+		}
+
+		$previous_disruption = $index;
 	}
 	return $disruptions;
 }
