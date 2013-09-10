@@ -301,6 +301,22 @@ function get_disruptions($filter = array()) {
 
 		$previous_disruption = $index;
 	}
+
+	usort($disruptions, function($a, $b) {
+		if($a['start_time'] < $b['start_time']) {
+			return 1;
+		}
+		if($a['start_time'] > $b['start_time']) {
+			return -1;
+		}
+		if($a['end_time'] < $b['end_time']) {
+			return 1;
+		}
+		if($a['end_time'] > $b['end_time']) {
+			return -1;
+		}
+		return 0;
+	});
 	return $disruptions;
 }
 
