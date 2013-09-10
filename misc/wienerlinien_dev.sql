@@ -270,6 +270,7 @@ CREATE TABLE IF NOT EXISTS `traffic_info` (
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
   `resume_time` datetime DEFAULT NULL,
+  `group` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `wl_id` (`wl_id`),
   KEY `category` (`category`)
