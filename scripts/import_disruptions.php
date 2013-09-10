@@ -17,6 +17,8 @@ check_categories($data->data->trafficInfoCategories);
 process_traffic_infos($data->data->trafficInfos);
 check_outdated($imported_disruptions, 'traffic_info');
 
+require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
+
 log_query_stats();
 
 function process_traffic_infos($infos) {
