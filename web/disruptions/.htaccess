@@ -1,0 +1,4 @@
+RewriteEngine on
+
+RewriteRule ^rss.xml rss.php [QSA]
+
