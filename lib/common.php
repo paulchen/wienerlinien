@@ -297,6 +297,7 @@ function get_disruptions($filter = array()) {
 		}
 		else {
 			$disruption['lines'] = explode(',', $disruption['lines']);
+			usort($disruption['lines'], 'line_sorter');
 		}
 
 		if($disruption['stations'] == '') {
