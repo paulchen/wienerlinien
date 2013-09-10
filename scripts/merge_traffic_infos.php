@@ -1,6 +1,4 @@
 <?php
-require_once('../lib/common.php');
-
 /* In this file, several entries in the database table 'traffic_info' are organized into groups
  * in case they describe the same event; two items are assumed to describe the same item if
  * 1) a set of fields is equal and
