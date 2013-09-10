@@ -31,7 +31,7 @@ foreach($data as $row) {
 	$previous_hash = $hash;
 }
 if(count($kill_groups) > 0) {
-	write_log('Killing groups: ' . $implode(', ', $kill_groups));
+	write_log('Killing groups: ' . implode(', ', $kill_groups));
 
 	$placeholders = array();
 	foreach($kill_groups as $group) {
@@ -48,7 +48,10 @@ $data = db_query('SELECT id, category, priority, owner, title, description, `gro
 $existing_hashes = array();
 foreach($data as $row) {
 	$hash = calculate_hash($row, $comparison_fields);
-	$existing_hashes[$hash] = array('group' => $row['group'], 'timestamp' => $row['start_time']);
+	if(!isset($existing_hashes[$hash])) {
+		$existing_hashes[$hash] = array();
+	}
+	$existing_hashes[$hash][$row['group']] = $row['start_time'];
 }
 
 // TODO deleted == 0
@@ -61,11 +64,17 @@ $groups = array();
 $add_to_existing_groups = array();
 foreach($data as &$row) {
 	$hash = calculate_hash($row, $comparison_fields);
-	if(isset($existing_hashes[$hash]) && abs(strtotime($row['start_time'])-strtotime($existing_hashes[$hash]['timestamp'])) < 1800) {
-		if(!isset($add_to_existing_groups[$hash])) {
-			$add_to_existing_groups[$hash] = array();
+	if(isset($existing_hashes[$hash])) {
+		foreach($existing_hashes[$hash] as $group_id => $timestamp) {
+			if(abs(strtotime($timestamp)-strtotime($row['start_time'])) < 1800) {
+				if(!isset($add_to_existing_groups[$group_id])) {
+					$add_to_existing_groups[$group_id] = array();
+				}
+				$add_to_existing_groups[$group_id][] = $row['id'];
+
+				continue 2;
+			}
 		}
-		$add_to_existing_groups[$hash][] = $row['id'];
 	}
 	else {
 		if(!isset($groups[$hash])) {
@@ -75,15 +84,15 @@ foreach($data as &$row) {
 	}
 }
 unset($row);
-foreach($add_to_existing_groups as $hash => $group) {
-	write_log("Adding items to group {$existing_hashes[$hash]}: " . implode(', ', $group));
+foreach($add_to_existing_groups as $group_id => $group) {
+	write_log("Adding items to group $group_id: " . implode(', ', $group));
 
 	$placeholders = array();
 	foreach($group as $item) {
 		$placeholders[] = '?';
 	}
 	$placeholder_string = implode(',', $placeholders);
-	array_unshift($group, $existing_hashes[$hash]);
+	array_unshift($group, $group_id);
 	db_query("UPDATE traffic_info SET `group` = ? WHERE id IN ($placeholder_string)", $group);
 }
 
