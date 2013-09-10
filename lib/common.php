@@ -249,6 +249,10 @@ function get_disruptions($filter = array()) {
 			$filter_part .= ' AND i.id = ?';
 			$filter_params[] = $filter['id'];
 		}
+		if(isset($filter['group'])) {
+			$filter_part .= ' AND i.group = ?';
+			$filter_params[] = $filter['group'];
+		}
 	}
 
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(e.start_time, i.start_time, i.timestamp_created)) start_time,
