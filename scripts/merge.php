@@ -31,12 +31,24 @@ foreach($data as $row) {
 	$previous_hash = $hash;
 }
 if(count($kill_groups) > 0) {
+	write_log('Killing groups: ' . $implode(', ', $kill_groups));
+
 	$placeholders = array();
 	foreach($kill_groups as $group) {
 		$placeholders[] = '?';
 	}
 	$placeholder_string = implode(',',$placeholders);
 	db_query("UPDATE traffic_info SET `group` = NULL WHERE `group` IN ($placeholder_string)", $kill_groups);
+}
+
+$data = db_query('SELECT id, category, priority, owner, title, description, `group`, start_time
+		FROM traffic_info
+		WHERE NOT `group` IS NULL
+		ORDER BY `group` ASC');
+$existing_hashes = array();
+foreach($data as $row) {
+	$hash = calculate_hash($row, $comparison_fields);
+	$existing_hashes[$hash] = array('group' => $row['group'], 'timestamp' => $row['start_time']);
 }
 
 // TODO deleted == 0
@@ -46,13 +58,35 @@ $data = db_query('SELECT id, timestamp_created, category, priority, owner, title
 		ORDER BY start_time ASC');
 //		WHERE id IN (40, 69, 142, 167, 238, 307, 378, 562)	
 $groups = array();
+$add_to_existing_groups = array();
 foreach($data as &$row) {
 	$hash = calculate_hash($row, $comparison_fields);
-	if(!isset($groups[$hash])) {
-		$groups[$hash] = array();
+	if(isset($existing_hashes[$hash]) && abs(strtotime($row['start_time'])-strtotime($existing_hashes[$hash]['timestamp'])) < 1800) {
+		if(!isset($add_to_existing_groups[$hash])) {
+			$add_to_existing_groups[$hash] = array();
+		}
+		$add_to_existing_groups[$hash][] = $row['id'];
 	}
-	$groups[$hash][] = $row;
+	else {
+		if(!isset($groups[$hash])) {
+			$groups[$hash] = array();
+		}
+		$groups[$hash][] = $row;
+	}
 }
+unset($row);
+foreach($add_to_existing_groups as $hash => $group) {
+	write_log("Adding items to group {$existing_hashes[$hash]}: " . implode(', ', $group));
+
+	$placeholders = array();
+	foreach($group as $item) {
+		$placeholders[] = '?';
+	}
+	$placeholder_string = implode(',', $placeholders);
+	array_unshift($group, $existing_hashes[$hash]);
+	db_query("UPDATE traffic_info SET `group` = ? WHERE id IN ($placeholder_string)", $group);
+}
+
 $groups_modified = true;
 while($groups_modified) {
 //	print_r($groups);
@@ -92,14 +126,19 @@ while($groups_modified) {
 		}
 	}
 }
-// print_r($groups);
+unset($group);
 
 $data = db_query('SELECT COALESCE(MAX(`group`), 0) max_group FROM traffic_info');
 $group_id = $data[0]['max_group'];
 
+// print_r($groups);
 foreach($groups as $group) {
+//	print_r($group);
 	$group_id++;
 	$parameters = array_map(function($a) { return $a['id']; }, $group);
+//	print_r($parameters);
+	write_log("Creating group $group_id from items: " . implode(', ', $parameters));
+
 	array_unshift($parameters, $group_id);
 	$placeholders = array();
 	foreach($parameters as $parameter) {
@@ -109,4 +148,6 @@ foreach($groups as $group) {
 	$placeholder_string = implode(',', $placeholders);
 	db_query("UPDATE traffic_info SET `group` = ? WHERE id IN ($placeholder_string)", $parameters);
 }
+
+// print_r($groups);
 
