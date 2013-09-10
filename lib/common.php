@@ -293,7 +293,7 @@ function get_disruptions($filter = array()) {
 			sort($disruptions[$previous_disruption]['stations']);
 
 			$disruptions[$previous_disruption]['lines'] = array_unique(array_merge($disruptions[$previous_disruption]['lines'], $disruption['lines']));
-			sort($disruptions[$previous_disruption]['lines']);
+			usort($disruptions[$previous_disruption]['lines'], 'line_sorter');
 
 			unset($disruptions[$index]);
 			continue;
@@ -302,6 +302,37 @@ function get_disruptions($filter = array()) {
 		$previous_disruption = $index;
 	}
 	return $disruptions;
+}
+
+function line_sorter($a, $b) {
+	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a['name'], $matches_a);
+	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b['name'], $matches_b);
+
+	if($matches_a[1] != '' && $matches_b[1] == '') {
+		return -1;
+	}
+	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[1] < $matches_b[1]) {
+		return -1;
+	}
+	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[1] > $matches_b[1]) {
+		return 1;
+	}
+
+	if(intval($matches_a[2]) < intval($matches_b[2])) {
+		return -1;
+	}
+	if(intval($matches_a[2]) > intval($matches_b[2])) {
+		return 1;
+	}
+
+	if($matches_a[3] < $matches_b[3]) {
+		return -1;
+	}
+	if($matches_a[3] > $matches_b[3]) {
+		return 1;
+	}
+
+	return 0;
 }
 
 
