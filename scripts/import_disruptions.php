@@ -40,7 +40,7 @@ function process_traffic_infos($infos) {
 		}
 		else {
 			$id = $data[0]['id'];
-			db_query('UPDATE traffic_info SET category = ?, priority = ?, owner = ?, title = ?, description = ?, start_time = FROM_UNIXTIME(?), end_time = FROM_UNIXTIME(?), resume_time = FROM_UNIXTIME(?) WHERE id = ?', array($info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $start_time, $end_time, $resume_time, $id));
+			db_query('UPDATE traffic_info SET category = ?, priority = ?, owner = ?, title = ?, description = ?, start_time = FROM_UNIXTIME(?), end_time = FROM_UNIXTIME(?), resume_time = FROM_UNIXTIME(?), deleted = 0, timestamp_deleted = NULL WHERE id = ?', array($info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $start_time, $end_time, $resume_time, $id));
 
 			write_log("Updated disruption $id");
 		}
