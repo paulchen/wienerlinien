@@ -198,6 +198,13 @@ function notify_twitter() {
 
 	$ids = array();
 	foreach($disruptions as $disruption) {
+		$data = db_query('SELECT id FROM traffic_info WHERE `group` = ? AND id IN (SELECT id FROM traffic_info_twitter)', array($disruption['group']));
+		if(count($data) > 0) {
+			write_log("Skipping sending notification for disruption(s) " . implode(', ', $disruption['ids']) . " as a notification has already been sent for at least one item in the same group.");
+			$ids = array_merge($ids, $disruption['ids']);
+			continue;
+		}
+
 		write_log("Sending notification for disruption(s) " . implode(', ', $disruption['ids']));
 
 		$link = "https://rueckgr.at/wienerlinien/disruptions/?id=" . $disruption['id'];
