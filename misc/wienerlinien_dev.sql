@@ -291,6 +291,7 @@ CREATE TABLE IF NOT EXISTS `traffic_info_category` (
   `group` int(11) NOT NULL,
   `name` text NOT NULL,
   `title` text NOT NULL,
+  `short_name` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `group` (`group`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
