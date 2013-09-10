@@ -31,7 +31,7 @@ foreach($data as $row) {
 	$previous_hash = $hash;
 }
 if(count($kill_groups) > 0) {
-	write_log('Killing groups: ' . implode(', ', $kill_groups));
+	write_log('Killing group(s): ' . implode(', ', $kill_groups));
 
 	$placeholders = array();
 	foreach($kill_groups as $group) {
@@ -62,6 +62,7 @@ $data = db_query('SELECT id, timestamp_created, category, priority, owner, title
 //		WHERE id IN (40, 69, 142, 167, 238, 307, 378, 562)	
 $groups = array();
 $add_to_existing_groups = array();
+// print_r($data);
 foreach($data as &$row) {
 	$hash = calculate_hash($row, $comparison_fields);
 	if(isset($existing_hashes[$hash])) {
@@ -76,14 +77,13 @@ foreach($data as &$row) {
 			}
 		}
 	}
-	else {
-		if(!isset($groups[$hash])) {
-			$groups[$hash] = array();
-		}
-		$groups[$hash][] = $row;
+	if(!isset($groups[$hash])) {
+		$groups[$hash] = array();
 	}
+	$groups[$hash][] = $row;
 }
 unset($row);
+// print_r($groups);
 foreach($add_to_existing_groups as $group_id => $group) {
 	write_log("Adding items to group $group_id: " . implode(', ', $group));
 
