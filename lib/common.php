@@ -403,7 +403,7 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $cache_expiration, $debug;
+	global $wl_api_key, $cache_expiration, $debug, $input_encoding;
 
 	$result = array();
 	$missing_ids = array();
@@ -423,6 +423,7 @@ function fetch_rbls($rbls) {
 		$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $missing_ids) . "&sender=$wl_api_key";
 		$cache_expiration = -1; // TODO hmmm
 		$debug = false;
+		$input_encoding = 'UTF-8';
 		$data = download_json($url, 'rbl_' . implode('.', $missing_ids));
 
 		foreach($data->data->monitors as $monitor) {
