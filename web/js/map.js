@@ -128,13 +128,11 @@ function show_overlay(url) {
 }
 
 function line_click(id) {
-	show_overlay('..');
-//	alert(line_data[id]['name']);
+	show_overlay('line.htm?id=' + id);
 }
 
 function station_click(line, station) {
-	show_overlay('..');
-//	alert(line_data[line]["stations"][station]["name"]);
+	show_overlay('station.htm?id=' + line_data[line]["stations"][station]["id"]);
 }
 
 function toggle(id) {
