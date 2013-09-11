@@ -150,23 +150,25 @@ function import_wl_platforms($data) {
 
 		$direction = ($row['RICHTUNG'] == 'H') ? 1 : 2;
 		$pos = $row['REIHENFOLGE'];
-		$rbl = $row['RBL_NUMMER'];
+		$rbls = explode(':', $row['RBL_NUMMER']);
 		$area = $row['BEREICH'];
 		$platform = $row['STEIG'];
 		$lat = $row['STEIG_WGS84_LAT'];
 		$lon = $row['STEIG_WGS84_LON'];
 		$updated = strtotime($row['STAND']);
 
-		$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND wl_updated = FROM_UNIXTIME(?) AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
-		if(count($data3) == 0) {
-			db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon, wl_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
-			$id = db_last_insert_id();
+		foreach($rbls as $rbl) {
+			$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND wl_updated = FROM_UNIXTIME(?) AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+			if(count($data3) == 0) {
+				db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon, wl_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+				$id = db_last_insert_id();
 
-			$imported_platforms[] = $id;
-			write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
-		}
-		else {
-			$imported_platforms[] = $data3[0]['id'];
+				$imported_platforms[] = $id;
+				write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
+			}
+			else {
+				$imported_platforms[] = $data3[0]['id'];
+			}
 		}
 	}
 
