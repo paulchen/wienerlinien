@@ -82,9 +82,13 @@ function show(ids) {
 				strokeOpacity: 1.0,
 				strokeWeight: line_data[id]["line_thickness"]
 			});
+			google.maps.event.addListener(segment, 'click', function() {
+				line_click(id)
+			});
 
 			segment.setMap(googleMap);
 			segments[id].push(segment);
+
 		});
 		$.each(line_data[id]["stations"], function(index, value) {
 			var lat = value["lat"];
@@ -106,9 +110,31 @@ function show(ids) {
 				},
 			    	title: value["name"]
 			});
+			google.maps.event.addListener(station, 'click', function() {
+				station_click(id, index);
+			});
+
 			stations[id].push(station);
 		});
 	});
+}
+
+function show_overlay(url) {
+	$.fancybox.open({
+		href: url,
+		type: 'iframe',
+		padding: 5,
+	});
+}
+
+function line_click(id) {
+	show_overlay('..');
+//	alert(line_data[id]['name']);
+}
+
+function station_click(line, station) {
+	show_overlay('..');
+//	alert(line_data[line]["stations"][station]["name"]);
 }
 
 function toggle(id) {

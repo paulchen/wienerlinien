@@ -21,6 +21,9 @@ function show_lines($lines) {
 	<link rel="stylesheet" type="text/css" href="../css/map.css" />
 	<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&amp;sensor=false"></script>
 	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/jquery.fancybox.js"></script>
+	<link rel="stylesheet" type="text/css" href="../css/jquery.fancybox.css" media="screen" />
+
 	<script type="text/javascript" src="../js/map.js"></script>
 	<script type="text/javascript">
 	<!--
@@ -45,6 +48,7 @@ function show_lines($lines) {
 		<hr />
 		<?php require('footer.php'); ?>
 	</div>
+	<div id="overlay">foobar</div>
 	<div id="map_canvas" style="position: absolute; width:80%; left: 20%; height:100%"></div>
 </body>
 </html>
