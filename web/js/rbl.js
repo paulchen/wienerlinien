@@ -3,6 +3,15 @@ $(document).ready(function() {
 });
 
 function update_rbls() {
-	// TODO
+	$.ajax({
+		url: 'rbls.php?ids=' + rbls.join(','),
+		dataType: 'json',
+		success: function(data, text, xhr) {
+			// TODO
+		},
+		complete: function(xhr, text) {
+			window.setTimeout('update_rbls();', 30000);
+		}
+	});
 }
 
