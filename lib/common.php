@@ -10,6 +10,12 @@ db_query('SET NAMES UTF8');
 
 $template_dir = dirname(__FILE__) . '/../templates/';
 
+$memcached = new Memcached();
+$memcached_servers = array(array('ip' => '127.0.0.1', 'port' => '11211'));
+foreach($memcached_servers as $server) {
+	$memcached->addServer($server['ip'], $server['port']);
+}
+
 function db_query($query, $parameters = array(), $ignore_errors = false) {
 	global $db, $db_queries;
 
@@ -378,4 +384,56 @@ function line_sorter($a, $b) {
 	return 0;
 }
 
+function cache_get($key) {
+	global $memcached;
+
+	// TODO -> configuration file
+	$memcached_prefix = "wienerlinien_dev";
+
+	return $memcached->get("${memcached_prefix}_$key");
+}
+
+function cache_set($key, $data, $expiration = 60) {
+	global $memcached;
+
+	// TODO -> configuration file
+	$memcached_prefix = "wienerlinien_dev";
+
+	$memcached->set("${memcached_prefix}_$key", $data, $expiration);
+}
+
+function fetch_rbls($rbls) {
+	global $wl_api_key, $cache_expiration, $debug;
+
+	$result = array();
+	$missing_ids = array();
+	foreach($rbls as $rbl) {
+		// TODO necessary?
+		db_query('INSERT INTO active_rbl (rbl) VALUES (?) ON DUPLICATE KEY UPDATE `timestamp` = NOW()', array($rbl));
+		$data = cache_get("rbl_$rbl");
+		if(!$data) {
+			$missing_ids[] = $rbl;
+		}
+		else {
+			$result[$rbl] = $data;
+		}
+	}
+
+	if(count($missing_ids) > 0) {
+		$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $missing_ids) . "&sender=$wl_api_key";
+		$cache_expiration = -1; // TODO hmmm
+		$debug = false;
+		$data = download_json($url, 'rbl_' . implode('.', $missing_ids));
+
+		foreach($data->data->monitors as $monitor) {
+			$rbl = $monitor->locationStop->properties->attributes->rbl;
+			$lines = $monitor->lines;
+
+			$result[$rbl] = $lines;
+			cache_set("rbl_$rbl", $lines, 60);
+		}
+	}
+
+	return $result;
+}
 
