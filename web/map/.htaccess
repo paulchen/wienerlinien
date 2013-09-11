@@ -1,0 +1,5 @@
+RewriteEngine on
+
+RewriteRule ^line.htm line.php [QSA]
+RewriteRule ^station.htm station.php [QSA]
+
