@@ -103,7 +103,8 @@ function show(ids) {
 					strokeColor: '#' + line_data[id]["color"],
 					fillColor: '#' + line_data[id]["color"],
 					fillOpacity: 1.0
-				}
+				},
+			    	title: value["name"]
 			});
 			stations[id].push(station);
 		});

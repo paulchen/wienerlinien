@@ -18,7 +18,7 @@ foreach($line_ids as $line_id) {
 
 $placeholders = implode(', ', $placeholder_array);
 
-$data = db_query("SELECT l.id id, COALESCE(c.color, t.color) color, t.line_thickness
+$data = db_query("SELECT l.id id, l.name name, COALESCE(c.color, t.color) color, t.line_thickness
 		FROM line l
 			LEFT JOIN line_color c ON (l.id = c.line)
 			JOIN line_type t ON (l.type = t.id)
@@ -113,7 +113,7 @@ foreach($line_ids as $line_id) {
 		}
 	}
 
-	$result[] = array('line' => $line_id, 'segments' => $segments, 'color' => $line_data[$line_id]['color'], 'line_thickness' => $line_data[$line_id]['line_thickness'], 'stations' => $stations, 'routes' => $routes);
+	$result[] = array('line' => $line_id, 'name' => $line_data[$line_id]['name'], 'segments' => $segments, 'color' => $line_data[$line_id]['color'], 'line_thickness' => $line_data[$line_id]['line_thickness'], 'stations' => $stations, 'routes' => $routes);
 }
 
 header('Content-Type: application/json');
