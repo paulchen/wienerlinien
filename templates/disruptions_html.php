@@ -16,7 +16,7 @@
 		<hr />
 	<?php endforeach; ?>
 	<?php if(isset($_REQUEST['id'])): ?>
-		<a href="?">Alle Störungen</a><hr />
+		<a href="?">Alle aktuellen Störungen</a><hr />
 	<?php endif; ?>
 	<?php require('footer.php'); ?>
 </body>
