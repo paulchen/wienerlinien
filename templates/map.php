@@ -48,7 +48,6 @@ function show_lines($lines) {
 		<hr />
 		<?php require('footer.php'); ?>
 	</div>
-	<div id="overlay">foobar</div>
 	<div id="map_canvas" style="position: absolute; width:80%; left: 20%; height:100%"></div>
 </body>
 </html>
