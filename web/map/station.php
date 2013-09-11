@@ -14,8 +14,14 @@ if(count($data) != 1) {
 }
 $station_id = $data[0]['station_id'];
 
-$stations = db_query('SELECT name FROM station WHERE station_id = ?', array($station_id));
-$station_name = $stations[0]['name'];
+$platforms = db_query('SELECT s.name station_name, p.rbl rbl, l.name line_name, l.id line_id
+		FROM station s
+			LEFT JOIN wl_platform p ON (s.id = p.station)
+			LEFT JOIN line l ON (p.line = l.id)
+		WHERE s.station_id = ?
+		ORDER BY l.wl_order ASC, direction ASC', array($station_id));
+$station_name = $platforms[0]['station_name'];
+$rbls = array_values(array_unique(array_filter(array_map(function($a) { return $a['rbl']; }, $platforms))));
 
 require_once("$template_dir/station.php");
 
