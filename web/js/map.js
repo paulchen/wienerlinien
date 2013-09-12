@@ -128,7 +128,7 @@ function show_overlay(url) {
 		closeEffect: 'elastic',
 		openSpeed: 150,
 		closeSpeed: 150,
-		width: '520px',
+		width: '530px',
 		height: '90%',
 		fitToView: false,
 		autoSize: false
