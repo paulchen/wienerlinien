@@ -399,7 +399,8 @@ CREATE TABLE IF NOT EXISTS `wl_platform` (
   PRIMARY KEY (`id`),
   KEY `station` (`station`,`line`),
   KEY `station_2` (`station`),
-  KEY `line` (`line`)
+  KEY `line` (`line`),
+  KEY `rbl` (`rbl`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
 --
@@ -422,6 +423,18 @@ CREATE TABLE IF NOT EXISTS `log` (
 --
 -- Dumping data for table `log`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `active_rbl`
+--
+
+CREATE TABLE IF NOT EXISTS `active_rbl` (
+  `rbl` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`rbl`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Constraints for dumped tables
@@ -505,6 +518,12 @@ ALTER TABLE `traffic_info_platform`
 ALTER TABLE `wl_platform`
   ADD CONSTRAINT `wl_platform_ibfk_2` FOREIGN KEY (`line`) REFERENCES `line` (`id`),
   ADD CONSTRAINT `wl_platform_ibfk_1` FOREIGN KEY (`station`) REFERENCES `station` (`id`);
+
+--
+-- Constraints for table `active_rbl`
+--
+ALTER TABLE `active_rbl`
+  ADD CONSTRAINT `active_rbl_ibfk_1` FOREIGN KEY (`rbl`) REFERENCES `wl_platform` (`rbl`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
