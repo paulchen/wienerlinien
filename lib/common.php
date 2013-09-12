@@ -445,13 +445,29 @@ function fetch_rbls($rbls) {
 	return $result;
 }
 
+function get_line_id($name) {
+	global $line_id_list;
+
+	if(!isset($line_id_list)) {
+		$data = db_query('SELECT id, name FROM line');
+		$line_id_list = array();
+		foreach($data as $row) {
+			$line_id_list[$row['name']] = $row['id'];
+		}
+	}
+
+	return $line_id_list[$name];
+}
+
 function process_rbl_data($data) {
 	$departures = array();
 	foreach($data as $row) {
 		foreach($row as $line) {
 			foreach($line->departures->departure as $departure) {
+				$line_name = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->name : $line->name;
 				$departures[] = array(
-					'line' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->name : $line->name,
+					'line' => $line_name,
+					'line_id' => get_line_id($line_name),
 					'towards' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards,
 					'time' => $departure->departureTime->countdown
 				); 

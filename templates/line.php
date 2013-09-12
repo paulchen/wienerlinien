@@ -20,7 +20,7 @@
 				<?php else: ?>
 					<div class="route route_station"></div>
 				<?php endif; ?>
-				<?php echo $station['name'] ?><br />
+				<a href="station.htm?id=<?php echo $station['id'] ?>"><?php echo htmlentities($station['name'], ENT_QUOTES, 'UTF-8') ?></a><br />
 				<?php if(!$station['last']): ?>
 					<div class="route"></div><br />
 				<?php endif; ?>

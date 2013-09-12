@@ -30,8 +30,9 @@ function update_rbls() {
 						var line = row['line'];
 						var towards = row['towards'];
 						var time = row['time'];
+						var line_link = 'line.htm?id=' + row['line_id'];
 
-						content += '<tr><td>' + line + '</td><td>' + towards + '</td><td>' + time + '</td></tr>';
+						content += '<tr><td><a href="' + line_link + '">' + line + '</a></td><td>' + towards + '</td><td>' + time + '</td></tr>';
 					});
 
 					content += '</table>';
