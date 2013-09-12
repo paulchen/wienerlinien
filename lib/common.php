@@ -466,7 +466,7 @@ function process_rbl_data($data) {
 		if($a['time'] > $b['time']) {
 			return 1;
 		}
-		return line_sorter($a, $b);
+		return line_sorter($a['line'], $b['line']);
 	});
 
 	return $departures;
