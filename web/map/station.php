@@ -14,13 +14,22 @@ if(count($data) != 1) {
 }
 $station_id = $data[0]['station_id'];
 
-$platforms = db_query('SELECT s.name station_name, p.rbl rbl, l.name line_name, l.id line_id
+$platforms = db_query("SELECT s.name station_name, p.rbl rbl,
+			GROUP_CONCAT(DISTINCT l.name ORDER BY wl_order ASC SEPARATOR ',') line_names,
+			GROUP_CONCAT(DISTINCT l.id ORDER BY wl_order ASC SEPARATOR ',') line_ids
 		FROM station s
 			LEFT JOIN wl_platform p ON (s.id = p.station)
 			LEFT JOIN line l ON (p.line = l.id)
 		WHERE s.station_id = ?
-		ORDER BY l.wl_order ASC, direction ASC', array($station_id));
+		GROUP BY p.rbl
+		ORDER BY wl_order ASC", array($station_id));
 $station_name = $platforms[0]['station_name'];
+foreach($platforms as &$platform) {
+	$platform['line_names'] = explode(',', $platform['line_names']);
+	$platform['line_ids'] = explode(',', $platform['line_ids']);
+}
+unset($platform);
+
 $rbls = array_values(array_unique(array_filter(array_map(function($a) { return $a['rbl']; }, $platforms))));
 
 require_once("$template_dir/station.php");
