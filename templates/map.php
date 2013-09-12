@@ -24,7 +24,7 @@ function show_lines($lines) {
 	<script type="text/javascript" src="../js/jquery.fancybox.js"></script>
 	<link rel="stylesheet" type="text/css" href="../css/jquery.fancybox.css" media="screen" />
 
-	<script type="text/javascript" src="../js/map.js"></script>
+	<script type="text/javascript" src="../js/main.js"></script>
 	<script type="text/javascript">
 	<!--
 

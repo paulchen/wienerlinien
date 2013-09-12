@@ -3,7 +3,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien -- Liniendetails</title>
-	<link rel="stylesheet" type="text/css" href="../css/map.css" />
+	<link rel="stylesheet" type="text/css" href="../css/main.css" />
 </head>
 <body class="line">
 	<h1>Linie <?php echo htmlentities($line_name, ENT_QUOTES, 'UTF-8') ?> &ndash; Details</h1>

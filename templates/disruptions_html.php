@@ -4,6 +4,7 @@
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien -- <?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Aktuelle Störungen<?php endif; ?></title>
 	<link rel="alternate" type="application/rss+xml" title="Wiener Linien -- Aktuelle Störungen -- RSS-Feed"  href="rss.xml" />
+	<link rel="stylesheet" type="text/css" href="../css/main.css" />
 </head>
 <body>
 	<h1><?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Aktuelle Störungen<?php endif; ?></h1>
