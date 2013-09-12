@@ -410,7 +410,8 @@ function fetch_rbls($rbls) {
 	foreach($rbls as $rbl) {
 		// TODO necessary?
 		db_query('INSERT INTO active_rbl (rbl) VALUES (?) ON DUPLICATE KEY UPDATE `timestamp` = NOW()', array($rbl));
-		$data = cache_get("rbl_$rbl");
+	//	$data = cache_get("rbl_$rbl");
+		$data = null;
 		if(!$data) {
 			$missing_ids[] = $rbl;
 		}
@@ -445,16 +446,12 @@ function fetch_rbls($rbls) {
 }
 
 function process_rbl_data($data) {
-//	print_r($data);
-//	die();
 	$departures = array();
 	foreach($data as $row) {
 		foreach($row as $line) {
-//			print_r($line);
-//			die();
 			foreach($line->departures->departure as $departure) {
 				$departures[] = array(
-					'line' => (isset($departure->vehicle) && $departute->vehicle->towards) ? $departute->vehicle->towards : $line->name,
+					'line' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->name : $line->name,
 					'towards' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards,
 					'time' => $departure->departureTime->countdown
 				); 
@@ -472,7 +469,5 @@ function process_rbl_data($data) {
 		return line_sorter($a, $b);
 	});
 
-//	print_r($departures);
-//	die();
 	return $departures;
 }
