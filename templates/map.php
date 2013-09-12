@@ -5,7 +5,7 @@ function show_lines($lines) {
 		echo "<a href='javascript:show_group(" . $line_type['id'] . ")'>Alle</a> / ";
 		echo "<a href='javascript:hide_group(" . $line_type['id'] . ")'>Keine</a> / ";
 		echo "<a href='javascript:invert_group(" . $line_type['id'] . ")'>Auswahl umkehren</a>";
-		echo "<br />";
+		echo "<br /><br />";
 
 		foreach($line_type['lines'] as $line) {
 			echo "<input type='checkbox' name='checkbox_line_{$line['id']}' id='checkbox_line_{$line['id']}' onclick='toggle({$line['id']});'>&nbsp;<label for='checkbox_line_{$line['id']}'>{$line['name']}</label><br />";
