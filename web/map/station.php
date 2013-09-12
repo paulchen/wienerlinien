@@ -14,12 +14,12 @@ if(count($data) != 1) {
 }
 $station_id = $data[0]['station_id'];
 
-$platforms = db_query("SELECT s.name station_name, p.rbl rbl,
+$platforms = db_query("SELECT s.name station_name, p.rbl rbl, GROUP_CONCAT(DISTINCT p.platform ORDER BY platform ASC SEPARATOR '/') platform,
 			GROUP_CONCAT(DISTINCT l.name ORDER BY wl_order ASC SEPARATOR ',') line_names,
 			GROUP_CONCAT(DISTINCT l.id ORDER BY wl_order ASC SEPARATOR ',') line_ids
 		FROM station s
-			LEFT JOIN wl_platform p ON (s.id = p.station)
-			LEFT JOIN line l ON (p.line = l.id)
+			JOIN wl_platform p ON (s.id = p.station)
+			JOIN line l ON (p.line = l.id)
 		WHERE s.station_id = ?
 		GROUP BY p.rbl
 		ORDER BY wl_order ASC", array($station_id));

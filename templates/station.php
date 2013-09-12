@@ -15,6 +15,7 @@
 	<h1><?php echo htmlentities($station_name, ENT_QUOTES, 'UTF-8') ?></h1>
 	<?php foreach($platforms as $platform): ?>
 	<?php if(!isset($previous_lines) || $previous_lines != $platform['line_ids']): ?><h2><?php echo htmlentities(implode(', ', $platform['line_names']), ENT_QUOTES, 'UTF-8') ?></h2><?php endif; ?>
+	<div>Bahnsteig <?php echo htmlentities($platform['platform'], ENT_QUOTES, 'UTF-8') ?>:</div>
 	<div class="rbl_<?php echo $platform['rbl'] ?>"></div>
 	<?php $previous_lines = $platform['line_ids']; endforeach; ?>
 </body>
