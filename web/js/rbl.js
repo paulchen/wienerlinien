@@ -41,10 +41,12 @@ function update_rbls() {
 					});
 
 					content += '</table>';
-
-					$('#rbl_' + rbl).html(content);
+				}
+				else {
+					content = 'Derzeit sind für diesen Bahnsteig keine Abfahrtsinformationen verfügbar.';
 				}
 
+				$('#rbl_' + rbl).html(content);
 				$('#last_update').html('Letzte Aktualisierung: ' + (new Date()).toString('dd.MM.yyyy HH:mm:ss'));
 			});
 		},

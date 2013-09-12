@@ -3,7 +3,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien -- Aktuelle Störungen</title>
-	<link rel="stylesheet" type="text/css" href="../css/main.css" />
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 <body>
 	<h1>Wiener Linien</h1>
