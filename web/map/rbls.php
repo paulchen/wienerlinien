@@ -19,23 +19,3 @@ if(count($data) != count($ids)) {
 
 echo json_encode(fetch_rbls($ids));
 
-/*
-$missing_ids = array();
-$rbl_data = array();
-foreach($ids as $id) {
-	// TODO necessary?
-	db_query('INSERT INTO active_rbl (rbl) VALUES (?) ON DUPLICATE KEY UPDATE `timestamp` = NOW()', array($id));
-	$data = cache_get("rbl_$id");
-	if(!$data) {
-		$missing_ids[] = $id;
-	}
-	else {
-		$rbl_data[$id] = $data;
-	}
-}
-if(count($missing_ids) > 0) {
-	$rbl_data = array_merge($rbl_data, fetch_rbls($data));
-}
-
-echo json_encode($rbl_data);
- */
