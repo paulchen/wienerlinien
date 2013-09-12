@@ -42,6 +42,9 @@ table.rbl_info tr > td {
 	background-color: black;
 	padding: 3px;
 }
+table.rbl_info tr > td a {
+	color: yellow;
+}
 table.rbl_info tr > td:first-child {
 	width: 15%;
 }
