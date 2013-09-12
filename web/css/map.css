@@ -1,7 +1,7 @@
 html {
 	height: 100%;
 }
-body {
+body.map {
 	height: 100%;
 	margin: 0;
 	padding: 0;
@@ -9,5 +9,29 @@ body {
 }
 #map_canvas {
 	height: 100%;
+}
+div.rbl {
+	margin-bottom: 1em;
+}
+table.rbl_info {
+	width: 500px;
+	background-color: gray;
+	padding: 10px;
+	font-weight: bold;
+	font-family: monospace;
+}
+table.rbl_info tr > td {
+	width: 70%;
+	text-align: left;
+	color: yellow;
+	background-color: black;
+	padding: 3px;
+}
+table.rbl_info tr > td:first-child {
+	width: 15%;
+}
+table.rbl_info tr > td:last-child {
+	width: 15%;
+	text-align: right;
 }
 

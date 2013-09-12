@@ -47,7 +47,7 @@ $(document).ready(function() {
 	// -->
 	</script>
 </head>
-<body onload="initialize();">
+<body onload="initialize();" class="map">
 	<div id="options_pane" style="width: 20%; height: 100%; position: absolute; overflow-y: scroll; overflow-x: hidden;">
 		<?php show_lines($lines); ?>
 		<hr />

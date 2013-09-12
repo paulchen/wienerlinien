@@ -8,7 +8,6 @@ function update_rbls() {
 		dataType: 'json',
 		success: function(data, text, xhr) {
 			$.each(rbls, function(index, rbl) {
-
 				if(rbl in data) {
 					var content = '<table class="rbl_info">';
 
@@ -32,7 +31,7 @@ function update_rbls() {
 
 					content += '</table>';
 
-					$('.rbl_' + rbl).html(content);
+					$('#rbl_' + rbl).html(content);
 				}
 			});
 		},
