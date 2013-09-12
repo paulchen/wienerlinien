@@ -4,14 +4,6 @@
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien -- Liniendetails</title>
 	<link rel="stylesheet" type="text/css" href="../css/map.css" />
-	<script type="text/javascript" src="../js/jquery.min.js"></script>
-	<script type="text/javascript" src="../js/date.js"></script>
-	<script type="text/javascript" src="../js/rbl.js"></script>
-	<script type="text/javascript">
-	<!--
-	var rbls=<?php echo json_encode($rbls) ?>;
-	// -->
-	</script>
 </head>
 <body>
 	<h1>Linie <?php echo htmlentities($line_name, ENT_QUOTES, 'UTF-8') ?> &ndash; Details</h1>
