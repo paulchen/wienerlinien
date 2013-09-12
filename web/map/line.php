@@ -37,7 +37,6 @@ for($a=0; $a<count($data)/2; $a++) {
 	}
 }
 
-// TODO remove this (unneeded)?
 $routes = array(array());
 if($directions_difference) {
 	$routes[] = array();
@@ -65,7 +64,7 @@ foreach($data as $row) {
 	}
 }
 
-// print_r($routes);
+print_r($routes);
 // print_r($stations);
 // print_r($data);
 
