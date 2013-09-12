@@ -91,30 +91,7 @@ foreach($line_ids as $line_id) {
 		$stations[] = $row;
 	}
 
-	$directions_difference = false;
-	for($a=0; $a<count($data)/2; $a++) {
-		if($data[$a] != $data[count($data)-1-$a]) {
-			$directions_difference = true;
-		}
-	}
-
-	// TODO remove this (unneeded)?
-	$routes = array(array());
-	if($directions_difference) {
-		$routes[] = array();
-	}
-	foreach($data as $row) {
-		$direction = $row['direction'];
-		unset($row['direction']);
-		if($direction == 1) {
-			$routes[0][] = $row;
-		}
-		else if($directions_difference) {
-			$routes[1][] = $row;
-		}
-	}
-
-	$result[] = array('line' => $line_id, 'name' => $line_data[$line_id]['name'], 'segments' => $segments, 'color' => $line_data[$line_id]['color'], 'line_thickness' => $line_data[$line_id]['line_thickness'], 'stations' => $stations, 'routes' => $routes);
+	$result[] = array('line' => $line_id, 'name' => $line_data[$line_id]['name'], 'segments' => $segments, 'color' => $line_data[$line_id]['color'], 'line_thickness' => $line_data[$line_id]['line_thickness'], 'stations' => $stations);
 }
 
 header('Content-Type: application/json');
