@@ -41,10 +41,17 @@ $routes = array(array());
 if($directions_difference) {
 	$routes[] = array();
 }
+$previous_ids = array(0, 0);
 foreach($data as $row) {
 	$direction = $row['direction'];
 	$row['last'] = true;
+
 	if($direction == 1) {
+		if($previous_ids[0] == $row['id']) {
+			continue;
+		}
+		$previous_ids[0] = $row['id'];
+
 		if(count($routes[0]) == 0) {
 			$row['first'] = true;
 		}
@@ -54,6 +61,11 @@ foreach($data as $row) {
 		$routes[0][] = $row;
 	}
 	else if($directions_difference) {
+		if($previous_ids[1] == $row['id']) {
+			continue;
+		}
+		$previous_ids[1] = $row['id'];
+
 		if(count($routes[1]) == 0) {
 			$row['first'] = true;
 		}
