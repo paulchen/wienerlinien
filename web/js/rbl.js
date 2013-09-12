@@ -38,7 +38,7 @@ function update_rbls() {
 					$('#rbl_' + rbl).html(content);
 				}
 
-				// TODO update last_update
+				$('#last_update').html('Letzte Aktualisierung: ' + (new Date()).toString('dd.MM.yyyy HH:mm:ss'));
 			});
 		},
 		complete: function(xhr, text) {
