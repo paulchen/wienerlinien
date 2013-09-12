@@ -32,7 +32,12 @@ function update_rbls() {
 						var time = row['time'];
 						var line_link = 'line.htm?id=' + row['line_id'];
 
-						content += '<tr><td><a href="' + line_link + '">' + line + '</a></td><td>' + towards + '</td><td>' + time + '</td></tr>';
+						if(line == null && time == null) {
+							content += '<tr><td></td><td>' + towards + '</td><td></td></tr>';
+						}
+						else {
+							content += '<tr><td><a href="' + line_link + '">' + line + '</a></td><td>' + towards + '</td><td>' + time + '</td></tr>';
+						}
 					});
 
 					content += '</table>';
