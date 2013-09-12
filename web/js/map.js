@@ -127,7 +127,11 @@ function show_overlay(url) {
 		openEffect: 'elastic',
 		closeEffect: 'elastic',
 		openSpeed: 150,
-		closeSpeed: 150
+		closeSpeed: 150,
+		width: '90%',
+		height: '90%',
+		fitToView: false,
+		autoSize: false
 	});
 }
 
