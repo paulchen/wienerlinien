@@ -5,6 +5,7 @@
 	<title>Wiener Linien -- Stationsdetails</title>
 	<link rel="stylesheet" type="text/css" href="../css/map.css" />
 	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/date.js"></script>
 	<script type="text/javascript" src="../js/rbl.js"></script>
 	<script type="text/javascript">
 	<!--
