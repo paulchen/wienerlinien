@@ -1,22 +1,23 @@
 $(document).ready(function() {
-	update_rbls();
+	$('#last_update').html('Letzte Aktivierung: nie');
+	update_countdown(0);
 });
 
 function update_countdown(seconds) {
 	if(seconds == 0) {
+		$('#next_update span').html('Aktualisierung läuft...');
+		$('#next_update img').show();
 		update_rbls();
 	}
 	else {
-		// TODO show updating image
-		$('#next_update').html('Nächste Aktualisierung in ' + seconds + ' Sekunden');
+		$('#next_update span').html('Nächste Aktualisierung in ' + seconds + ' Sekunden');
+		$('#next_update img').hide();
 		window.setTimeout('update_countdown(' + (seconds-1) + ');', 1000);
 	}
 
 }
 
 function update_rbls() {
-	$('#next_update').html('Aktualisierung läuft...');
-
 	$.ajax({
 		url: 'rbls.php?ids=' + rbls.join(','),
 		dataType: 'json',
