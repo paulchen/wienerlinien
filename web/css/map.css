@@ -1,14 +1,29 @@
 html {
 	height: 100%;
 }
+body {
+	font-family: Helvetica, Arial, Verdana, sans-serif;
+}
+a {
+	text-decoration: none;
+}
+a:hover {
+	color: red;
+}
 body.map {
 	height: 100%;
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
 }
+body.station, body.line {
+}
 #map_canvas {
 	height: 100%;
+}
+#options_pane {
+	margin: 8px;
+	line-height: 1.2em;
 }
 div.rbl {
 	margin-bottom: 1em;

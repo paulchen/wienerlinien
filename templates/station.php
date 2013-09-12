@@ -13,7 +13,7 @@
 	// -->
 	</script>
 </head>
-<body>
+<body class="station">
 	<h1><?php echo htmlentities($station_name, ENT_QUOTES, 'UTF-8') ?> &ndash; Nächste Abfahrten</h1>
 	<div id="last_update"></div>
 	<div id="next_update"><span></span><img src="../css/ajax-loader.gif" alt="" style="display: none; padding-left: 10px;" /></div>

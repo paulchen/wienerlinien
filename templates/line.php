@@ -5,7 +5,7 @@
 	<title>Wiener Linien -- Liniendetails</title>
 	<link rel="stylesheet" type="text/css" href="../css/map.css" />
 </head>
-<body>
+<body class="line">
 	<h1>Linie <?php echo htmlentities($line_name, ENT_QUOTES, 'UTF-8') ?> &ndash; Details</h1>
 	<?php foreach($routes as $index => $route): ?>
 		<?php if(count($routes) > 1): ?>
