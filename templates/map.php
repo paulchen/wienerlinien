@@ -31,8 +31,13 @@ function show_lines($lines) {
 	var groups = <?php echo json_encode($groups); ?>;
 
 <?php if(isset($_REQUEST['lines'])): ?>
-	$(document).ready(function() {
-		var preselected_lines = new Array(<?php echo $_REQUEST['lines'] ?>);
+$(document).ready(function() {
+		<?php if(count(explode(',', $_REQUEST['lines'])) == 1): ?>
+			var preselected_lines = new Array();
+			preselected_lines.push(<?php echo $_REQUEST['lines'] ?>);
+		<?php else: ?>
+			var preselected_lines = new Array(<?php echo $_REQUEST['lines'] ?>);
+		<?php endif; ?>
 		$.each(preselected_lines, function(index, value) {
 			$('#checkbox_line_' + value).prop('checked', true);
 		});
