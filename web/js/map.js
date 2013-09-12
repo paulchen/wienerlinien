@@ -124,6 +124,10 @@ function show_overlay(url) {
 		href: url,
 		type: 'iframe',
 		padding: 5,
+		openEffect: 'elastic',
+		closeEffect: 'elastic',
+		openSpeed: 150,
+		closeSpeed: 150
 	});
 }
 
