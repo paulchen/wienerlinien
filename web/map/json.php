@@ -98,6 +98,7 @@ foreach($line_ids as $line_id) {
 		}
 	}
 
+	// TODO remove this (unneeded)?
 	$routes = array(array());
 	if($directions_difference) {
 		$routes[] = array();

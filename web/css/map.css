@@ -34,4 +34,23 @@ table.rbl_info tr > td:last-child {
 	width: 15%;
 	text-align: right;
 }
-
+div.route {
+	display: inline-block;
+	height: 20px;
+	width: 20px;
+	position: relative;
+	top: 5px;
+	background-image: url(route.png);
+}
+div.route_station {
+	background-image: url(station_intermediate.png);
+}
+div.route_first {
+	background-image: url(station_first.png);
+}
+div.route_last {
+	background-image: url(station_last.png);
+}
+div.route_details {
+	line-height: 10px;
+}
