@@ -426,15 +426,53 @@ function fetch_rbls($rbls) {
 		$input_encoding = 'UTF-8';
 		$data = download_json($url, 'rbl_' . implode('.', $missing_ids));
 
+		$rbl_data = array();
 		foreach($data->data->monitors as $monitor) {
 			$rbl = $monitor->locationStop->properties->attributes->rbl;
 			$lines = $monitor->lines;
-
-			$result[$rbl] = $lines;
-			cache_set("rbl_$rbl", $lines, 60);
+			if(!isset($rbl_data[$rbl])) {
+				$rbl_data[$rbl] = array();
+			}
+			$rbl_data[$rbl][] = $lines;
+		}
+		foreach($rbl_data as $index => $value) {
+			$result[$index] = process_rbl_data($value);
+			cache_set("rbl_$index", $result[$index], 60);
 		}
 	}
 
 	return $result;
 }
 
+function process_rbl_data($data) {
+//	print_r($data);
+//	die();
+	$departures = array();
+	foreach($data as $row) {
+		foreach($row as $line) {
+//			print_r($line);
+//			die();
+			foreach($line->departures->departure as $departure) {
+				$departures[] = array(
+					'line' => (isset($departure->vehicle) && $departute->vehicle->towards) ? $departute->vehicle->towards : $line->name,
+					'towards' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards,
+					'time' => $departure->departureTime->countdown
+				); 
+			}
+		}
+	}
+
+	usort($departures, function($a, $b) {
+		if($a['time'] < $b['time']) {
+			return -1;
+		}
+		if($a['time'] > $b['time']) {
+			return 1;
+		}
+		return line_sorter($a, $b);
+	});
+
+//	print_r($departures);
+//	die();
+	return $departures;
+}

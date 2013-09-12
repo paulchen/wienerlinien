@@ -12,21 +12,11 @@ function update_rbls() {
 					var content = '<table class="rbl_info">';
 
 					$.each(data[rbl], function(index2, row) {
-						var line = row['name'];
+						var line = row['line'];
 						var towards = row['towards'];
+						var time = row['time'];
 
-						if(row['departures']['departure'].length > 0) {
-							$.each(row['departures']['departure'], function(index3, departure) {
-								var time = departure['departureTime']['countdown'];
-								if(time == undefined) {
-									time = '&ndash;';
-								}
-								content += '<tr><td>' + line + '</td><td>' + towards + '</td><td>' + time + '</td></tr>';
-							});
-						}
-						else {
-							content += '<tr><td>' + line + '</td><td>' + towards + '</td><td>&ndash;</td></tr>';
-						}
+						content += '<tr><td>' + line + '</td><td>' + towards + '</td><td>' + time + '</td></tr>';
 					});
 
 					content += '</table>';
