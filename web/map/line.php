@@ -44,6 +44,7 @@ if($directions_difference) {
 $previous_ids = array(0, 0);
 foreach($data as $row) {
 	$direction = $row['direction'];
+	$row['first'] = false;
 	$row['last'] = true;
 
 	if($direction == 1) {
