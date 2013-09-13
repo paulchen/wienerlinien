@@ -6,8 +6,8 @@ $feed_date = 0;
 foreach($disruptions as &$disruption) {
 	$feed_date = max($feed_date, $disruption['start_time']);
 
-	if(count($disruption['lines']) == 1) {
-		$disruption['title'] = str_replace($disruption['lines'][0] . ' ', '', $disruption['title']);
+	foreach($disruption['lines'] as $line) {
+		$disruption['title'] = str_replace("$line ", '', $disruption['title']);
 	}
 }
 unset($disruption);
