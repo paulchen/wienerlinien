@@ -34,7 +34,7 @@
 <body>
 	<h1><?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Aktuelle Störungen<?php endif; ?></h1>
 	<?php foreach($disruptions as $disruption): ?>
-		<h2><a href="?id=<?php echo $disruption['id'] ?>">[<?php echo htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></a></h2>
+		<h2><a href="?id=<?php echo $disruption['id'] ?>"><?php if(count($disruption['lines']) > 0): echo implode('/', $disruption['lines']) . ': '; endif; echo '[' . htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></a></h2>
 		<a href="javascript:show(<?php echo $disruption['id'] ?>);" class="show_link" id="show_link_<?php echo $disruption['id'] ?>">Anzeigen</a><a href="javascript:hide(<?php echo $disruption['id'] ?>);" class="hide_link" id="hide_link_<?php echo $disruption['id'] ?>">Verbergen</a>
 		<div class="description" id="description_<?php echo $disruption['id'] ?>">
 			<?php if($disruption['deleted']): ?>

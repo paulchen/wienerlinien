@@ -13,6 +13,12 @@ if(isset($_REQUEST['id'])) {
 else {
 	$disruptions = get_disruptions();
 }
+foreach($disruptions as &$disruption) {
+	foreach($disruption['lines'] as $line) {
+		$disruption['title'] = str_replace("$line ", '', $disruption['title']);
+	}
+}
+unset($disruption);
 
 require_once("$template_dir/disruptions_html.php");
 
