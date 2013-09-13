@@ -3,7 +3,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Wiener Linien -- <?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Aktuelle Störungen<?php endif; ?></title>
-	<link rel="alternate" type="application/rss+xml" title="Wiener Linien -- Aktuelle Störungen -- RSS-Feed"  href="rss.xml" />
+	<link rel="alternate" type="application/rss+xml" title="Wiener Linien -- <?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>Alle<?php else: ?>Aktuelle<? endif; ?> Störungen -- RSS-Feed"  href="rss.xml" />
 	<link rel="stylesheet" type="text/css" href="../css/main.css" />
 	<style type="text/css">
 	a.show_link, a.hide_link { display: none; }
@@ -32,7 +32,18 @@
 	</script>
 </head>
 <body>
-	<h1><?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Aktuelle Störungen<?php endif; ?></h1>
+	<h1>
+		<?php if(isset($_REQUEST['id'])): ?>
+			Störungsdetails
+		<?php else: ?>
+			<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
+				Alle
+			<?php else: ?>
+				Aktuelle
+			<? endif; ?>
+			Störungen
+		<?php endif; ?>
+	</h1>
 	<?php foreach($disruptions as $disruption): ?>
 		<h2><a href="?id=<?php echo $disruption['id'] ?>"><?php if(count($disruption['lines']) > 0): echo implode('/', $disruption['lines']) . ': '; endif; echo '[' . htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></a></h2>
 		<a href="javascript:show(<?php echo $disruption['id'] ?>);" class="show_link" id="show_link_<?php echo $disruption['id'] ?>">Anzeigen</a><a href="javascript:hide(<?php echo $disruption['id'] ?>);" class="hide_link" id="hide_link_<?php echo $disruption['id'] ?>">Verbergen</a>
