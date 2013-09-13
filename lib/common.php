@@ -274,13 +274,12 @@ function get_disruptions($filter = array()) {
 		}
 	}
 
-	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(e.start_time, i.start_time, i.timestamp_created)) start_time,
-					UNIX_TIMESTAMP(COALESCE(e.end_time, i.end_time)) end_time,
+	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
+					UNIX_TIMESTAMP(i.end_time) end_time,
 					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
 					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
 				FROM traffic_info i
-					LEFT JOIN traffic_info_elevator e ON (i.id = e.id)
 					LEFT JOIN traffic_info_line til ON (i.id = til.traffic_info)
 					LEFT JOIN line l ON (til.line = l.id)
 					LEFT JOIN traffic_info_platform tip ON (i.id = tip.traffic_info)
@@ -292,11 +291,6 @@ function get_disruptions($filter = array()) {
 				ORDER BY `group` ASC, start_time ASC", $filter_params);
 
 	foreach($disruptions as $index => &$disruption) {
-		if($disruption['start_time'] > time()) {
-			unset($disruptions[$index]);
-			continue;
-		}
-
 		$disruption['ids'] = array($disruption['id']);
 		if($disruption['lines'] == '') {
 			$disruption['lines'] = array();
