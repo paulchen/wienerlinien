@@ -214,7 +214,13 @@ function notify_twitter() {
 			$disruption_text .= implode('/', $disruption['lines']) . ': ';
 		}
 		$disruption_text .= '[' . $disruption['category'] . '] ';
-		$disruption_text .= str_replace("\n", " ", $disruption['title']);
+
+		$title = str_replace("\n", " ", $disruption['title']);
+		foreach($disruption['lines'] as $line) {
+			$title = str_replace("$line ", '', $title);
+		}
+		$disruption_text .= $title;
+
 		if(mb_strlen($disruption_text, 'UTF-8') > 110) {
 			$disruption_text = mb_substr($disruption_text, 0, 109, 'UTF-8') . '…';
 		}
