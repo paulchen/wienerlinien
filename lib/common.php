@@ -272,6 +272,11 @@ function get_disruptions($filter = array()) {
 			$filter_part .= ' AND i.deleted = ?';
 			$filter_params[] = $filter['deleted'];
 		}
+
+		if(isset($filter['archive']) && $filter['archive'] == 0) {
+			$filter_part .= ' AND i.deleted = ?';
+			$filter_params[] = 0;
+		}
 	}
 
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,

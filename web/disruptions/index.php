@@ -10,6 +10,9 @@ if(isset($_REQUEST['id'])) {
 		$disruptions = get_disruptions(array('id' => $_REQUEST['id']));
 	}
 }
+else if(isset($_REQUEST['archive'])) {
+	$disruptions = get_disruptions(array('archive' => $_REQUEST['archive']));
+}
 else {
 	$disruptions = get_disruptions();
 }
