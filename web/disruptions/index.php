@@ -44,7 +44,7 @@ if(isset($pagination_data)) {
 		}
 		$item = array(
 			'name' => $pagination_names[$name],
-			'url' => '?' . implode('&', $url_parts)
+			'url' => '?' . implode('&amp;', $url_parts)
 		);
 	}
 	unset($item);

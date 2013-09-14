@@ -28,7 +28,7 @@
 		$('#hide_link_' + id).hide();
 		$('#description_' + id).hide('fast');
 	}
-	// ->
+	// -->
 	</script>
 </head>
 <body class="centered_page">
