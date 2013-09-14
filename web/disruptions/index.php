@@ -37,6 +37,9 @@ if(isset($pagination_data)) {
 	);
 	$request_vars = $_REQUEST;
 	foreach($pagination_data as $name => &$item) {
+		if(isset($pagination_data['current'])) {
+			unset($pagination_data['current']);
+		}
 		$request_vars['page'] = $item;
 		$url_parts = array();
 		foreach($request_vars as $key => $value) {
