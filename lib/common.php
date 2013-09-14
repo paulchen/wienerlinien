@@ -278,7 +278,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$page = $filter['page'];
 	}
 
-
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(i.end_time) end_time,
 					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
@@ -293,7 +292,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 					JOIN traffic_info_category c ON (i.category = c.id)
 				WHERE $filter_part
 				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, c.title, i.group
-				ORDER BY `group` ASC, start_time ASC");
+				ORDER BY `group` ASC, start_time ASC", $filter_params);
 
 	foreach($disruptions as $index => &$disruption) {
 		$disruption['ids'] = array($disruption['id']);
