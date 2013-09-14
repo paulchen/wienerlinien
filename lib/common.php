@@ -294,28 +294,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 				WHERE $filter_part
 				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, c.title, i.group
 				ORDER BY `group` ASC, start_time ASC");
-	$disruption_count = count($disruptions);
-	$disruptions_per_page = 20;
-	$offset = ($page-1)*$disruptions_per_page;
-	if(isset($filter['limit'])) {
-		if($filter['limit'] == -1) {
-			$disruptions_per_page = $disruption_count;
-		}
-		else {
-			$disruptions_per_page = $filter['limit'];
-		}
-	}
-	if($disruption_count > $disruptions_per_page) {
-		$pages = ceil($disruption_count/$disruptions_per_page);
-		$pagination_data = array(
-			'first' => 1,
-			'previous' => max(1, $page-1),
-			'current' => $page,
-			'next' => min($pages, $page+1),
-			'last' => $pages
-		);
-	}
-
 
 	foreach($disruptions as $index => &$disruption) {
 		$disruption['ids'] = array($disruption['id']);
@@ -371,6 +349,28 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		}
 		return 0;
 	});
+
+	$disruption_count = count($disruptions);
+	$disruptions_per_page = 20;
+	$offset = ($page-1)*$disruptions_per_page;
+	if(isset($filter['limit'])) {
+		if($filter['limit'] == -1) {
+			$disruptions_per_page = $disruption_count;
+		}
+		else {
+			$disruptions_per_page = $filter['limit'];
+		}
+	}
+	if($disruption_count > $disruptions_per_page) {
+		$pages = ceil($disruption_count/$disruptions_per_page);
+		$pagination_data = array(
+			'first' => 1,
+			'previous' => max(1, $page-1),
+			'current' => $page,
+			'next' => min($pages, $page+1),
+			'last' => $pages
+		);
+	}
 
 	for($a=0; $a<$offset; $a++) {
 		array_shift($disruptions);
