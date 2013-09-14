@@ -278,12 +278,12 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$page = $filter['page'];
 	}
 
-	$disruptions_per_page = 20;
-	$offset = ($page-1)*$disruptions_per_page;
-	$limits = "LIMIT $offset, $disruptions_per_page";
 
-	$disruption_count = db_query("SELECT COUNT(*) disruptions FROM
-			(SELECT i.id id
+	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
+					UNIX_TIMESTAMP(i.end_time) end_time,
+					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
+					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
+					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
 				FROM traffic_info i
 					LEFT JOIN traffic_info_line til ON (i.id = til.traffic_info)
 					LEFT JOIN line l ON (til.line = l.id)
@@ -292,8 +292,11 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 					LEFT JOIN station s ON (p.station = s.id)
 					JOIN traffic_info_category c ON (i.category = c.id)
 				WHERE $filter_part
-				GROUP BY i.id) a", $filter_params);
-	$disruption_count = $disruption_count[0]['disruptions'];
+				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, c.title, i.group
+				ORDER BY `group` ASC, start_time ASC");
+	$disruption_count = count($disruptions);
+	$disruptions_per_page = 20;
+	$offset = ($page-1)*$disruptions_per_page;
 	if(isset($filter['limit'])) {
 		if($filter['limit'] == -1) {
 			$disruptions_per_page = $disruption_count;
@@ -312,23 +315,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			'last' => $pages
 		);
 	}
-
-	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
-					UNIX_TIMESTAMP(i.end_time) end_time,
-					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
-					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
-					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
-				FROM traffic_info i
-					LEFT JOIN traffic_info_line til ON (i.id = til.traffic_info)
-					LEFT JOIN line l ON (til.line = l.id)
-					LEFT JOIN traffic_info_platform tip ON (i.id = tip.traffic_info)
-					LEFT JOIN wl_platform p ON (tip.platform = p.id)
-					LEFT JOIN station s ON (p.station = s.id)
-					JOIN traffic_info_category c ON (i.category = c.id)
-				WHERE $filter_part
-				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, c.title, i.group
-				ORDER BY `group` ASC, start_time ASC
-				$limits", $filter_params);
 
 
 	foreach($disruptions as $index => &$disruption) {
@@ -385,6 +371,14 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		}
 		return 0;
 	});
+
+	for($a=0; $a<$offset; $a++) {
+		array_shift($disruptions);
+	}
+	while(count($disruptions) > $disruptions_per_page) {
+		array_pop($disruptions);
+	}
+
 	return $disruptions;
 }
 
