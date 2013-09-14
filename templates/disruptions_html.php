@@ -52,8 +52,9 @@
 		<?php if(isset($_REQUEST['id']) || !isset($_REQUEST['archive']) || $_REQUEST['archive'] != 1): ?>
 			<a href="?archive=1">Alle Störungen</a>
 		<?php endif; ?>
+		<a href="..">Übersicht</a>
 		<?php if(isset($pagination_data)): ?>
-			<hr />
+			<br /><br />
 			Aktuelle Seite: <?php echo $page ?>.
 			<?php foreach($pagination_data as $item): ?>
 				<a href="<?php echo $item['url'] ?>"><?php echo htmlentities($item['name'], ENT_QUOTES, 'UTF-8') ?></a>
