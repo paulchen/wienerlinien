@@ -1,7 +1,7 @@
 <?php
 require_once(dirname(__FILE__) . '/../../lib/common.php');
 
-$disruptions = get_disruptions();
+$disruptions = get_disruptions(array('limit' => -1));
 $feed_date = 0;
 foreach($disruptions as &$disruption) {
 	$feed_date = max($feed_date, $disruption['start_time']);

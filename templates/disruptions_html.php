@@ -51,6 +51,14 @@
 		<?php if(isset($_REQUEST['id']) || !isset($_REQUEST['archive']) || $_REQUEST['archive'] != 1): ?>
 			<a href="?archive=1">Alle Störungen</a>
 		<?php endif; ?>
+		<?php if(isset($pagination_data)): ?>
+			<hr />
+			Aktuelle Seite: <?php echo $page ?>.
+			<?php foreach($pagination_data as $item): ?>
+				<a href="<?php echo $item['url'] ?>"><?php echo htmlentities($item['name'], ENT_QUOTES, 'UTF-8') ?></a>
+			<?php endforeach; ?>
+		<?php endif; ?>
+		<hr />
 	</div>
 	<?php foreach($disruptions as $disruption): ?>
 		<h2><a href="?id=<?php echo $disruption['id'] ?>"><?php if(count($disruption['lines']) > 0): echo implode('/', $disruption['lines']) . ': '; endif; echo '[' . htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></a></h2>

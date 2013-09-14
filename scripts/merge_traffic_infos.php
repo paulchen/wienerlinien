@@ -30,7 +30,6 @@ function calculate_hash($row, $fields) {
 $data = db_query('SELECT id, category, priority, owner, title, description, `group`
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
-			AND deleted = 0
 		ORDER BY `group` ASC');
 $kill_groups = array();
 foreach($data as $row) {
@@ -77,7 +76,6 @@ foreach($data as $row) {
 $data = db_query('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time
 		FROM traffic_info
 		WHERE `group` IS NULL
-			AND deleted = 0
 		ORDER BY start_time ASC');
 $groups = array();
 $add_to_existing_groups = array();

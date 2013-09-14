@@ -188,7 +188,7 @@ function notify_twitter() {
 		return;
 	}
 
-	$disruptions = array_reverse(get_disruptions(array('twitter' => 0, 'deleted' => 0)));
+	$disruptions = array_reverse(get_disruptions(array('twitter' => 0, 'deleted' => 0, 'limit' => -1)));
 	if(count($disruptions) > 0) {
 		write_log("Sending notifications about " . count($disruptions) . " disruptions to twitter.");
 	}
