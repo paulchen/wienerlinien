@@ -50,6 +50,8 @@ $(document).ready(function() {
 <body onload="initialize();" class="map">
 	<div style="width: 20%; height: 100%; position: absolute; overflow-y: scroll; overflow-x: hidden;">
 		<div id="options_pane">
+			<h1>Kartenansicht</h1>
+			<a href="..">Übersicht</a>
 			<?php show_lines($lines); ?>
 			<hr />
 			<?php require('footer.php'); ?>
