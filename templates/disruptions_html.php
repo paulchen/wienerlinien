@@ -31,7 +31,8 @@
 	// ->
 	</script>
 </head>
-<body>
+<body class="centered_page">
+	<div class="main_pane">
 	<h1>
 		<?php if(isset($_REQUEST['id'])): ?>
 			Störungsdetails
@@ -75,6 +76,7 @@
 		<a href="?">Alle aktuellen Störungen</a><hr />
 	<?php endif; ?>
 	<?php require('footer.php'); ?>
+	</div>
 </body>
 </html>
 
