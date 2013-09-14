@@ -444,8 +444,7 @@ function fetch_rbls($rbls) {
 	foreach($rbls as $rbl) {
 		// TODO necessary?
 		db_query('INSERT INTO active_rbl (rbl) VALUES (?) ON DUPLICATE KEY UPDATE `timestamp` = NOW()', array($rbl));
-	//	$data = cache_get("rbl_$rbl");
-		$data = null;
+		$data = cache_get("rbl_$rbl");
 		if(!$data) {
 			$missing_ids[] = $rbl;
 		}
