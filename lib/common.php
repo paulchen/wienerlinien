@@ -329,6 +329,12 @@ function get_disruptions($filter = array()) {
 	}
 
 	usort($disruptions, function($a, $b) {
+		if($a['deleted'] < $b['deleted']) {
+			return -1;
+		}
+		if($a['deleted'] > $b['deleted']) {
+			return 1;
+		}
 		if($a['start_time'] < $b['start_time']) {
 			return 1;
 		}
