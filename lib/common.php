@@ -517,6 +517,7 @@ function process_rbl_data($data) {
 					'line' => $line_name,
 					'line_id' => get_line_id($line_name),
 					'towards' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards,
+					'barrier_free' => (isset($departure->vehicle) && $departure->vehicle->barrierFree) ? $departure->vehicle->barrierFree : $line->barrierFree,
 					'time' => $departure->departureTime->countdown
 				); 
 			}

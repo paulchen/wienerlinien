@@ -31,12 +31,13 @@ function update_rbls() {
 						var towards = row['towards'];
 						var time = row['time'];
 						var line_link = 'line.htm?id=' + row['line_id'];
+						var barrier_free = row['barrier_free'] ? '&#x267f;' : '<span style="visibility: hidden;">&#x267f;</span>';
 
 						if(line == null && time == null) {
 							content += '<tr><td></td><td>' + towards + '</td><td></td></tr>';
 						}
 						else {
-							content += '<tr><td><a href="' + line_link + '">' + line + '</a></td><td>' + towards + '</td><td>' + time + '</td></tr>';
+							content += '<tr><td><a href="' + line_link + '">' + line + '</a></td><td>' + towards + '</td><td>' + time + ' ' + barrier_free + '</td></tr>';
 						}
 					});
 
