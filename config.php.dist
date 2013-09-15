@@ -18,3 +18,6 @@ $twitter_consumer_secret = '';
 $twitter_oauth_token = '';
 $twitter_oauth_token_secret = '';
 
+$semaphore_id = '';
+$parallel_api_calls = 10;
+

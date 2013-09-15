@@ -437,7 +437,17 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $cache_expiration, $debug, $input_encoding;
+	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $parallel_api_calls;
+
+	$sem = sem_get($semaphore_id, $parallel_api_calls, 0600);
+	if(!$sem) {
+		// TODO error
+		die();
+	}
+	if(!sem_acquire($sem)) {
+		// TODO error
+		die();
+	}
 
 	$result = array();
 	$missing_ids = array();
@@ -473,6 +483,11 @@ function fetch_rbls($rbls) {
 			$result[$index] = process_rbl_data($value);
 			cache_set("rbl_$index", $result[$index], 60);
 		}
+	}
+
+	if(!sem_release($sem)) {
+		// TODO error
+		die();
 	}
 
 	return $result;
