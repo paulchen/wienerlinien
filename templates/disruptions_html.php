@@ -9,8 +9,8 @@
 	a.show_link, a.hide_link { display: none; }
 	div.description { padding-top: 1em; }
 	</style>
-	<script type="text/javascript" src="../js/jquery.min.js"></script>
 	<?php if(!isset($_REQUEST['id'])): ?>
+		<script type="text/javascript" src="../js/jquery.min.js"></script>
 		<script type="text/javascript">
 		<!--
 		$(document).ready(function() {
