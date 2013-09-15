@@ -3,18 +3,27 @@ $(document).ready(function() {
 	update_countdown(0);
 });
 
+var timeout;
+
 function update_countdown(seconds) {
 	if(seconds == 0) {
 		$('#next_update span').html('Aktualisierung läuft...');
-		$('#next_update img').show();
+		$('#next_update > img').show();
+		$('#next_update > a').hide();
 		update_rbls();
 	}
 	else {
 		$('#next_update span').html('Nächste Aktualisierung in ' + seconds + ' Sekunden');
-		$('#next_update img').hide();
-		window.setTimeout('update_countdown(' + (seconds-1) + ');', 1000);
+		$('#next_update > img').hide();
+		$('#next_update > a').show();
+		timeout = window.setTimeout('update_countdown(' + (seconds-1) + ');', 1000);
 	}
 
+}
+
+function force_refresh() {
+	window.clearTimeout(timeout);
+	update_countdown(0);
 }
 
 function update_rbls() {
