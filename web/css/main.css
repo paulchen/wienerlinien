@@ -89,3 +89,11 @@ div.route_details {
 	line-height: 10px;
 	padding-bottom: 2em;
 }
+a.show_link, a.hide_link {
+	display: none;
+}
+div.description {
+	padding-top: 1em;
+}
+
+
