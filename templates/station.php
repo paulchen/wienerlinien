@@ -18,8 +18,8 @@
 	<div id="last_update"></div>
 	<div id="next_update">
 		<span></span>
-		<img src="../css/ajax-loader.gif" alt="" style="display: none; padding-left: 10px;" />
-		<a style="display: none; padding-left: 5px;" href="javascript:force_refresh();"><img src="../css/refresh.png" alt="Aktualisieren" /></a>
+		<img src="../css/ajax-loader.gif" alt="" />
+		<a href="javascript:force_refresh();"><img src="../css/refresh.png" alt="Aktualisieren" /></a>
 	</div>
 	<?php foreach($platforms as $platform): ?>
 	<?php if(!isset($previous_lines) || $previous_lines != $platform['line_ids']): ?><h2><?php echo htmlentities(implode(', ', $platform['line_names']), ENT_QUOTES, 'UTF-8') ?></h2><?php endif; ?>

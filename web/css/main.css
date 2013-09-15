@@ -95,5 +95,9 @@ a.show_link, a.hide_link {
 div.description {
 	padding-top: 1em;
 }
-
+last_update > img,
+last_update > a {
+	display: none;
+	padding-left: 10px;
+}
 
