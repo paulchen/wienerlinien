@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta name="viewport" content="initial-scale=.4, user-scalable=yes" />
 	<title>Wiener Linien -- <?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Störungen<?php endif; ?></title>
 	<link rel="alternate" type="application/rss+xml" title="Wiener Linien -- <?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>Alle<?php else: ?>Aktuelle<? endif; ?> Störungen -- RSS-Feed"  href="rss.xml" />
 	<link rel="stylesheet" type="text/css" href="../css/main.css" />
