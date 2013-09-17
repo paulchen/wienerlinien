@@ -42,12 +42,24 @@ function update_rbls() {
 						var line_link = 'line.htm?id=' + row['line_id'];
 						var barrier_free = row['barrier_free'] ? '&#x267f;' : '<span style="visibility: hidden;">&#x267f;</span>';
 
-						if(line == null && time == null) {
-							content += '<tr><td></td><td>' + towards + '</td><td></td></tr>';
+						content += '<tr>';
+						if(line == null) {
+						       	content += '<td></td>';
+						}
+						else if(row['line_id'] == null) {
+							content += '<td>' + line + '</td>';
 						}
 						else {
-							content += '<tr><td><a href="' + line_link + '">' + line + '</a></td><td>' + towards + '</td><td>' + time + ' ' + barrier_free + '</td></tr>';
+							content += '<td><a href="' + line_link + '">' + line + '</a></td>';
 						}
+						content += '<td>' + towards + '</td>';
+						if(time == null) {
+							content += '<td></td>';
+						}
+						else {
+							content += '<td>' +  time + ' ' + barrier_free + '</td>';
+						}
+						content += '</tr>';
 					});
 
 					content += '</table>';
