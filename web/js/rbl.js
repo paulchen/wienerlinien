@@ -52,7 +52,12 @@ function update_rbls() {
 						else {
 							content += '<td><a href="' + line_link + '">' + line + '</a></td>';
 						}
-						content += '<td>' + towards + '</td>';
+						if(row['towards_id'] == null) {
+							content += '<td>' + towards + '</td>';
+						}
+						else {
+							content += '<td><a href="station.htm?id=' + row['towards_id'] + '">' + towards + '</a></td>';
+						}
 						if(time == null) {
 							content += '<td></td>';
 						}

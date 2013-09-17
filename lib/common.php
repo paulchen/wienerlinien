@@ -507,16 +507,34 @@ function get_line_id($name) {
 	return $line_id_list[$name];
 }
 
+function possible_destination($line_id, $towards) {
+	$data = db_query('SELECT DISTINCT(s.id) id, damlev(s.name, ?) damlev, (LOCATE(?, s.name)>0) contained
+			FROM wl_platform p
+				JOIN station s ON (s.id = p.station)
+			WHERE p.line = ?
+				AND p.deleted = 0
+			ORDER BY contained DESC, damlev ASC
+			LIMIT 0, 1', array($towards, $towards, $line_id));
+	if(count($data) == 0) {
+		return null;
+	}
+	return $data[0]['id'];
+}
+
 function process_rbl_data($data) {
 	$departures = array();
 	foreach($data as $row) {
 		foreach($row as $line) {
 			foreach($line->departures->departure as $departure) {
 				$line_name = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->name : $line->name;
+				$towards = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards;
+				$line_id = get_line_id($line_name);
+
 				$departures[] = array(
 					'line' => $line_name,
-					'line_id' => get_line_id($line_name),
-					'towards' => (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards,
+					'line_id' => $line_id,
+					'towards' => $towards,
+					'towards_id' => possible_destination($line_id, $towards),
 					'barrier_free' => (isset($departure->vehicle) && $departure->vehicle->barrierFree) ? $departure->vehicle->barrierFree : $line->barrierFree,
 					'time' => $departure->departureTime->countdown
 				); 
