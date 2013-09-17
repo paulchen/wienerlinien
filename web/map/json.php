@@ -41,7 +41,8 @@ foreach($line_ids as $line_id) {
 				JOIN segment s ON (ls.segment = s.id)
 				JOIN segment_point sp1 ON (s.point1 = sp1.id)
 				JOIN segment_point sp2 ON (s.point2 = sp2.id)
-			WHERE l.id = ?', array($line_id));
+			WHERE l.id = ?
+				AND ls.deleted = 0', array($line_id));
 	$segments = array();
 	foreach($data as $row) {
 		$segments[] = array(array($row['lat1'], $row['lon1']), array($row['lat2'], $row['lon2']));
@@ -76,6 +77,7 @@ foreach($line_ids as $line_id) {
 		FROM wl_platform p
 			JOIN station s ON (p.station = s.id)
 		WHERE p.line = ?
+			AND p.deleted = 0
 		ORDER BY p.direction ASC, p.pos ASC', array($line_id));
 	$stations = array();
 	$known_station_ids = array();
