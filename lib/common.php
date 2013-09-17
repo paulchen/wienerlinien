@@ -455,6 +455,7 @@ function fetch_rbls($rbls) {
 		// TODO necessary?
 		db_query('INSERT INTO active_rbl (rbl) VALUES (?) ON DUPLICATE KEY UPDATE `timestamp` = NOW()', array($rbl));
 		$data = cache_get("rbl_$rbl");
+		$data = null;
 		if(!$data) {
 			$missing_ids[] = $rbl;
 		}
@@ -508,11 +509,13 @@ function get_line_id($name) {
 }
 
 function possible_destination($line_id, $towards) {
-	$data = db_query('SELECT DISTINCT(s.id) id, damlev(s.name, ?) damlev, (LOCATE(?, s.name)>0) contained
-			FROM wl_platform p
-				JOIN station s ON (s.id = p.station)
-			WHERE p.line = ?
-				AND p.deleted = 0
+	$data = db_query('SELECT id FROM
+			(SELECT s.id id, s.name name, damlev(s.name, ?) damlev, (LOCATE(?, s.name)>0) contained
+				FROM wl_platform p
+					JOIN station s ON (s.id = p.station)
+				WHERE p.line = ?
+					AND p.deleted = 0) a
+			WHERE (contained = 1 OR damlev < CHAR_LENGTH(name)*.5)
 			ORDER BY contained DESC, damlev ASC
 			LIMIT 0, 1', array($towards, $towards, $line_id));
 	if(count($data) == 0) {
