@@ -100,7 +100,7 @@ function process_traffic_infos($infos) {
 					$parameters[] = $stop;
 				}
 				$placeholder_string = implode(', ', $placeholders);
-				$data = db_query("SELECT id FROM wl_platform WHERE rbl IN ($placeholder_string)", $parameters);
+				$data = db_query("SELECT id FROM wl_platform WHERE rbl IN ($placeholder_string) AND deleted = 0", $parameters);
 				$placeholders = array();
 				$parameters = array();
 				foreach($data as $row) {
@@ -122,7 +122,7 @@ function process_traffic_infos($infos) {
 				$placeholders[] = '?';
 			}
 			$placeholder_string = implode(', ', $placeholders);
-			$data = db_query("SELECT id FROM line WHERE name IN ($placeholder_string)", $info->relatedLines);
+			$data = db_query("SELECT id FROM line WHERE name IN ($placeholder_string) AND deleted = 0", $info->relatedLines);
 			foreach($data as $row) {
 				$feed_line_ids[] = $row['id'];
 			}
