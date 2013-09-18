@@ -40,7 +40,15 @@ function update_current_view_info() {
 		$('#current_lines').html('keine');
 	}
 	else {
-		// TODO sorting
+		line_names.sort(function(a, b) {
+			if(line_orders[a] < line_orders[b]) {
+				return -1;
+			}
+			if(line_orders[a] > line_orders[b]) {
+				return 1;
+			}
+			return 0;
+		});
 		$('#current_lines').html(line_names.join(', '));
 	}
 
@@ -50,6 +58,8 @@ function update_current_view_info() {
 	permalink += '&lon=' + latLon.lng();
 	permalink += '&zoom=' + zoom;
 	permalink += '&lines=' + line_ids.join(',');
+	
+	window.history.pushState('', document.title, permalink);
 
 	$('#current_permalink').attr('href', permalink);
 }

@@ -29,6 +29,7 @@ function show_lines($lines) {
 	<!--
 
 	var groups = <?php echo json_encode($groups); ?>;
+	var line_orders = <?php echo json_encode($line_orders); ?>;
 
 <?php if(isset($_REQUEST['lines'])): ?>
 $(document).ready(function() {

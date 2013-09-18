@@ -19,6 +19,12 @@ foreach($data as $row) {
 foreach($lines as $type => &$value) {
 	usort($value['lines'], 'line_sorter');
 }
+usort($data, 'line_sorter');
+
+$line_orders = array();
+foreach($data as $row) {
+	$line_orders[$row['name']] = count($line_orders);
+}
 
 if(isset($_REQUEST['lines'])) {
 	$_lines = explode(',', $_REQUEST['lines']);
