@@ -391,27 +391,38 @@ function line_sorter($a, $b) {
 		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b, $matches_b);
 	}
 
-	if($matches_a[1] != '' && $matches_b[1] == '') {
+	if($matches_a[1] != '' && $matches_b[1] == '') { // U1 < 1, U1 < 13A
 		return -1;
 	}
-	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[1] < $matches_b[1]) {
-		return -1;
-	}
-	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[1] > $matches_b[1]) {
+	if($matches_a[1] == '' && $matches_b[1] != '') { // 1 > U1, 13A > U1
 		return 1;
 	}
 
-	if(intval($matches_a[2]) < intval($matches_b[2])) {
+	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[2] == '' && $matches_b[2] != '') { // D > U1
+		return 1;
+	}
+	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[2] != '' && $matches_b[2] == '') { // U1 < D
 		return -1;
 	}
-	if(intval($matches_a[2]) > intval($matches_b[2])) {
+
+	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[1] < $matches_b[1]) { // D < O, S1 < U1, O < WLB
+		return -1;
+	}
+	if($matches_a[1] != '' && $matches_b[1] != '' && $matches_a[1] > $matches_b[1]) { // O > D, U1 > S1, WLB > O
 		return 1;
 	}
 
-	if($matches_a[3] < $matches_b[3]) {
+	if(intval($matches_a[2]) < intval($matches_b[2])) { // U1 < U3, S1 < S3
 		return -1;
 	}
-	if($matches_a[3] > $matches_b[3]) {
+	if(intval($matches_a[2]) > intval($matches_b[2])) { // U3 > U1, S3 > S1
+		return 1;
+	}
+
+	if($matches_a[3] < $matches_b[3]) { // 99A < 99B
+		return -1;
+	}
+	if($matches_a[3] > $matches_b[3]) { // 99B > 99A
 		return 1;
 	}
 
