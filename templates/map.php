@@ -21,6 +21,7 @@ function show_lines($lines) {
 	<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&amp;sensor=false"></script>
 	<script type="text/javascript" src="../js/jquery.min.js"></script>
 	<script type="text/javascript" src="../js/jquery.fancybox.js"></script>
+	<script type="text/javascript" src="../js/purl.js"></script>
 	<link rel="stylesheet" type="text/css" href="../css/jquery.fancybox.css" media="screen" />
 
 	<script type="text/javascript" src="../js/map.js"></script>
@@ -51,6 +52,13 @@ $(document).ready(function() {
 		<div id="options_pane">
 			<h1>Kartenansicht</h1>
 			<a href="..">Übersicht</a>
+			<br /><br />
+			<b>Aktuelle Ansicht</b> (<a href="#" id="current_permalink">Permalink</a>):
+			<ul>
+				<li>Koordinaten: <span id="current_latlon"></span></li>
+				<li>Zoomstufe: <span id="current_zoom"></span></li>
+				<li>Linie(n): <span id="current_lines"></li>
+			</ul>
 			<?php show_lines($lines); ?>
 			<hr />
 			<?php require('footer.php'); ?>

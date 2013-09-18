@@ -5,13 +5,53 @@ var stations = new Array();
 var shown = new Array();
 
 function initialize() {
+	var lat = $.url(true).param('lat') ? $.url(true).param('lat') : 48.21;
+	var lon = $.url(true).param('lon') ? $.url(true).param('lon') : 16.37;
+	var zoom = $.url(true).param('zoom') ? $.url(true).param('zoom') : 12;
+
 	var mapOptions = {
-		center: new google.maps.LatLng(48.21, 16.37),
-		zoom: 12,
+		center: new google.maps.LatLng(lat, lon),
+		zoom: parseInt(zoom),
 		mapTypeId: google.maps.MapTypeId.ROADMAP,
 		streetViewControl: false
 	};
 	googleMap = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+	google.maps.event.addListener(googleMap, 'center_changed', update_current_view_info);
+	google.maps.event.addListener(googleMap, 'zoom_changed', update_current_view_info);
+	update_current_view_info();
+}
+
+function update_current_view_info() {
+	var latLon = googleMap.getCenter();
+	var zoom = googleMap.getZoom();
+
+	$('#current_latlon').html(Math.round(latLon.lat()*100)/100 + " " + Math.round(latLon.lng()*100)/100);
+	$('#current_zoom').html(zoom);
+
+	var line_names = new Array();
+	var line_ids = new Array();
+	$.each(shown, function(index, value) {
+		if(value) {
+			line_names.push(line_data[index]['name']);
+			line_ids.push(index);
+		}
+	});
+	if(line_names.length == 0) {
+		$('#current_lines').html('keine');
+	}
+	else {
+		// TODO sorting
+		$('#current_lines').html(line_names.join(', '));
+	}
+
+	var permalink = document.location.href;
+	permalink = permalink.substring(0, permalink.lastIndexOf('/')) + '/';
+	permalink += '?lat=' + latLon.lat();
+	permalink += '&lon=' + latLon.lng();
+	permalink += '&zoom=' + zoom;
+	permalink += '&lines=' + line_ids.join(',');
+
+	$('#current_permalink').attr('href', permalink);
 }
 
 function hide(ids) {
@@ -24,6 +64,8 @@ function hide(ids) {
 		});
 		shown[id] = false;
 	});
+
+	update_current_view_info();
 }
 
 function load(ids) {
@@ -117,6 +159,8 @@ function show(ids) {
 			stations[id].push(station);
 		});
 	});
+
+	update_current_view_info();
 }
 
 function show_overlay(url) {
