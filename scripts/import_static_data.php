@@ -172,6 +172,13 @@ function import_wl_platforms($data) {
 		}
 	}
 
+	$data = db_query('SELECT id FROM wl_platform_keep');
+	foreach($data as $row) {
+		if(!in_array($row['id'], $imported_platforms)) {
+			$imported_platforms[] = $row['id'];
+		}
+	}
+
 	write_log("Platforms data successfully imported.");
 }
 
