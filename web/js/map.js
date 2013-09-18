@@ -59,7 +59,7 @@ function update_current_view_info() {
 	permalink += '&zoom=' + zoom;
 	permalink += '&lines=' + line_ids.join(',');
 	
-	window.history.pushState('', document.title, permalink);
+	window.history.replaceState('', document.title, permalink);
 
 	$('#current_permalink').attr('href', permalink);
 }
