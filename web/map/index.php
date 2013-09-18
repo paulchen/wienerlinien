@@ -26,7 +26,7 @@ foreach($data as $row) {
 	$line_orders[$row['name']] = count($line_orders);
 }
 
-if(isset($_REQUEST['lines'])) {
+if(isset($_REQUEST['lines']) && $_REQUEST['lines'] != '') {
 	$_lines = explode(',', $_REQUEST['lines']);
 	foreach($_lines as $id) {
 		if(!in_array($id, $line_ids)) {
