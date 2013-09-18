@@ -272,7 +272,6 @@ CREATE TABLE IF NOT EXISTS `traffic_info` (
   `resume_time` datetime DEFAULT NULL,
   `group` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `wl_id` (`wl_id`),
   KEY `category` (`category`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
