@@ -427,6 +427,21 @@ CREATE TABLE IF NOT EXISTS `log` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `wl_platform_keep`
+--
+
+CREATE TABLE IF NOT EXISTS `wl_platform_keep` (
+  `id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `wl_platform_keep`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `active_rbl`
 --
 
@@ -524,6 +539,12 @@ ALTER TABLE `wl_platform`
 --
 ALTER TABLE `active_rbl`
   ADD CONSTRAINT `active_rbl_ibfk_1` FOREIGN KEY (`rbl`) REFERENCES `wl_platform` (`rbl`);
+
+--
+-- Constraints for table `wl_platform_keep`
+--
+ALTER TABLE `wl_platform_keep`
+  ADD CONSTRAINT `wl_platform_keep_ibfk_1` FOREIGN KEY (`id`) REFERENCES `wl_platform` (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
