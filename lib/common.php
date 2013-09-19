@@ -465,58 +465,132 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $parallel_api_calls;
+	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id;
 
-	$sem = sem_get($semaphore_id, $parallel_api_calls, 0600);
+	$sem = sem_get($semaphore_id, 1, 0600);
 	if(!$sem) {
 		// TODO error
 		die();
 	}
-	if(!sem_acquire($sem)) {
-		// TODO error
-		die();
-	}
 
-	$result = array();
-	$missing_ids = array();
-	foreach($rbls as $rbl) {
-		// TODO necessary?
-		db_query('INSERT INTO active_rbl (rbl) VALUES (?) ON DUPLICATE KEY UPDATE `timestamp` = NOW()', array($rbl));
-		$data = cache_get("rbl_$rbl");
-		$data = null;
-		if(!$data) {
-			$missing_ids[] = $rbl;
+	$missing_ids = $rbls;
+	$start_time = time();
+	while(time()-$start_time < 15) { // TODO magic number
+		foreach($missing_ids as $key => $rbl) {
+			$data = cache_get("rbl_$rbl");
+			if($data) {
+				unset($missing_ids[$key]);
+				if($data != 'unavailable') {
+					$result[$rbl] = $data;
+				}
+			}
+		}
+
+		if(count($missing_ids) == 0) {
+			break;
+		}
+
+		if(!sem_acquire($sem)) {
+			// TODO error
+			die();
+		}
+
+		foreach($missing_ids as $key => $rbl) {
+			$data = cache_get("rbl_$rbl");
+			if($data) {
+				unset($missing_ids[$key]);
+				$result[$rbl] = $data;
+			}
+		}
+		$not_fetched_ids = $missing_ids;
+		if(count($not_fetched_ids) > 0) {
+			$fetched_ids = cache_get("rbl_currently_fetched");
+			if(!$fetched_ids || !is_array($fetched_ids)) {
+				$fetched_ids = array();
+			}
+
+//			echo "1: \n";
+//			print_r($fetched_ids);
+
+			foreach($fetched_ids as $id => $timestamp) {
+				if(time()-$timestamp > 60) {
+					unset($fetched_ids[$id]);
+					continue;
+				}
+				if(($pos = array_search($id, $not_fetched_ids)) !== false) {
+					unset($not_fetched_ids[$pos]);
+				}
+			}
+			foreach($not_fetched_ids as $id) {
+				$fetched_ids[$id] = time();
+			}
+//			echo "2: \n";
+//			print_r($fetched_ids);
+
+			cache_set("rbl_currently_fetched", $fetched_ids, 3600); // TODO magic number
+		}
+
+		if(!sem_release($sem)) {
+			// TODO error
+			die();
+		}
+
+		if(count($not_fetched_ids) == 0) {
+//			echo "Waiting...\n";
+			usleep(500000);
 		}
 		else {
-			$result[$rbl] = $data;
-		}
-	}
+			$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $not_fetched_ids) . "&sender=$wl_api_key";
+			$cache_expiration = -1; // TODO hmmm
+			$debug = false;
+			$input_encoding = 'UTF-8';
+			$data = download_json($url, 'rbl_' . implode('.', $not_fetched_ids));
+//			sleep(5);
 
-	if(count($missing_ids) > 0) {
-		$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $missing_ids) . "&sender=$wl_api_key";
-		$cache_expiration = -1; // TODO hmmm
-		$debug = false;
-		$input_encoding = 'UTF-8';
-		$data = download_json($url, 'rbl_' . implode('.', $missing_ids));
-
-		$rbl_data = array();
-		foreach($data->data->monitors as $monitor) {
-			$rbl = $monitor->locationStop->properties->attributes->rbl;
-			$lines = $monitor->lines;
-			if(!isset($rbl_data[$rbl])) {
-				$rbl_data[$rbl] = array();
+			$rbl_data = array();
+			foreach($data->data->monitors as $monitor) {
+				$rbl = $monitor->locationStop->properties->attributes->rbl;
+				$lines = $monitor->lines;
+				if(!isset($rbl_data[$rbl])) {
+					$rbl_data[$rbl] = array();
+				}
+				$rbl_data[$rbl][] = $lines;
 			}
-			$rbl_data[$rbl][] = $lines;
-		}
-		foreach($rbl_data as $index => $value) {
-			$result[$index] = process_rbl_data($value);
-			cache_set("rbl_$index", $result[$index], 60);
-		}
-	}
+			foreach($rbl_data as $index => $value) {
+				$result[$index] = process_rbl_data($value);
+				cache_set("rbl_$index", $result[$index], 60);
+			}
+			foreach($not_fetched_ids as $id) {
+				if(!isset($rbl_data[$id])) {
+					cache_set("rbl_$id", 'unavailable', 60);
+				}
+			}
 
-	if(!sem_release($sem)) {
-		// TODO error
-		die();
+			if(!sem_acquire($sem)) {
+				// TODO error
+				die();
+			}
+			$fetched_ids = cache_get("rbl_currently_fetched");
+			if(!$fetched_ids || !is_array($fetched_ids)) {
+				$fetched_ids = array();
+			}
+//			echo "3: \n";
+//			print_r($fetched_ids);
+
+			foreach($not_fetched_ids as $id) {
+				unset($fetched_ids[$id]);
+				unset($missing_ids[array_search($id, $missing_ids)]);
+			}
+//			echo "4: \n";
+//			print_r($fetched_ids);
+
+			cache_set("rbl_currently_fetched", $fetched_ids, 3600); // TODO magic number
+
+			if(!sem_release($sem)) {
+				// TODO error
+				die();
+			}
+		}
 	}
 
 	return $result;
