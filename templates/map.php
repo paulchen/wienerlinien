@@ -60,6 +60,7 @@ $(document).ready(function() {
 				<li>Zoomstufe: <span id="current_zoom"></span></li>
 				<li>Linie(n): <span id="current_lines"></li>
 			</ul>
+			Eingeblendete Linien und Haltestellen können auf der Karte angeklickt werden, um eine Liste der Haltestellen einer Linie oder Abfahrtstafeln einer Haltestelle anzuzeigen.
 			<?php show_lines($lines); ?>
 			<hr />
 			<?php require('footer.php'); ?>
