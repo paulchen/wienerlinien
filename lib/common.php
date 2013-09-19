@@ -467,15 +467,42 @@ function cache_set($key, $data, $expiration = 60) {
 function fetch_rbls($rbls) {
 	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id;
 
+	/* semaphore for the synchronization of the access to the memcache key
+	 * 'rbl_currently_fetched' (see below)
+	 */
 	$sem = sem_get($semaphore_id, 1, 0600);
 	if(!$sem) {
 		// TODO error
 		die();
 	}
 
-	$missing_ids = $rbls;
-	$start_time = time();
+	/* The purpose of this loop is to avoid that several concurrent instances of the application
+	 * fetch data for the same RBL numbers. This is done using the memcache key 'rbl_currently_fetched'.
+	 * This key stores, an array of all RBL numbers which are currently being fetched by any instance
+	 * of the application. To synchronize the access to this key, a semaphore ($sem) is used.
+	 * Data fetched by one instance is stored using memcache so other instances can use it.
+	 *
+	 * The loop performs the following steps:
+	 * 1) All data which is available from memcache is fetched.
+	 * 2) If all data is available, the loop will be terminated.
+	 * 3) All RBL numbers currently processed by other instances are identified (from the memcache
+	 *    key 'rbl_currently_fetched').
+	 * 4) The RBL numbers required by this instance which are not processed by other instances are
+	 *    identified and stored in the memcache key 'rbl_currently_fetched'.
+	 * 4) Data for all required RBL numbers currently not processed by any other instance is obtained
+	 *    from the API.
+	 * 5) The data that has been fetched is stored using memcache to make it available to other instances.
+	 *    In case no data could have been obtained for an RBL number, the value 'unavailable' is stored
+	 *    to ensure no other instance will again try to fetch the data for this number.
+	 * 6) The RBL numbers that have just been processed are removed from the memcache key
+	 *    'rbl_currently_fetched'.
+	 */
+
+	$missing_ids = $rbls; // all RBL number no data has yet been obtained
+	$start_time = time(); // timestamp to determine whether the loop shall be terminated due to too high processing time
+
 	while(time()-$start_time < 15) { // TODO magic number
+		// try to fetch data from memcache for all RBL numbers for which no data has yet been obtained
 		foreach($missing_ids as $key => $rbl) {
 			$data = cache_get("rbl_$rbl");
 			if($data) {
@@ -486,15 +513,18 @@ function fetch_rbls($rbls) {
 			}
 		}
 
+		// do we already have data for all RBL numbers?
 		if(count($missing_ids) == 0) {
 			break;
 		}
 
+		// acquire exclusive access to the memcache key 'rbl_currently_fetched'
 		if(!sem_acquire($sem)) {
 			// TODO error
 			die();
 		}
 
+		// check again whether some data has been added to memcache
 		foreach($missing_ids as $key => $rbl) {
 			$data = cache_get("rbl_$rbl");
 			if($data) {
@@ -502,50 +532,64 @@ function fetch_rbls($rbls) {
 				$result[$rbl] = $data;
 			}
 		}
+
+		// $not_fetched_ids contains all missing RBL numbers that are not currently being processed by
+		// any other instance of the application; these are the RBL numbers that will be processed by
+		// this instance
 		$not_fetched_ids = $missing_ids;
 		if(count($not_fetched_ids) > 0) {
+			// fetch all RBL numbers that are currently being processed by other instances
 			$fetched_ids = cache_get("rbl_currently_fetched");
 			if(!$fetched_ids || !is_array($fetched_ids)) {
 				$fetched_ids = array();
 			}
 
-//			echo "1: \n";
-//			print_r($fetched_ids);
-
+			// the key 'rbl_currently_fetched' is an array using the RBL number as
+			// key and the UNIX timestamp when the number was added to the array as
+			// value
 			foreach($fetched_ids as $id => $timestamp) {
+				// if the number has been added more than 60 seconds ago, we can
+				// assume that something bad happened to the instance that
+				// processed it
 				if(time()-$timestamp > 60) {
 					unset($fetched_ids[$id]);
 					continue;
 				}
+
+				// remove the number from the list of numbers processed by this instance
 				if(($pos = array_search($id, $not_fetched_ids)) !== false) {
 					unset($not_fetched_ids[$pos]);
 				}
 			}
+
+			// add the RBL numbers processed by this instance...
 			foreach($not_fetched_ids as $id) {
 				$fetched_ids[$id] = time();
 			}
-//			echo "2: \n";
-//			print_r($fetched_ids);
 
+			// .. and store the array using memcache
 			cache_set("rbl_currently_fetched", $fetched_ids, 3600); // TODO magic number
 		}
 
+		// release exclusive access to the memcache key 'rbl_currently_fetched'
 		if(!sem_release($sem)) {
 			// TODO error
 			die();
 		}
 
 		if(count($not_fetched_ids) == 0) {
-//			echo "Waiting...\n";
+			// if there is no RBL number we need that is not currently being processed by another
+			// instance of the application, we'll sleep for 500ms and hope that the data will then
+			// be available
 			usleep(500000);
 		}
 		else {
+			// now, fetch the data
 			$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $not_fetched_ids) . "&sender=$wl_api_key";
 			$cache_expiration = -1; // TODO hmmm
 			$debug = false;
 			$input_encoding = 'UTF-8';
 			$data = download_json($url, 'rbl_' . implode('.', $not_fetched_ids));
-//			sleep(5);
 
 			$rbl_data = array();
 			foreach($data->data->monitors as $monitor) {
@@ -556,36 +600,49 @@ function fetch_rbls($rbls) {
 				}
 				$rbl_data[$rbl][] = $lines;
 			}
+
+			// process the data and make it available to other instances of the application
+			// using memcache
 			foreach($rbl_data as $index => $value) {
 				$result[$index] = process_rbl_data($value);
 				cache_set("rbl_$index", $result[$index], 60);
 			}
+
+			// mark an RBL numbers as unavailable in case no data could be fetched for it
 			foreach($not_fetched_ids as $id) {
 				if(!isset($rbl_data[$id])) {
 					cache_set("rbl_$id", 'unavailable', 60);
 				}
 			}
 
+			// acquire exclusive access to the memcache key 'rbl_currently_fetched'
 			if(!sem_acquire($sem)) {
 				// TODO error
 				die();
 			}
+
+			// obtain the list of all RBL numbers currently being processed by any
+			// of the instances of the application
 			$fetched_ids = cache_get("rbl_currently_fetched");
 			if(!$fetched_ids || !is_array($fetched_ids)) {
 				$fetched_ids = array();
 			}
-//			echo "3: \n";
-//			print_r($fetched_ids);
 
+			// remove the RBL numbers that have just been processed from both
+			// the list of RBL numbers currently being processed by any instance
+			// of the program and the list of RBL numbers that have yet to be
+			// processed by this instance in any of the next iterations of the
+			// loop
 			foreach($not_fetched_ids as $id) {
 				unset($fetched_ids[$id]);
 				unset($missing_ids[array_search($id, $missing_ids)]);
 			}
-//			echo "4: \n";
-//			print_r($fetched_ids);
 
+			// save the list of all RBL numbers currently being processed by any
+			// of the instances of the application back to memcache
 			cache_set("rbl_currently_fetched", $fetched_ids, 3600); // TODO magic number
 
+			// release exclusive access to the memcache key 'rbl_currently_fetched'
 			if(!sem_release($sem)) {
 				// TODO error
 				die();
@@ -593,6 +650,7 @@ function fetch_rbls($rbls) {
 		}
 	}
 
+	// we're done here
 	return $result;
 }
 
