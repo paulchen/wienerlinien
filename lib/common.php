@@ -500,6 +500,7 @@ function fetch_rbls($rbls) {
 
 	$missing_ids = $rbls; // all RBL number no data has yet been obtained
 	$start_time = time(); // timestamp to determine whether the loop shall be terminated due to too high processing time
+	$result = array(); // here all data is stored that will be returned to the client
 
 	while(time()-$start_time < 15) { // TODO magic number
 		// try to fetch data from memcache for all RBL numbers for which no data has yet been obtained
