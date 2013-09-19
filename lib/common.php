@@ -130,17 +130,26 @@ function db_last_insert_id() {
 function download_json($url, $prefix) {
 	global $input_encoding;
 
+	$download = download($url, $prefix, 'json');
+	if($download == null) {
+		return null;
+	}
+
 	if(!isset($input_encoding)) {
-		return json_decode(iconv('ISO-8859-15', 'UTF-8', download($url, $prefix, 'json')));
+		return json_decode(iconv('ISO-8859-15', 'UTF-8', $download));
 	}
 	if($input_encoding != 'UTF-8') {
-		return json_decode(iconv($input_encoding, 'UTF-8', download($url, $prefix, 'json')));
+		return json_decode(iconv($input_encoding, 'UTF-8', $download));
 	}
-	return json_decode(download($url, $prefix, 'json'));
+	return json_decode($download);
 }
 
 function download_csv($url, $prefix) {
 	$csv_file = download($url, $prefix, 'csv', true);
+	if($csv_file == null) {
+		return null;
+	}
+
 	$csv = new Csv();
 	$csv->separator = ';';
 	$csv->parse($csv_file);
@@ -193,15 +202,23 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 	$data = curl_exec($curl);
+	$info = curl_getinfo($curl);
 	curl_close($curl);
-	file_put_contents($filename, $data);
 
-	write_log("Fetching completed");
+	if($info['http_code'] == 200) {
+		file_put_contents($filename, $data);
 
-	if($return_filename) {
-		return $filename;
+		write_log("Fetching completed");
+
+		if($return_filename) {
+			return $filename;
+		}
+		return $data;
 	}
-	return $data;
+
+	write_log('Fetching failed');
+
+	return null;
 }
 
 function write_log($message) {

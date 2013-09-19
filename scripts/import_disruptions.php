@@ -13,14 +13,16 @@ $data = download_json($disruptions_url, 'disruptions');
 
 $imported_disruptions = array();
 
-check_category_groups($data->data->trafficInfoCategoryGroups);
-check_categories($data->data->trafficInfoCategories);
-process_traffic_infos($data->data->trafficInfos);
-check_outdated($imported_disruptions, 'traffic_info');
+if($data && $data->data && $data->data->trafficInfoCategoryGroups && $data->data->trafficInfoCategories && $data->data->trafficInfos) {
+	check_category_groups($data->data->trafficInfoCategoryGroups);
+	check_categories($data->data->trafficInfoCategories);
+	process_traffic_infos($data->data->trafficInfos);
+	check_outdated($imported_disruptions, 'traffic_info');
 
-require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
+	require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
 
-notify_twitter();
+	notify_twitter();
+}
 
 log_query_stats();
 
