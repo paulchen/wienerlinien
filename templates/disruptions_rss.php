@@ -4,7 +4,7 @@
 <channel>
   <title>Wiener Linien -- Aktuelle Störungen</title>
   <link><?php echo $link ?></link>
-  <atom:link href="<?php echo "{$link}rss.php" ?>" rel="self" type="application/rss+xml" />
+  <atom:link href="<?php echo "{$link}rss.xml" ?>" rel="self" type="application/rss+xml" />
   <description>Wiener Linien -- Aktuelle Störungen</description>
   <pubDate><?php echo date(DateTime::RSS, $feed_date) ?></pubDate>
   <?php foreach($disruptions as $disruption): ?>
