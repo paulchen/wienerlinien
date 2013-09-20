@@ -11,7 +11,7 @@ db_query('SET NAMES UTF8');
 $template_dir = dirname(__FILE__) . '/../templates/';
 
 $memcached = new Memcached();
-$memcached_servers = array(array('ip' => '127.0.0.1', 'port' => '11211'));
+$memcached_servers = array(array('ip' => '127.0.0.1', 'port' => '11211')); // TODO
 foreach($memcached_servers as $server) {
 	$memcached->addServer($server['ip'], $server['port']);
 }
