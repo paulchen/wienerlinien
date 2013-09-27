@@ -12,13 +12,39 @@ $url_wl_lines = 'http://data.wien.gv.at/csv/wienerlinien-ogd-linien.csv';
 $url_wl_stations = 'http://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv';
 $url_wl_platforms = 'http://data.wien.gv.at/csv/wienerlinien-ogd-steige.csv';
 
-$lines_data = download_json($url_lines, 'lines');
-$stations_data = download_json($url_stations, 'stations');
-$station_id_data = download_json($url_station_ids, 'station_ids');
+if(!$lines_data = download_json($url_lines, 'lines')) {
+	write_log("Error while fetching $url_lines, aborting now");
+	die();
+}
+if(!$stations_data = download_json($url_stations, 'stations')) {
+	write_log("Error while fetching $url_stations, aborting now");
+	die();
+}
+if(!$station_id_data = download_json($url_station_ids, 'station_ids')) {
+	write_log("Error while fetching $url_station_ids, aborting now");
+	die();
+}
 
-$wl_lines_data = download_csv($url_wl_lines, 'wl_lines');
-$wl_stations_data = download_csv($url_wl_stations, 'wl_stations');
-$wl_platforms_data = download_csv($url_wl_platforms, 'wl_platforms');
+if(!$wl_lines_data = download_csv($url_wl_lines, 'wl_lines')) {
+	write_log("Error while fetching $url_wl_lines, aborting now");
+	die();
+}
+if(!$wl_stations_data = download_csv($url_wl_stations, 'wl_stations')) {
+	write_log("Error while fetching $url_wl_stations, aborting now");
+	die();
+}
+if(!$wl_platforms_data = download_csv($url_wl_platforms, 'wl_platforms')) {
+	write_log("Error while fetching $url_wl_platforms, aborting now");
+	die();
+}
+
+import_lines($lines_data, true);
+import_station_ids($station_id_data, true);
+import_stations($stations_data, true);
+
+import_wl_lines($wl_lines_data, true);
+import_wl_stations($wl_stations_data, true);
+import_wl_platforms($wl_platforms_data, true);
 
 write_log("Starting import script...");
 
@@ -47,8 +73,16 @@ write_log("Import script successfully completed.");
 
 log_query_stats();
 
-function import_wl_lines($data) {
+function import_wl_lines($data, $check_only = false) {
 	global $imported_lines;
+
+	if($check_only) {
+		if(count($data) == 0) {
+			write_log('Error: Lines data from Wiener Linien cannot be imported.');
+			return false;
+		}
+		return true;
+	}
 
 	write_log("Import lines data from Wiener Linien...");
 
@@ -85,8 +119,16 @@ function import_wl_lines($data) {
 	write_log("Line data successfully imported.");
 }
 
-function import_wl_stations($data) {
+function import_wl_stations($data, $check_only = false) {
 	global $imported_stations;
+
+	if($check_only) {
+		if(count($data) == 0) {
+			write_log('Error: Stations data from Wiener Linien cannot be imported.');
+			return false;
+		}
+		return true;
+	}
 
 	write_log("Import stations data from Wiener Linien...");
 
@@ -128,8 +170,16 @@ function import_wl_stations($data) {
 	write_log("Stations data successfully imported.");
 }
 
-function import_wl_platforms($data) {
+function import_wl_platforms($data, $check_only = false) {
 	global $imported_platforms;
+
+	if($check_only) {
+		if(count($data) == 0) {
+			write_log('Error: Platforms data from Wiener Linien cannot be imported.');
+			return false;
+		}
+		return true;
+	}
 
 	write_log("Import platforms data from Wiener Linien...");
 
@@ -319,8 +369,15 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 	$imported_stations[] = $id;
 }
 
-function import_station_ids($data) {
+function import_station_ids($data, $check_only = false) {
 	global $imported_station_ids;
+
+	if($check_only) {
+		if(!isset($data->features)) {
+			write_log('Error: station IDs data cannot be imported');
+		}
+		return isset($data->features);
+	}
 
 	write_log("Importing station IDs...");
 
@@ -344,7 +401,14 @@ function import_station_ids($data) {
 	write_log("Station IDs successfully imported.");
 }
 
-function import_stations($data) {
+function import_stations($data, $check_only = false) {
+	if($check_only) {
+		if(!isset($data->features)) {
+			write_log('Error: stations data cannot be imported');
+		}
+		return isset($data->features);
+	}
+
 	write_log("Importing stations...");
 
 	foreach($data->features as $feature) {
@@ -354,7 +418,14 @@ function import_stations($data) {
 	write_log("Stations successfully imported.");
 }
 
-function import_lines($data) {
+function import_lines($data, $check_only = false) {
+	if($check_only) {
+		if(!isset($data->features)) {
+			write_log('Error: lines data cannot be imported');
+		}
+		return isset($data->features);
+	}
+
 	write_log("Importing lines...");
 
 	foreach($data->features as $feature) {
