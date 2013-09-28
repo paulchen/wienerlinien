@@ -16,6 +16,8 @@ foreach($memcached_servers as $server) {
 	$memcached->addServer($server['ip'], $server['port']);
 }
 
+$retry_download = true;
+
 function db_query($query, $parameters = array(), $ignore_errors = false) {
 	global $db, $db_queries;
 
@@ -159,7 +161,7 @@ function download_csv($url, $prefix) {
 }
 
 function download($url, $prefix, $extension, $return_filename = false) {
-	global $cache_expiration;
+	global $cache_expiration, $retry_download;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
@@ -198,11 +200,21 @@ function download($url, $prefix, $extension, $return_filename = false) {
 
 	write_log("Fetching $url to $filename...");
 
+	$attempts = 0;
+	$failure_wait_time = 60; // TODO magic_number
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-	$data = curl_exec($curl);
-	$info = curl_getinfo($curl);
+	while($attempts < 3) {
+		$data = curl_exec($curl);
+		$info = curl_getinfo($curl);
+		if($info['http_code'] == 200 || !$retry_download) {
+			break;
+		}
+		write_log("Fetching failed, retrying in $failure_wait_time seconds...");
+		sleep($failure_wait_time);
+		$attempts++;
+	}
 	curl_close($curl);
 
 	if($info['http_code'] == 200) {
@@ -465,7 +477,9 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id;
+	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $retry_download;
+
+	$retry_download = false;
 
 	/* semaphore for the synchronization of the access to the memcache key
 	 * 'rbl_currently_fetched' (see below)
