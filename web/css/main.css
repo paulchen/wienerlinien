@@ -115,3 +115,6 @@ last_update > a {
 .ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }
 
 .ui-widget { font-size: .9em; }
+
+#filter_fieldset { display: none; }
+

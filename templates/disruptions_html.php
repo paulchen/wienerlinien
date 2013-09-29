@@ -18,6 +18,11 @@
 			$('#from').datetimepicker(options);
 			$('#to').datetimepicker(options);
 		});
+
+		function show_filter() {
+			$('#filter_link').hide();
+			$('#filter_fieldset').show('fast');
+		}
 		// -->
 		</script>
 	<?php endif; ?>
@@ -90,7 +95,8 @@
 	</div>
 	<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
 		<div>
-			<fieldset><legend>Filter</legend>
+			<a href="javascript:show_filter();" id="filter_link">Filter</a>
+			<fieldset id="filter_fieldset"><legend>Filter</legend>
 				<form method="get" action=".">
 					<input type="hidden" name="archive" value="1" />
 					<div style="padding-bottom: 1em;">
@@ -98,8 +104,8 @@
 					</div>
 					<div style="padding-bottom: 1em;">
 						<b>Zeitraum:</b><br />
-						Von: <input type="text" name="from" id="from" value="" /><br />
-						Bis: <input type="text" name="to" id="to" value="" /><br />
+						Von: <input type="text" name="from" id="from" value="<?php if(isset($_REQUEST['from'])) echo date('d.m.Y H:i', $_REQUEST['from']) ?>" /><br />
+						Bis: <input type="text" name="to" id="to" value="<?php if(isset($_REQUEST['to'])) echo date('d.m.Y H:i', $_REQUEST['to']) ?>" /><br />
 					</div>
 					<div style="padding-bottom: 1em;">
 						<b>Kategorien:</b><br />
