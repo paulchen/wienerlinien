@@ -19,6 +19,7 @@ foreach($data as $row) {
 foreach($lines as $type => &$value) {
 	usort($value['lines'], 'line_sorter');
 }
+unset($value);
 usort($data, 'line_sorter');
 
 $line_orders = array();
