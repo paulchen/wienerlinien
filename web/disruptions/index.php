@@ -66,7 +66,7 @@ else if(isset($_REQUEST['archive'])) {
 		$filter_settings['lines'] = $lines;
 		$filtered_archive = true;
 	}
-	if(isset($_REQUEST['from'])) {
+	if(isset($_REQUEST['from']) && trim($_REQUEST['from']) != '') {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['from'])) {
 			$datetime = DateTime::createFromFormat('d.m.Y H:i', $_REQUEST['from']);
 			if(!$datetime) {
@@ -81,7 +81,7 @@ else if(isset($_REQUEST['archive'])) {
 
 		$filter_strings[] = 'Beginnzeitpunkt: ' . date('d.m.Y H:i', $_REQUEST['from']);
 	}
-	if(isset($_REQUEST['to'])) {
+	if(isset($_REQUEST['to']) && trim($_REQUEST['to']) != '') {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['to'])) {
 			$datetime = DateTime::createFromFormat('d.m.Y H:i', $_REQUEST['to']);
 			if(!$datetime) {
