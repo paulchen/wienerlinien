@@ -1,4 +1,22 @@
 <?php
+$request_changed = false;
+foreach($_REQUEST as $key => &$value) {
+	if(is_array($value)) {
+		$value = implode(',', $value);
+		$request_changed = true;
+	}
+}
+unset($value);
+if($request_changed) {
+	$redirect_parts = array();
+	foreach($_REQUEST as $key => $value) {
+		$redirect_parts[] = urlencode($key) . '=' . urlencode($value);
+	}
+	$redirect_url = '?' . implode('&', $redirect_parts);
+	header("Location: $redirect_url");
+	die();
+}
+
 require_once(dirname(__FILE__) . '/../../lib/common.php');
 
 $page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -71,15 +89,15 @@ else if(isset($_REQUEST['archive'])) {
 		$filter_strings[] = 'Endzeitpunkt: ' . date('d.m.Y H:i:s', $_REQUEST['to']);
 	}
 	if(isset($_REQUEST['types'])) {
-		$types = array_unique(explode(',', $_REQUEST['types']));
+		$selected_types = array_unique(explode(',', $_REQUEST['types']));
 		$parameters = array();
-		foreach($types as $type) {
+		foreach($selected_types as $type) {
 			$parameters[] = '?';
 		}
 		$parameters_string = implode(',', $parameters);
 		$query = "SELECT title FROM traffic_info_category WHERE id IN ($parameters_string) ORDER BY id ASC";
-		$category_names = db_query($query, $types);
-		if(count($category_names) != count($types)) {
+		$category_names = db_query($query, $selected_types);
+		if(count($category_names) != count($selected_types)) {
 			// TODO
 			die();
 		}
@@ -132,6 +150,8 @@ if(isset($pagination_data)) {
 	}
 	unset($item);
 }
+
+$categories = db_query('SELECT id, title FROM traffic_info_category ORDER BY id ASC');
 
 require_once("$template_dir/disruptions_html.php");
 

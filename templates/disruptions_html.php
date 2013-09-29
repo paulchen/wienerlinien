@@ -67,6 +67,28 @@
 		<?php endif; ?>
 		<hr />
 	</div>
+	<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
+		<div>
+			<fieldset><legend>Filter</legend>
+				<form method="get" action=".">
+					<input type="hidden" name="archive" value="1" />
+					<div style="padding-bottom: 1em;">
+						<b>Linien:</b><br />
+					</div>
+					<div style="padding-bottom: 1em;">
+						<b>Zeitraum:</b><br />
+					</div>
+					<div style="padding-bottom: 1em;">
+						<b>Kategorien:</b><br />
+						<?php foreach($categories as $category): ?>
+						<input type="checkbox" name="types[]" value="<?php echo $category['id'] ?>" id="category_<?php echo $category['id'] ?>" <?php if(in_array($category['id'], $selected_types)): ?>checked="checked"<?php endif; ?> />&nbsp;<label for="category_<?php echo $category['id'] ?>"><?php echo htmlentities($category['title'], ENT_QUOTES, 'UTF-8') ?></label>
+						<?php endforeach; ?>
+					</div>
+					<input type="submit" value="Filter anwenden" />
+				</form>
+			</fieldset>
+		</div>
+	<?php endif; ?>
 	<?php foreach($disruptions as $disruption): ?>
 		<h2><a href="?id=<?php echo $disruption['id'] ?>"><?php if(count($disruption['lines']) > 0): echo implode('/', $disruption['lines']) . ': '; endif; echo '[' . htmlentities($disruption['category'], ENT_QUOTES, 'UTF-8') ?>] <?php echo htmlentities($disruption['title'], ENT_QUOTES, 'UTF-8') ?></a></h2>
 		<?php if(!isset($_REQUEST['id'])): ?>
