@@ -35,21 +35,40 @@ if(isset($_REQUEST['id'])) {
 	}
 }
 else if(isset($_REQUEST['archive'])) {
+	$lines = array();
+	$data = db_query('SELECT id, name FROM line_type WHERE id IN (1,2,4,8) ORDER BY pos ASC');
+	foreach($data as $row) {
+		$row['lines'] = array();
+		$lines[$row['id']] = $row;
+	}
+	$data = db_query('SELECT id, name, type FROM line ORDER BY name ASC');
+	$line_ids = array();
+	foreach($data as $row) {
+		if(!isset($lines[$row['type']])) {
+			continue;
+		}
+		$lines[$row['type']]['lines'][] = $row;
+	}
+	foreach($lines as $type => &$value) {
+		usort($value['lines'], 'line_sorter');
+	}
+	unset($value);
+
 	$filter_settings = array(
 		'archive' => $_REQUEST['archive'],
 		'page' => $page
 	);
 	$filter_strings = array();
 	if(isset($_REQUEST['lines'])) {
-		$lines = array_unique(explode(',', $_REQUEST['lines']));
+		$selected_lines = array_unique(explode(',', $_REQUEST['lines']));
 		$parameters = array();
-		foreach($lines as $line) {
+		foreach($selected_lines as $line) {
 			$parameters[] = '?';
 		}
 		$parameters_string = implode(',', $parameters);
 		$query = "SELECT name FROM line WHERE id IN ($parameters_string)";
-		$line_names = db_query($query, $lines);
-		if(count($line_names) != count($lines)) {
+		$line_names = db_query($query, $selected_lines);
+		if(count($line_names) != count($selected_lines)) {
 			// TODO
 			die();
 		}
@@ -63,7 +82,7 @@ else if(isset($_REQUEST['archive'])) {
 			$filter_strings[] = 'Linien: ' . implode(', ', $line_names);
 		}
 
-		$filter_settings['lines'] = $lines;
+		$filter_settings['lines'] = $selected_lines;
 		$filtered_archive = true;
 	}
 	if(isset($_REQUEST['from']) && trim($_REQUEST['from']) != '') {
