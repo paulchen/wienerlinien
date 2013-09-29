@@ -20,11 +20,11 @@ a {
 	text-decoration: none;
 	color: #417394;
 }
-a:hover {
-	color: red;
-}
 a:visited {
 	color: #417394;
+}
+a:hover {
+	color: red;
 }
 body.map {
 	height: 100%;
