@@ -137,7 +137,7 @@ else if(isset($_REQUEST['archive'])) {
 			$filter_strings[] = 'Kategorien: ' . implode(', ', $category_names);
 		}
 
-		$filter_settings['types'] = $types;
+		$filter_settings['types'] = $selected_types;
 		$filtered_archive = true;
 	}
 
