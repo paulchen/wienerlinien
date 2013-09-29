@@ -4,9 +4,24 @@
 	<meta name="viewport" content="initial-scale=.4, user-scalable=yes" />
 	<title>Wiener Linien -- <?php if(isset($_REQUEST['id'])): ?>Störungsdetails<?php else: ?>Störungen<?php endif; ?></title>
 	<link rel="alternate" type="application/rss+xml" title="Wiener Linien -- <?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>Alle<?php else: ?>Aktuelle<? endif; ?> Störungen -- RSS-Feed"  href="rss.xml" />
-	<link rel="stylesheet" type="text/css" href="../css/main.css" />
-	<?php if(!isset($_REQUEST['id'])): ?>
+	<?php if((isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1) || !isset($_REQUEST['id'])): ?>
 		<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<?php endif; ?>
+	<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
+		<script type="text/javascript" src="../js/jquery-ui.js"></script>
+		<script type="text/javascript" src="../js/jquery-ui-timepicker-addon.js"></script>
+		<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css" />
+		<script type="text/javascript">
+		<!--
+		$(document).ready(function() {
+			var options = { dateFormat: 'dd.mm.yy', timeFormat: 'HH:mm', currentText: 'Jetzt', closeText: 'Fertig' };
+			$('#from').datetimepicker(options);
+			$('#to').datetimepicker(options);
+		});
+		// -->
+		</script>
+	<?php endif; ?>
+	<?php if(!isset($_REQUEST['id'])): ?>
 		<script type="text/javascript">
 		<!--
 		$(document).ready(function() {
@@ -28,6 +43,7 @@
 		// -->
 		</script>
 	<?php endif; ?>
+	<link rel="stylesheet" type="text/css" href="../css/main.css" />
 </head>
 <body class="centered_page">
 	<div class="main_pane">
@@ -48,7 +64,12 @@
 	<div>
 		<?php if($filtered_archive): ?>
 			<div style="padding-bottom: 1em;">
-				Aktueller Filter: <?php echo implode('; ', $filter_strings); ?>
+				<b>Aktueller Filter</b>:
+				<ul>
+					<?php foreach($filter_strings as $filter): ?>
+						<li><?php echo $filter; ?></li>
+					<?php endforeach; ?>
+				</ul>
 			</div>
 		<?php endif; ?>
 		<?php if(isset($_REQUEST['id']) || !isset($_REQUEST['archive']) || $_REQUEST['archive'] != 1 || $filtered_archive): ?>
@@ -77,6 +98,8 @@
 					</div>
 					<div style="padding-bottom: 1em;">
 						<b>Zeitraum:</b><br />
+						Von: <input type="text" name="from" id="from" value="" /><br />
+						Bis: <input type="text" name="to" id="to" value="" /><br />
 					</div>
 					<div style="padding-bottom: 1em;">
 						<b>Kategorien:</b><br />
@@ -87,6 +110,7 @@
 					<input type="submit" value="Filter anwenden" />
 				</form>
 			</fieldset>
+			<hr />
 		</div>
 	<?php endif; ?>
 	<?php foreach($disruptions as $disruption): ?>
@@ -103,6 +127,16 @@
 		</div>
 		<hr />
 	<?php endforeach; ?>
+	<?php if(count($disruptions) == 0): ?>
+		<div>
+			<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
+				Es wurde keine Störung gefunden, die den gewählten Kriterien entspricht.
+			<?php else: ?>
+				Derzeit gibt es keine Störungen im Netz der Wiener Linien. Gute Fahrt!
+			<?php endif; ?>
+			<hr />
+		</div>
+	<?php endif; ?>
 	<?php if(isset($_REQUEST['id'])): ?>
 		<a href="?">Alle aktuellen Störungen</a><hr />
 	<?php endif; ?>

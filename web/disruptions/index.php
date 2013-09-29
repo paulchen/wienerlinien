@@ -68,25 +68,33 @@ else if(isset($_REQUEST['archive'])) {
 	}
 	if(isset($_REQUEST['from'])) {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['from'])) {
-			// TODO
-			die();
+			$datetime = DateTime::createFromFormat('d.m.Y H:i', $_REQUEST['from']);
+			if(!$datetime) {
+				// TODO
+				die();
+			}
+			$_REQUEST['from'] = $datetime->format('U');
 		}
 
 		$filter_settings['from'] = $_REQUEST['from'];
 		$filtered_archive = true;
 
-		$filter_strings[] = 'Beginnzeitpunkt: ' . date('d.m.Y H:i:s', $_REQUEST['from']);
+		$filter_strings[] = 'Beginnzeitpunkt: ' . date('d.m.Y H:i', $_REQUEST['from']);
 	}
 	if(isset($_REQUEST['to'])) {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['to'])) {
-			// TODO
-			die();
+			$datetime = DateTime::createFromFormat('d.m.Y H:i', $_REQUEST['to']);
+			if(!$datetime) {
+				// TODO
+				die();
+			}
+			$_REQUEST['to'] = $datetime->format('U');
 		}
 
 		$filter_settings['to'] = $_REQUEST['to'];
 		$filtered_archive = true;
 
-		$filter_strings[] = 'Endzeitpunkt: ' . date('d.m.Y H:i:s', $_REQUEST['to']);
+		$filter_strings[] = 'Endzeitpunkt: ' . date('d.m.Y H:i', $_REQUEST['to']);
 	}
 	if(isset($_REQUEST['types'])) {
 		$selected_types = array_unique(explode(',', $_REQUEST['types']));
