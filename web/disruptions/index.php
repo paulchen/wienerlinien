@@ -6,6 +6,7 @@ if(!preg_match('/^[0-9]+$/', $page)) {
 	$page = 1;
 }
 
+$filtered_archive = false;
 if(isset($_REQUEST['id'])) {
 	$data = db_query('SELECT `group` FROM traffic_info WHERE id = ?', array($_REQUEST['id']));
 	if($data[0]['group']) {
@@ -16,10 +17,11 @@ if(isset($_REQUEST['id'])) {
 	}
 }
 else if(isset($_REQUEST['archive'])) {
-	$settings = array(
+	$filter_settings = array(
 		'archive' => $_REQUEST['archive'],
 		'page' => $page
 	);
+	$filter_strings = array();
 	if(isset($_REQUEST['lines'])) {
 		$lines = array_unique(explode(',', $_REQUEST['lines']));
 		$parameters = array();
@@ -27,14 +29,24 @@ else if(isset($_REQUEST['archive'])) {
 			$parameters[] = '?';
 		}
 		$parameters_string = implode(',', $parameters);
-		$query = "SELECT id, name FROM line WHERE id IN ($parameters_string)";
-		$data = db_query($query, $lines);
-		if(count($data) != count($lines)) {
+		$query = "SELECT name FROM line WHERE id IN ($parameters_string)";
+		$line_names = db_query($query, $lines);
+		if(count($line_names) != count($lines)) {
 			// TODO
 			die();
 		}
 
-		$settings['lines'] = $lines;
+		$line_names = array_map(function($a) { return $a['name']; }, $line_names);
+		usort($line_names, 'line_sorter');
+		if(count($line_names) == 1) {
+			$filter_strings[] = 'Linie: ' . implode(', ', $line_names);
+		}
+		else {
+			$filter_strings[] = 'Linien: ' . implode(', ', $line_names);
+		}
+
+		$filter_settings['lines'] = $lines;
+		$filtered_archive = true;
 	}
 	if(isset($_REQUEST['from'])) {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['from'])) {
@@ -42,7 +54,10 @@ else if(isset($_REQUEST['archive'])) {
 			die();
 		}
 
-		$settings['from'] = $_REQUEST['from'];
+		$filter_settings['from'] = $_REQUEST['from'];
+		$filtered_archive = true;
+
+		$filter_strings[] = 'Beginnzeitpunkt: ' . date('d.m.Y H:i:s', $_REQUEST['from']);
 	}
 	if(isset($_REQUEST['to'])) {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['to'])) {
@@ -50,7 +65,10 @@ else if(isset($_REQUEST['archive'])) {
 			die();
 		}
 
-		$settings['to'] = $_REQUEST['to'];
+		$filter_settings['to'] = $_REQUEST['to'];
+		$filtered_archive = true;
+
+		$filter_strings[] = 'Endzeitpunkt: ' . date('d.m.Y H:i:s', $_REQUEST['to']);
 	}
 	if(isset($_REQUEST['types'])) {
 		$types = array_unique(explode(',', $_REQUEST['types']));
@@ -59,17 +77,26 @@ else if(isset($_REQUEST['archive'])) {
 			$parameters[] = '?';
 		}
 		$parameters_string = implode(',', $parameters);
-		$query = "SELECT id, name FROM traffic_info_category WHERE id IN ($parameters_string)";
-		$data = db_query($query, $types);
-		if(count($data) != count($types)) {
+		$query = "SELECT title FROM traffic_info_category WHERE id IN ($parameters_string) ORDER BY id ASC";
+		$category_names = db_query($query, $types);
+		if(count($category_names) != count($types)) {
 			// TODO
 			die();
 		}
 
-		$settings['types'] = $types;
+		$category_names = array_map(function($a) { return $a['title']; }, $category_names);
+		if(count($category_names) == 1) {
+			$filter_strings[] = 'Kategorie: ' . implode(', ', $category_names);
+		}
+		else {
+			$filter_strings[] = 'Kategorien: ' . implode(', ', $category_names);
+		}
+
+		$filter_settings['types'] = $types;
+		$filtered_archive = true;
 	}
 
-	$disruptions = get_disruptions($settings, $pagination_data);
+	$disruptions = get_disruptions($filter_settings, $pagination_data);
 }
 else {
 	$disruptions = get_disruptions(array('page' => $page), $pagination_data);

@@ -36,7 +36,9 @@
 			Störungsdetails
 		<?php else: ?>
 			<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
-				Alle
+				<?php if(!$filtered_archive): ?>
+					Alle
+				<?php endif; ?>
 			<?php else: ?>
 				Aktuelle
 			<? endif; ?>
@@ -44,11 +46,16 @@
 		<?php endif; ?>
 	</h1>
 	<div>
+		<?php if($filtered_archive): ?>
+			<div style="padding-bottom: 1em;">
+				Aktueller Filter: <?php echo implode('; ', $filter_strings); ?>
+			</div>
+		<?php endif; ?>
+		<?php if(isset($_REQUEST['id']) || !isset($_REQUEST['archive']) || $_REQUEST['archive'] != 1 || $filtered_archive): ?>
+			<a href="?archive=1">Alle Störungen</a>
+		<?php endif; ?>
 		<?php if(isset($_REQUEST['id']) || (isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1)): ?>
 			<a href="?">Aktuelle Störungen</a>
-		<?php endif; ?>
-		<?php if(isset($_REQUEST['id']) || !isset($_REQUEST['archive']) || $_REQUEST['archive'] != 1): ?>
-			<a href="?archive=1">Alle Störungen</a>
 		<?php endif; ?>
 		<a href="..">Übersicht</a>
 		<?php if(isset($pagination_data)): ?>
