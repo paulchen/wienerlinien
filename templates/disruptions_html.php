@@ -30,8 +30,8 @@
 		<script type="text/javascript">
 		<!--
 		$(document).ready(function() {
-			$('.description').hide();
 			$('.show_link').show();
+			$('.description').hide();
 		});
 
 		function show(id) {
