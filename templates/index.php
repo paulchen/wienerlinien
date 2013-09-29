@@ -13,6 +13,9 @@
 			<ul>
 				<li><a href="disruptions/">Aktuelle Störungen</a></li>
 				<li><a href="disruptions/rss.php">Aktuelle Störungen -- RSS-Feed</a></li>
+				<?php if(isset($twitter_username) && trim($twitter_username) != ''): ?>
+					<li><a href="https://twitter.com/<?php echo rawurlencode($twitter_username) ?>">Störungen auf Twitter</a></li>
+				<?php endif; ?>
 				<li><a href="disruptions/?archive=1">Störungsarchiv</a></li>
 				<li><a href="map">Karte</a></li>
 			</ul>
