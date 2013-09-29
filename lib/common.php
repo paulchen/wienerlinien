@@ -310,7 +310,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 				$parameters[] = '?';
 				$filter_params[] = $line;
 			}
-			$parameters_string = implode(',', $filter['lines']);
+			$parameters_string = implode(',', $parameters);
 			$filter_part .= " AND l2.id IN ($parameters_string)";
 		}
 		if(isset($filter['from'])) {
@@ -321,13 +321,22 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$filter_part .= ' AND i.start_time < FROM_UNIXTIME(?)';
 			$filter_params[] = $filter['to'];
 		}
+		if(isset($filter['types'])) {
+			$parameters = array();
+			foreach($filter['types'] as $type) {
+				$parameters[] = '?';
+				$filter_params[] = $type;
+			}
+			$parameters_string = implode(',', $parameters);
+			$filter_part .= " AND c.id IN ($parameters_string)";
+		}
 	}
 
 	if(isset($filter['page'])) {
 		$page = $filter['page'];
 	}
 
-	$disruptions = db_query("SELECTx i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
+	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(i.end_time) end_time,
 					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,

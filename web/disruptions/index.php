@@ -29,7 +29,7 @@ else if(isset($_REQUEST['archive'])) {
 		$parameters_string = implode(',', $parameters);
 		$query = "SELECT id, name FROM line WHERE id IN ($parameters_string)";
 		$data = db_query($query, $lines);
-		if(count($data) != count($lines) {
+		if(count($data) != count($lines)) {
 			// TODO
 			die();
 		}
@@ -51,6 +51,22 @@ else if(isset($_REQUEST['archive'])) {
 		}
 
 		$settings['to'] = $_REQUEST['to'];
+	}
+	if(isset($_REQUEST['types'])) {
+		$types = array_unique(explode(',', $_REQUEST['types']));
+		$parameters = array();
+		foreach($types as $type) {
+			$parameters[] = '?';
+		}
+		$parameters_string = implode(',', $parameters);
+		$query = "SELECT id, name FROM traffic_info_category WHERE id IN ($parameters_string)";
+		$data = db_query($query, $types);
+		if(count($data) != count($types)) {
+			// TODO
+			die();
+		}
+
+		$settings['types'] = $types;
 	}
 
 	$disruptions = get_disruptions($settings, $pagination_data);
