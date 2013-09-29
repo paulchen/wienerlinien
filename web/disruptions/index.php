@@ -16,7 +16,44 @@ if(isset($_REQUEST['id'])) {
 	}
 }
 else if(isset($_REQUEST['archive'])) {
-	$disruptions = get_disruptions(array('archive' => $_REQUEST['archive'], 'page' => $page), $pagination_data);
+	$settings = array(
+		'archive' => $_REQUEST['archive'],
+		'page' => $page
+	);
+	if(isset($_REQUEST['lines'])) {
+		$lines = array_unique(explode(',', $_REQUEST['lines']));
+		$parameters = array();
+		foreach($lines as $line) {
+			$parameters[] = '?';
+		}
+		$parameters_string = implode(',', $parameters);
+		$query = "SELECT id, name FROM line WHERE id IN ($parameters_string)";
+		$data = db_query($query, $lines);
+		if(count($data) != count($lines) {
+			// TODO
+			die();
+		}
+
+		$settings['lines'] = $lines;
+	}
+	if(isset($_REQUEST['from'])) {
+		if(!preg_match('/^[0-9]+$/', $_REQUEST['from'])) {
+			// TODO
+			die();
+		}
+
+		$settings['from'] = $_REQUEST['from'];
+	}
+	if(isset($_REQUEST['to'])) {
+		if(!preg_match('/^[0-9]+$/', $_REQUEST['to'])) {
+			// TODO
+			die();
+		}
+
+		$settings['to'] = $_REQUEST['to'];
+	}
+
+	$disruptions = get_disruptions($settings, $pagination_data);
 }
 else {
 	$disruptions = get_disruptions(array('page' => $page), $pagination_data);

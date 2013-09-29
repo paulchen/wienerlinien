@@ -302,12 +302,32 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$filter_part .= ' AND i.deleted = ?';
 		$filter_params[] = 0;
 	}
+	
+	if(isset($filter['archive']) && $filter['archive'] == 1) {
+		if(isset($filter['lines'])) {
+			$parameters = array();
+			foreach($filter['lines'] as $line) {
+				$parameters[] = '?';
+				$filter_params[] = $line;
+			}
+			$parameters_string = implode(',', $filter['lines']);
+			$filter_part .= " AND l2.id IN ($parameters_string)";
+		}
+		if(isset($filter['from'])) {
+			$filter_part .= ' AND i.timestamp_deleted > FROM_UNIXTIME(?)';
+			$filter_params[] = $filter['from'];
+		}
+		if(isset($filter['to'])) {
+			$filter_part .= ' AND i.start_time < FROM_UNIXTIME(?)';
+			$filter_params[] = $filter['to'];
+		}
+	}
 
 	if(isset($filter['page'])) {
 		$page = $filter['page'];
 	}
 
-	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
+	$disruptions = db_query("SELECTx i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(i.end_time) end_time,
 					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
@@ -315,6 +335,8 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 				FROM traffic_info i
 					LEFT JOIN traffic_info_line til ON (i.id = til.traffic_info)
 					LEFT JOIN line l ON (til.line = l.id)
+					LEFT JOIN traffic_info_line til2 ON (i.id = til2.traffic_info)
+					LEFT JOIN line l2 ON (til2.line = l2.id)
 					LEFT JOIN traffic_info_platform tip ON (i.id = tip.traffic_info)
 					LEFT JOIN wl_platform p ON (tip.platform = p.id)
 					LEFT JOIN station s ON (p.station = s.id)
