@@ -13,13 +13,13 @@ if(isset($argv[1])) {
 		echo "yes\n";
 	}
 	else if($argv[1] == 'config') {
-		echo "graph_title Anzahl StÃ¶rungen\n";
+		echo "graph_title Anzahl Störungen\n";
 		echo "graph_args -l 0\n";
-		echo "graph_vlabel StÃ¶rungen\n";
+		echo "graph_vlabel Störungen\n";
 		echo "graph_category other\n";
-		echo "graph_info Anzahl StÃ¶rungen im Netz der Wiener Linien\n";
+		echo "graph_info Anzahl Störungen im Netz der Wiener Linien\n";
 		echo "disruptions_total.label Gesamt\n";
-		echo "disruptions_total.info Gesamtanzahl der StÃ¶rungen\n";
+		echo "disruptions_total.info Gesamtanzahl der Störungen\n";
 
 		foreach($categories as $category) {
 			echo "disruptions{$category['id']}.label Typ {$category['id']}\n";
