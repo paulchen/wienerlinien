@@ -338,7 +338,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(i.end_time) end_time,
-					COALESCE(c.short_name, c.title) category, i.group `group`, i.deleted deleted,
+					COALESCE(c.short_name, c.title) category, c.id category_id, i.group `group`, i.deleted deleted,
 					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
 					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
 				FROM traffic_info i
