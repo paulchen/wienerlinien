@@ -1,6 +1,5 @@
 <?php echo '<?xml version="1.0" encoding="UTF-8" ?>'; ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-<!-- TODO update time for whole feed, times for items -->
 <channel>
   <title>Wiener Linien -- Aktuelle Störungen</title>
   <link><?php echo $link ?></link>
