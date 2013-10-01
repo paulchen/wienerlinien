@@ -23,6 +23,20 @@
 			$('#filter_link').hide();
 			$('#filter_fieldset').show('fast');
 		}
+
+		function select_all(group) {
+			$('.line_type' + group).prop('checked', true);
+		}
+
+		function select_none(group) {
+			$('.line_type' + group).prop('checked', false);
+		}
+
+		function invert_selection(group) {
+			$('.line_type' + group).each(function(index) {
+				$(this).prop('checked', !$(this).prop('checked'));
+			});
+		}
 		// -->
 		</script>
 	<?php endif; ?>
@@ -101,11 +115,10 @@
 					<input type="hidden" name="archive" value="1" />
 					<div style="padding-bottom: 1em;">
 						<b>Linien:</b><br />
-						<!-- TODO all/none/invert links -->
 						<?php foreach($lines as $line_type): ?>
-							<i><?php echo $line_type['name']; ?>:</i><br />
+						<i><?php echo $line_type['name']; ?></i> (<a href="javascript:select_all(<?php echo $line_type['id']; ?>);">alle</a>/<a href="javascript:select_none(<?php echo $line_type['id']; ?>);">keine</a>/<a href="javascript:invert_selection(<?php echo $line_type['id']; ?>);">Auswahl umkehren</a>):<br />
 							<?php foreach($line_type['lines'] as $line): ?>
-								<span><input type="checkbox" name="lines[]" value="<?php echo $line['id'] ?>" id="line_<?php echo $line['id'] ?>" <?php if(in_array($line['id'], $selected_lines)): ?>checked="checked"<?php endif; ?>> <label for="line_<?php echo $line['id'] ?>"><?php echo htmlentities($line['name'], ENT_QUOTES, 'UTF-8') ?></label></span>
+								<span><input type="checkbox" name="lines[]" class="line_type<?php echo $line_type['id']; ?>" value="<?php echo $line['id'] ?>" id="line_<?php echo $line['id'] ?>" <?php if(in_array($line['id'], $selected_lines)): ?>checked="checked"<?php endif; ?>> <label for="line_<?php echo $line['id'] ?>"><?php echo htmlentities($line['name'], ENT_QUOTES, 'UTF-8') ?></label></span>
 							<?php endforeach; ?>
 							<br />
 						<?php endforeach; ?>
