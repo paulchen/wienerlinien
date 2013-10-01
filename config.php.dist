@@ -24,6 +24,7 @@ $semaphore_id = '';
 $memcached_servers = array(
 	array('ip' => '127.0.0.1', 'port' => '11211')
 );
+$memcached_prefix = 'wienerlinien';
 
 $download_failure_wait_time = 60;
 

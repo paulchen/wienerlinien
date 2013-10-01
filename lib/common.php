@@ -488,19 +488,13 @@ function line_sorter($a, $b) {
 }
 
 function cache_get($key) {
-	global $memcached;
-
-	// TODO -> configuration file
-	$memcached_prefix = "wienerlinien_dev";
+	global $memcached, $memcached_prefix;
 
 	return $memcached->get("${memcached_prefix}_$key");
 }
 
 function cache_set($key, $data, $expiration = 60) {
-	global $memcached;
-
-	// TODO -> configuration file
-	$memcached_prefix = "wienerlinien_dev";
+	global $memcached, $memcached_prefix;
 
 	$memcached->set("${memcached_prefix}_$key", $data, $expiration);
 }
