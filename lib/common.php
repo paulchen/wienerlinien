@@ -500,7 +500,7 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $retry_download;
+	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $retry_download, $rbl_lock_wait_time;
 
 	$retry_download = false;
 
@@ -539,7 +539,7 @@ function fetch_rbls($rbls) {
 	$start_time = time(); // timestamp to determine whether the loop shall be terminated due to too high processing time
 	$result = array(); // here all data is stored that will be returned to the client
 
-	while(time()-$start_time < 15) { // TODO magic number
+	while(time()-$start_time < $rbl_lock_wait_time) {
 		// try to fetch data from memcache for all RBL numbers for which no data has yet been obtained
 		foreach($missing_ids as $key => $rbl) {
 			$data = cache_get("rbl_$rbl");
