@@ -500,7 +500,7 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $retry_download, $rbl_lock_wait_time;
+	global $wl_api_key, $cache_expiration, $debug, $input_encoding, $semaphore_id, $retry_download, $rbl_lock_wait_time, $rbl_cache_time;
 
 	$retry_download = false;
 
@@ -606,7 +606,7 @@ function fetch_rbls($rbls) {
 			}
 
 			// .. and store the array using memcache
-			cache_set("rbl_currently_fetched", $fetched_ids, 3600); // TODO magic number
+			cache_set("rbl_currently_fetched", $fetched_ids, $rbl_cache_time);
 		}
 
 		// release exclusive access to the memcache key 'rbl_currently_fetched'

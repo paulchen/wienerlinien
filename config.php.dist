@@ -28,4 +28,5 @@ $memcached_prefix = 'wienerlinien';
 
 $download_failure_wait_time = 60;
 $rbl_lock_wait_time = 15;
+$rbl_cache_time = 3600;
 
