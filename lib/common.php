@@ -678,7 +678,7 @@ function fetch_rbls($rbls) {
 
 			// save the list of all RBL numbers currently being processed by any
 			// of the instances of the application back to memcache
-			cache_set("rbl_currently_fetched", $fetched_ids, 3600); // TODO magic number
+			cache_set("rbl_currently_fetched", $fetched_ids, $rbl_cache_time);
 
 			// release exclusive access to the memcache key 'rbl_currently_fetched'
 			if(!sem_release($sem)) {
