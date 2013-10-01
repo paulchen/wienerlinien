@@ -314,7 +314,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$filter_part .= " AND l2.id IN ($parameters_string)";
 		}
 		if(isset($filter['from'])) {
-			$filter_part .= ' AND i.timestamp_deleted > FROM_UNIXTIME(?)';
+			$filter_part .= ' AND (i.timestamp_deleted > FROM_UNIXTIME(?) OR i.deleted = 0)';
 			$filter_params[] = $filter['from'];
 		}
 		if(isset($filter['to'])) {
