@@ -11,7 +11,6 @@ db_query('SET NAMES UTF8');
 $template_dir = dirname(__FILE__) . '/../templates/';
 
 $memcached = new Memcached();
-$memcached_servers = array(array('ip' => '127.0.0.1', 'port' => '11211')); // TODO
 foreach($memcached_servers as $server) {
 	$memcached->addServer($server['ip'], $server['port']);
 }
@@ -161,7 +160,7 @@ function download_csv($url, $prefix) {
 }
 
 function download($url, $prefix, $extension, $return_filename = false) {
-	global $cache_expiration, $retry_download;
+	global $cache_expiration, $retry_download, $download_failure_wait_time;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
@@ -201,7 +200,6 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	write_log("Fetching $url to $filename...");
 
 	$attempts = 0;
-	$failure_wait_time = 60; // TODO magic_number
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -211,8 +209,8 @@ function download($url, $prefix, $extension, $return_filename = false) {
 		if($info['http_code'] == 200 || !$retry_download) {
 			break;
 		}
-		write_log("Fetching failed, retrying in $failure_wait_time seconds...");
-		sleep($failure_wait_time);
+		write_log("Fetching failed, retrying in $download_failure_wait_time seconds...");
+		sleep($download_failure_wait_time);
 		$attempts++;
 	}
 	curl_close($curl);
