@@ -14,14 +14,25 @@ $data = download_json($disruptions_url, 'disruptions');
 $imported_disruptions = array();
 
 if($data && $data->data && $data->data->trafficInfoCategoryGroups && $data->data->trafficInfoCategories && $data->data->trafficInfos) {
-	check_category_groups($data->data->trafficInfoCategoryGroups);
-	check_categories($data->data->trafficInfoCategories);
-	process_traffic_infos($data->data->trafficInfos);
-	check_outdated($imported_disruptions, 'traffic_info');
+	$lockfile = fopen($disruptions_lockfile, 'w');
+	if(flock($lockfile, LOCK_EX + LOCK_NB)) {
+		check_category_groups($data->data->trafficInfoCategoryGroups);
+		check_categories($data->data->trafficInfoCategories);
+		process_traffic_infos($data->data->trafficInfos);
+		check_outdated($imported_disruptions, 'traffic_info');
 
-	require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
+		require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
 
-	notify_twitter();
+		notify_twitter();
+
+		flock($lockfile, LOCK_UN);
+		fclose($lockfile);
+		unlink($disruptions_lockfile);
+	}
+	else {
+		write_log('Import of disruptions data already running, aborting now.');
+		fclose($lockfile);
+	}
 }
 
 log_query_stats();
