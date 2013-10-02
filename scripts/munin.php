@@ -6,7 +6,21 @@ if(!isset($argv)) {
 }
 
 require_once(dirname(__FILE__) . '/../lib/common.php');
-$categories = db_query('SELECT id, title FROM traffic_info_category ORDER BY id ASC');
+
+$lockfile = fopen($disruptions_lockfile, 'w');
+if(!flock($lockfile, LOCK_EX + LOCK_NB)) {
+	$categories = cache_get('disruptions_munin');
+	fclose($lockfile);
+}
+else {
+	fclose($lockfile);
+	unlink($disruptions_lockfile);
+}
+
+if(!isset($categories) || $categories == null) {
+	$categories = db_query('SELECT id, title FROM traffic_info_category ORDER BY id ASC');
+	cache_set('disruptions_munin', $categories, 3600);
+}
 
 if(isset($argv[1])) {
 	if($argv[1] == 'autoconf') {
