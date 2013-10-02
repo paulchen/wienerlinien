@@ -266,7 +266,7 @@ function log_query_stats() {
 	$end_time = microtime(true);
 	$total_time = round($end_time-$start_time, 2);
 	$queries = count($db_queries);
-	$queries_per_sec = $queries/$total_time;
+	$queries_per_sec = round($queries/$total_time, 2);
 	write_log("$queries queries in $total_time seconds ($queries_per_sec queries/sec)");
 }
 
