@@ -29,7 +29,7 @@ if(isset($argv[1])) {
 	die();
 }
 
-$disruptions = get_disruptions();
+$disruptions = get_disruptions(array('limit' => -1));
 echo 'disruptions_total.value ' . count($disruptions) . "\n";
 foreach($categories as $category) {
 	$disruption_count = 0;
