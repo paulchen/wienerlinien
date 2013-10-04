@@ -137,8 +137,8 @@ INSERT INTO `line_type` (`id`, `name`, `color`, `line_thickness`, `pos`, `wl_nam
 (4, 'U-Bahn', 'ff0000', 4, 1, 'ptMetro', '/^U[1-9][0-9]*$/'),
 (5, 'ÖBB', '000000', 4, 8, NULL, NULL),
 (6, 'Badner Bahn', '003562', 3, 3, 'ptTramWLB', '/^WLB$/'),
-(7, 'S-Bahn', '009ddc', 4, 7, 'ptTrainS', '/^S[0-9][1-9]*$/'),
-(8, 'NightLine', '191364', 2, 6, 'ptBusNight', '/^N[0-9][1-9]*$/');
+(7, 'S-Bahn', '009ddc', 4, 7, 'ptTrainS', '/^S[1-9][0-9]*$/'),
+(8, 'NightLine', '191364', 2, 6, 'ptBusNight', '/^N[1-9][0-9]*$/');
 
 -- --------------------------------------------------------
 
