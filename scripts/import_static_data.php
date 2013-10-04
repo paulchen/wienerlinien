@@ -253,7 +253,7 @@ function fetch_line($name) {
 
 		// TODO we have a problem here...
 	}
-	$imported_lines[] = $$data[0]['id']
+	$imported_lines[] = $data[0]['id'];
 	return $data[0]['id'];
 }
 
