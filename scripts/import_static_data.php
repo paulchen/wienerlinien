@@ -244,6 +244,8 @@ function fetch_line($name) {
 				return fetch_line($name);
 			}
 		}
+
+		// TODO we have a problem here...
 	}
 	return $data[0]['id'];
 }
