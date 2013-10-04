@@ -9,7 +9,7 @@ foreach($data as $row) {
 	$lines[$row['id']] = $row;
 	$groups[$row['id']] = array();
 }
-$data = db_query('SELECT id, name, type FROM line ORDER BY name ASC');
+$data = db_query('SELECT id, name, type FROM line WHERE deleted=0 ORDER BY name ASC');
 $line_ids = array();
 foreach($data as $row) {
 	$lines[$row['type']]['lines'][] = $row;
