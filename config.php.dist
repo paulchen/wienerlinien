@@ -4,7 +4,7 @@ $db_user = 'wienerlinien';
 $db_pass = '';
 $db_name = 'wienerlinien';
 
-$cache_expiration = 86400;
+$cache_expiration = 79200;
 $debug = false;
 
 $wl_api_key = '';

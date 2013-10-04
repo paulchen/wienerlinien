@@ -69,6 +69,8 @@ function db_error($error, $stacktrace, $query, $parameters) {
 		);
 	write_log("A database error has occurred: \n\nRequest URI: {$params['REQUEST_URI']}\n\nQuery: {$params['QUERY']}\n\nError message: $error\n\nParameters:\n{$params['PARAMETERS']}\n\nStack trace:\n{$params['QUERY']}\n\n");
 
+	log_query_stats();
+
 	send_mail('db_error', 'Wiener Linien - Database error', $params, true);
 }
 

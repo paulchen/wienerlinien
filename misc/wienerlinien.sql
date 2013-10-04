@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS `line_type` (
   `line_thickness` int(11) NOT NULL,
   `pos` int(11) NOT NULL,
   `wl_name` varchar(20) DEFAULT NULL,
+  `name_pattern` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `pos` (`pos`),
   UNIQUE KEY `wl_name` (`wl_name`)
@@ -129,15 +130,15 @@ CREATE TABLE IF NOT EXISTS `line_type` (
 -- Dumping data for table `line_type`
 --
 
-INSERT INTO `line_type` (`id`, `name`, `color`, `line_thickness`, `pos`, `wl_name`) VALUES
-(1, 'Straßenbahn', 'ff0000', 2, 2, 'ptTram'),
-(2, 'Autobus', '0000ff', 2, 4, 'ptBusCity'),
-(3, 'Regionalbus', '00ab00', 2, 5, NULL),
-(4, 'U-Bahn', 'ff0000', 4, 1, 'ptMetro'),
-(5, 'ÖBB', '000000', 4, 8, NULL),
-(6, 'Badner Bahn', '003562', 3, 3, 'ptTramWLB'),
-(7, 'S-Bahn', '009ddc', 4, 7, 'ptTrainS'),
-(8, 'NightLine', '191364', 2, 6, 'ptBusNight');
+INSERT INTO `line_type` (`id`, `name`, `color`, `line_thickness`, `pos`, `wl_name`, `name_pattern`) VALUES
+(1, 'Straßenbahn', 'ff0000', 2, 2, 'ptTram', '/^([1-9][0-9]?|[A-Z])$/'),
+(2, 'Autobus', '0000ff', 2, 4, 'ptBusCity', '/^[1-9][0-9]*[A-Z]$/'),
+(3, 'Regionalbus', '00ab00', 2, 5, NULL, '/^[1-9][0-9][0-9]$/'),
+(4, 'U-Bahn', 'ff0000', 4, 1, 'ptMetro', '/^U[1-9][0-9]*$/'),
+(5, 'ÖBB', '000000', 4, 8, NULL, NULL),
+(6, 'Badner Bahn', '003562', 3, 3, 'ptTramWLB', '/^WLB$/'),
+(7, 'S-Bahn', '009ddc', 4, 7, 'ptTrainS', '/^S[0-9][1-9]*$/'),
+(8, 'NightLine', '191364', 2, 6, 'ptBusNight', '/^N[0-9][1-9]*$/');
 
 -- --------------------------------------------------------
 

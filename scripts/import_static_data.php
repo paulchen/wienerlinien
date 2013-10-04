@@ -233,8 +233,18 @@ function import_wl_platforms($data, $check_only = false) {
 }
 
 function fetch_line($name) {
-	// TODO what if the line does not exist?
 	$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($name));
+	if(count($data) == 0) {
+		write_log("Adding unknown line: $name");
+
+		$line_types = db_query('SELECT id, name_pattern FROM line_type WHERE name_pattern IS NOT NULL');
+		foreach($line_types as $type) {
+			if(preg_match($type['name_pattern'], $name)) {
+				db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type['id']));
+				return fetch_line($name);
+			}
+		}
+	}
 	return $data[0]['id'];
 }
 
