@@ -233,6 +233,8 @@ function import_wl_platforms($data, $check_only = false) {
 }
 
 function fetch_line($name) {
+	global $imported_lines;
+
 	$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($name));
 	if(count($data) == 0) {
 		write_log("Adding unknown line: $name");
@@ -241,6 +243,10 @@ function fetch_line($name) {
 		foreach($line_types as $type) {
 			if(preg_match($type['name_pattern'], $name)) {
 				db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type['id']));
+				$id = db_last_insert_id();
+				write_log("Added line $name (type {$type['id']})");
+				$imported_lines[] = $id;
+
 				return fetch_line($name);
 			}
 		}
