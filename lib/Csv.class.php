@@ -16,6 +16,7 @@ class Csv {
 		$line_count = 0;
 		foreach($file_contents as $line) {
 			$line_count++;
+			$line = remove_bom($line);
 			if(trim($line) == '') {
 				continue;
 			}

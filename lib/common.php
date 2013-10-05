@@ -196,7 +196,7 @@ function download($url, $prefix, $extension, $return_filename = false) {
 		if($return_filename) {
 			return $filename;
 		}
-		return file_get_contents("$cache_dir$found_file");
+		return remove_bom(file_get_contents("$cache_dir$found_file"));
 	}
 
 	write_log("Fetching $url to $filename...");
@@ -225,12 +225,25 @@ function download($url, $prefix, $extension, $return_filename = false) {
 		if($return_filename) {
 			return $filename;
 		}
-		return $data;
+		return remove_bom($data);
 	}
 
 	write_log('Fetching failed');
 
 	return null;
+}
+
+function remove_bom($text) {
+	if(strlen($text) > 2) {
+		$ord1=ord(substr($text, 0, 1));
+		$ord2=ord(substr($text, 1, 2));
+		$ord3=ord(substr($text, 2, 3));
+		if($ord1 == 239 && $ord2 == 187 && $ord3 == 191) {
+			$text = substr($text, 3);
+		}
+	}
+
+	return $text;
 }
 
 function write_log($message) {
