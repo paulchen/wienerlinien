@@ -139,17 +139,37 @@ function import_wl_stations($data, $check_only = false) {
 			continue;
 		}
 
-		$existing_station = db_query('SELECT id FROM station WHERE name = ? AND deleted = 0', array($row['NAME']));
+		$existing_station = db_query('SELECT wl_id, id FROM station WHERE name = ? AND deleted = 0', array($row['NAME']));
+		$create_station = false;
 		if(count($existing_station) == 0) {
+			$create_station = true;
+		}
+		else {
+			if(count($existing_station) == 1) {
+				$id = $existing_station[0]['id'];
+			}
+			else {
+				$found = false;
+				foreach($existing_station as $station) {
+					if($station['wl_id'] == $row['HALTESTELLEN_ID']) {
+						$found = true;
+						$id = $station['id'];
+						break;
+					}
+				}
+				if(!$found) {
+					$create_station = true;
+				}
+			}
+		}
+		if($create_station) {
 			db_query('INSERT INTO station (name, municipality) VALUES (?, ?)', array($row['NAME'], $municipality));
 			$id = db_last_insert_id();
 
 			write_log("Added station $id ({$row['NAME']}, {$row['GEMEINDE']})");
 		}
-		else {
-			$id = $existing_station[0]['id'];
-		}
 
+		// TODO avoid this query in case the station already exists
 		$existing_station = db_query('SELECT wl_id, wl_diva, wl_lat, wl_lon, TIMESTAMP(wl_updated) wl_updated FROM station WHERE id = ?', array($id));
 		$station = $existing_station[0];
 
