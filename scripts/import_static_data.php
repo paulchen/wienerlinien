@@ -188,15 +188,11 @@ function import_wl_platforms($data, $check_only = false) {
 		$station_wl_id = $row['FK_HALTESTELLEN_ID'];
 		$wl_id = $row['STEIG_ID'];
 
-		$data1 = db_query('SELECT id, name FROM station WHERE wl_id = ? AND deleted = 0', array($station_wl_id));
-		$data2 = db_query('SELECT id, name FROM line WHERE wl_id = ? AND deleted = 0', array($line_wl_id));
+		$data1 = db_query('SELECT id, name FROM station WHERE wl_id = ? AND deleted = 0 ORDER BY id DESC LIMIT 0, 1', array($station_wl_id));
+		$data2 = db_query('SELECT id, name FROM line WHERE wl_id = ? AND deleted = 0 ORDER BY id DESC LIMIT 0, 1', array($line_wl_id));
 
-		if(count($data1) != 1 || count($data2) != 1) {
-			// TODO wtf
-		}
-
-		$station_id = $data1[0]['id'];
-		$line_id = $data2[0]['id'];
+		$station_id = isset($data1[0]) ? $data1[0]['id'] : null;
+		$line_id = isset($data2[0]) ? $data2[0]['id'] : null;
 
 		$direction = ($row['RICHTUNG'] == 'H') ? 1 : 2;
 		$pos = $row['REIHENFOLGE'];
@@ -214,7 +210,18 @@ function import_wl_platforms($data, $check_only = false) {
 				$id = db_last_insert_id();
 
 				$imported_platforms[] = $id;
-				write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
+				if(isset($data1[0]) && isset($data2[0])) {
+					write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
+				}
+				else if(isset($data1[0])) {
+					write_log("Added platform $id ({$data1[0]['name']}, unknown line)");
+				}
+				else if(isset($data2[0])) {
+					write_log("Added platform $id (unknown station, {$data2[0]['name']})");
+				}
+				else {
+					write_log("Added platform $id (unknown station, unknown line)");
+				}
 			}
 			else {
 				$imported_platforms[] = $data3[0]['id'];
