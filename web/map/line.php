@@ -12,6 +12,9 @@ $data = db_query('SELECT l.name line_name, s.id id, s.name name, p.direction dir
 		JOIN station s ON (p.station = s.id)
 		JOIN line l ON (l.id = p.line)
 	WHERE l.id = ?
+		AND l.deleted = 0
+		AND s.deleted = 0
+		AND p.deleted = 0
 	ORDER BY p.direction ASC, p.pos ASC', array($line_id));
 $stations = array();
 $known_station_ids = array();
