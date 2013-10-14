@@ -103,6 +103,9 @@ else if(isset($_REQUEST['archive'])) {
 
 		$filter_strings[] = 'Beginnzeitpunkt: ' . date('d.m.Y H:i', $_REQUEST['from']);
 	}
+	else if(isset($_REQUEST['from'])) {
+		unset($_REQUEST['from']);
+	}
 	if(isset($_REQUEST['to']) && trim($_REQUEST['to']) != '') {
 		if(!preg_match('/^[0-9]+$/', $_REQUEST['to'])) {
 			$datetime = DateTime::createFromFormat('d.m.Y H:i', $_REQUEST['to']);
@@ -117,6 +120,9 @@ else if(isset($_REQUEST['archive'])) {
 		$filtered_archive = true;
 
 		$filter_strings[] = 'Endzeitpunkt: ' . date('d.m.Y H:i', $_REQUEST['to']);
+	}
+	else if(isset($_REQUEST['to'])) {
+		unset($_REQUEST['to']);
 	}
 	if(isset($_REQUEST['types'])) {
 		$selected_types = array_unique(explode(',', $_REQUEST['types']));
