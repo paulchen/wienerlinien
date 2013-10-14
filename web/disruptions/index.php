@@ -35,6 +35,9 @@ if(isset($_REQUEST['id'])) {
 	}
 }
 else if(isset($_REQUEST['archive'])) {
+	$selected_types = array();
+	$selected_lines = array();
+
 	$lines = array();
 	$data = db_query('SELECT id, name FROM line_type WHERE id IN (1,2,4,8) ORDER BY pos ASC');
 	foreach($data as $row) {
