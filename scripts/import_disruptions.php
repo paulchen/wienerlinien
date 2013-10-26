@@ -195,7 +195,7 @@ function check_categories($categories) {
 }
 
 function notify_twitter() {
-	global $twitter, $twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret;
+	global $twitter, $twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret, $twitter_hashtag;
 
 	if(!$twitter) {
 		return;
@@ -238,6 +238,9 @@ function notify_twitter() {
 			$disruption_text = mb_substr($disruption_text, 0, 109, 'UTF-8') . '…';
 		}
 		$disruption_text .= " $link";
+		if(isset($twitter_hashtag) && trim($twitter_hashtag) != '') {
+			$disruption_text .= " $twitter_hashtag";
+		}
 
 		$connection->post('statuses/update', array('status' => $disruption_text));
 

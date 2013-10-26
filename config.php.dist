@@ -18,6 +18,7 @@ $twitter_consumer_secret = '';
 $twitter_oauth_token = '';
 $twitter_oauth_token_secret = '';
 $twitter_username = '';
+$twitter_hashtag = '#wlvi';
 
 $semaphore_id = '';
 
