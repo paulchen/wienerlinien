@@ -114,6 +114,10 @@
 				<form method="get" action=".">
 					<input type="hidden" name="archive" value="1" />
 					<div style="padding-bottom: 1em;">
+						<b>Text:</b>
+						<input type="text" name="text" id="text" value="<?php if(isset($_REQUEST['text'])) echo htmlentities($_REQUEST['text'], ENT_QUOTES, 'UTF-8'); ?>" />
+					</div>
+					<div style="padding-bottom: 1em;">
 						<b>Linien:</b><br />
 						<?php foreach($lines as $line_type): ?>
 						<i><?php echo $line_type['name']; ?></i> (<a href="javascript:select_all(<?php echo $line_type['id']; ?>);">alle</a>/<a href="javascript:select_none(<?php echo $line_type['id']; ?>);">keine</a>/<a href="javascript:invert_selection(<?php echo $line_type['id']; ?>);">Auswahl umkehren</a>):<br />

@@ -343,6 +343,10 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$parameters_string = implode(',', $parameters);
 			$filter_part .= " AND c.id IN ($parameters_string)";
 		}
+		if(isset($filter['text'])) {
+			$filter_part .= ' AND i.title LIKE ?';
+			$filter_params[] = '%' . $filter['text'] . '%';
+		}
 	}
 
 	if(isset($filter['page'])) {

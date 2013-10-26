@@ -124,6 +124,10 @@ else if(isset($_REQUEST['archive'])) {
 	else if(isset($_REQUEST['to'])) {
 		unset($_REQUEST['to']);
 	}
+	if(isset($_REQUEST['text'])) {
+		$filter_settings['text'] = $_REQUEST['text'];
+		$filter_strings[] = 'Enthaltener Text: &quot;' . htmlentities($_REQUEST['text'], ENT_QUOTES, 'UTF-8') . '&quot;';
+	}
 	if(isset($_REQUEST['types'])) {
 		$selected_types = array_unique(explode(',', $_REQUEST['types']));
 		$parameters = array();
