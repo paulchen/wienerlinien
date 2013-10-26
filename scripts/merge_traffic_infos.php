@@ -10,7 +10,7 @@
 
 
 /* list of fields that must be equal for a set of items to be organized into a group */
-$comparison_fields = array('category', 'priority', 'owner', 'title', 'description');
+$comparison_fields = array('category', 'priority', 'owner', 'title', 'description', 'deleted');
 
 /* maximum difference of the start times of two items in the same group (in seconds) */
 $time_difference = 1800;
@@ -27,7 +27,7 @@ function calculate_hash($row, $fields) {
 
 /* STEP 1: fetch data about existing groups; iterate each group and compare their hashes;
  * if the hashes differ, add the group to $kill_groups */
-$data = db_query('SELECT id, category, priority, owner, title, description, `group`
+$data = db_query('SELECT id, category, priority, owner, title, description, `group`, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
 		ORDER BY `group` ASC');
@@ -59,7 +59,7 @@ if(count($kill_groups) > 0) {
  * the values of this array are in turn arrays, having the group ID as key and the timestamp
  * of one item of the group as value
  */
-$data = db_query('SELECT id, category, priority, owner, title, description, `group`, start_time
+$data = db_query('SELECT id, category, priority, owner, title, description, `group`, start_time, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
 		ORDER BY `group` ASC');
@@ -73,7 +73,7 @@ foreach($data as $row) {
 }
 
 /* Process all items that currently do not belong to any group */
-$data = db_query('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time
+$data = db_query('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time, deleted
 		FROM traffic_info
 		WHERE `group` IS NULL
 		ORDER BY start_time ASC');
