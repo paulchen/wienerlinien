@@ -1,4 +1,6 @@
 <?php
+require_once(dirname(__FILE__) . '/bom.php');
+
 class Csv {
 	public $column_names = array();
 	public $rows = array();

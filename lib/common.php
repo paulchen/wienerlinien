@@ -2,6 +2,7 @@
 $start_time = microtime(true);
 
 require_once(dirname(__FILE__) . '/../config.php');
+require_once(dirname(__FILE__) . '/bom.php');
 require_once('Mail/mime.php');
 require_once('Mail.php');
 
@@ -231,19 +232,6 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	write_log('Fetching failed');
 
 	return null;
-}
-
-function remove_bom($text) {
-	if(strlen($text) > 2) {
-		$ord1=ord(substr($text, 0, 1));
-		$ord2=ord(substr($text, 1, 2));
-		$ord3=ord(substr($text, 2, 3));
-		if($ord1 == 239 && $ord2 == 187 && $ord3 == 191) {
-			$text = substr($text, 3);
-		}
-	}
-
-	return $text;
 }
 
 function write_log($message) {
