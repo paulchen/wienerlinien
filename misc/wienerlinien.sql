@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS `line` (
   `timestamp_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `timestamp_deleted` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `wl_id` (`wl_id`),
   KEY `id` (`id`,`type`),
   KEY `type` (`type`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
@@ -221,7 +220,6 @@ CREATE TABLE IF NOT EXISTS `station` (
   `timestamp_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `timestamp_deleted` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `wl_id` (`wl_id`),
   KEY `station_id` (`station_id`),
   KEY `municipality` (`municipality`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
