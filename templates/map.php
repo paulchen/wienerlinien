@@ -1,6 +1,10 @@
 <?php
 function show_lines($lines) {
 	foreach($lines as $line_type) {
+		if(count($line_type['lines']) == 0) {
+			continue;
+		}
+
 		echo "<h2>" . htmlentities($line_type['name'], ENT_QUOTES, 'UTF-8') . "</h2>";
 		echo "<a href='javascript:show_group(" . $line_type['id'] . ")'>Alle</a> / ";
 		echo "<a href='javascript:hide_group(" . $line_type['id'] . ")'>Keine</a> / ";
