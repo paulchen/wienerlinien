@@ -108,21 +108,32 @@ function process_traffic_infos($infos) {
 			if(isset($info->relatedStops) && count($info->relatedStops) > 0) {	
 				$placeholders = array();
 				$parameters = array();
+				$missing_rbls = array();
 				foreach($info->relatedStops as $stop) {
 					$placeholders[] = '?';
 					$parameters[] = $stop;
+					$missing_rbls[$stop] = true;
 				}
 				$placeholder_string = implode(', ', $placeholders);
-				$data = db_query("SELECT id FROM wl_platform WHERE rbl IN ($placeholder_string) AND deleted = 0", $parameters);
+				$data = db_query("SELECT id, rbl FROM wl_platform WHERE rbl IN ($placeholder_string) AND deleted = 0", $parameters);
 				$placeholders = array();
 				$parameters = array();
 				foreach($data as $row) {
 					$placeholders[] = '(?, ?)';
 					$parameters[] = $id;
 					$parameters[] = $row['id'];
+
+					if(isset($missing_rbls[$row['rbl']])) {
+						unset($missing_rbls[$row['rbl']]);
+					}
 				}
-				$placeholder_string = implode(', ', $placeholders);
-				db_query("INSERT INTO traffic_info_platform (traffic_info, platform) VALUES $placeholder_string", $parameters);
+				if(count($parameters) > 0) {
+					$placeholder_string = implode(', ', $placeholders);
+					db_query("INSERT INTO traffic_info_platform (traffic_info, platform) VALUES $placeholder_string", $parameters);
+				}
+				foreach($missing_rbls as $rbl => $value) {
+					report_problem("Unknown RBL number $rbl for disruption $id. Disruption data:\n\n" . var_dump($info));
+				}
 			}
 
 			write_log("Updated platform data for disruption $id");

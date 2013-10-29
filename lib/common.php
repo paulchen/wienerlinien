@@ -251,6 +251,20 @@ function write_log($message) {
 	}
 }
 
+function report_problem($message) {
+	write_log($message);
+
+	db_query('INSERT INTO data_problem (description) VALUES (?)', array($message));
+
+	$params = array(
+			'MESSAGE' => $error,
+			'STACKTRACE' => dump_r($stacktrace),
+			'REQUEST_URI' => (isset($_SERVER) && isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : 'none',
+		);
+
+	send_mail('data_problem', 'Wiener Linien - Data problem', $params,false);
+}
+
 function check_outdated($current_ids, $table) {
 	write_log("Searching for outdated entries in table '$table'...");
 
