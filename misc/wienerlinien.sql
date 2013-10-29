@@ -407,6 +407,19 @@ CREATE TABLE IF NOT EXISTS `wl_platform` (
 
 -- --------------------------------------------------------
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `data_problem`
+--
+
+CREATE TABLE IF NOT EXISTS `data_problem` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `description` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 --
 -- Table structure for table `log`
 --
