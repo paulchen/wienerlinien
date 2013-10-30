@@ -4,7 +4,7 @@ A data problem has just occurred.
 
 Problem description:
 
-[ERROR]
+[MESSAGE]
 
 
 Stacktrace:
