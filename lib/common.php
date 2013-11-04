@@ -262,7 +262,7 @@ function report_problem($message, $stacktrace) {
 			'REQUEST_URI' => (isset($_SERVER) && isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : 'none',
 		);
 
-	send_mail('data_problem', 'Wiener Linien - Data problem', $params, false);
+//	send_mail('data_problem', 'Wiener Linien - Data problem', $params, false);
 }
 
 function check_outdated($current_ids, $table) {
