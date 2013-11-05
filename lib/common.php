@@ -206,6 +206,7 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 	while($attempts < 3) {
 		$data = curl_exec($curl);
 		$info = curl_getinfo($curl);
@@ -218,7 +219,7 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	}
 	curl_close($curl);
 
-	if($info['http_code'] == 200) {
+	if(isset($info) && isset($info['http_code']) && $info['http_code'] == 200) {
 		file_put_contents($filename, $data);
 
 		write_log("Fetching completed");
