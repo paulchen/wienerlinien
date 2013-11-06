@@ -458,7 +458,8 @@ CREATE TABLE IF NOT EXISTS `wl_platform_keep` (
 
 CREATE TABLE IF NOT EXISTS `settings` (
   `key` varchar(100) NOT NULL,
-  `value` text NOT NULL
+  `value` text NOT NULL,
+  PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
