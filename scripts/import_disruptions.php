@@ -28,6 +28,8 @@ if($data && $data->data && $data->data->trafficInfoCategoryGroups && $data->data
 		flock($lockfile, LOCK_UN);
 		fclose($lockfile);
 		unlink($disruptions_lockfile);
+
+		db_query('INSERT INTO settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', array('last_update', time(), time()));
 	}
 	else {
 		write_log('Import of disruptions data already running, aborting now.');

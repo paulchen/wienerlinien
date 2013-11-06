@@ -450,6 +450,17 @@ CREATE TABLE IF NOT EXISTS `wl_platform_keep` (
 -- Dumping data for table `wl_platform_keep`
 --
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `settings`
+--
+
+CREATE TABLE IF NOT EXISTS `settings` (
+  `key` varchar(100) NOT NULL,
+  `value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --
 -- Constraints for dumped tables
 --

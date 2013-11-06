@@ -193,5 +193,13 @@ if(isset($pagination_data)) {
 
 $categories = db_query('SELECT id, title FROM traffic_info_category ORDER BY id ASC');
 
+$data = db_query('SELECT value FROM settings WHERE `key` = ?', array('last_update'));
+if(count($data) == 0) {
+	$last_update = 'nie';
+}
+else {
+	$last_update = date('d.m.Y H:i:s', $data[0]['value']);
+}
+
 require_once("$template_dir/disruptions_html.php");
 
