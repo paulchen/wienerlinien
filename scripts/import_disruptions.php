@@ -13,7 +13,7 @@ $data = download_json($disruptions_url, 'disruptions');
 
 $imported_disruptions = array();
 
-if($data && $data->data && $data->data->trafficInfoCategoryGroups && $data->data->trafficInfoCategories && $data->data->trafficInfos) {
+if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfoCategoryGroups) && isset($data->data->trafficInfoCategories) && isset($data->data->trafficInfos)) {
 	$lockfile = fopen($disruptions_lockfile, 'w');
 	if(flock($lockfile, LOCK_EX + LOCK_NB)) {
 		check_category_groups($data->data->trafficInfoCategoryGroups);
