@@ -30,6 +30,7 @@ if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfo
 		unlink($disruptions_lockfile);
 
 		db_query('INSERT INTO settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', array('last_update', time(), time()));
+		touch(dirname(__FILE__) . '/../misc/last_update');
 	}
 	else {
 		write_log('Import of disruptions data already running, aborting now.');
