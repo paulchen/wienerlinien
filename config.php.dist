@@ -33,3 +33,5 @@ $rbl_cache_time = 3600;
 
 $disruptions_lockfile = '/tmp/wienerlinien_disruptions.lock';
 
+$home_url = 'https://rueckgr.at/wienerlinien/';
+

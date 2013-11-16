@@ -209,7 +209,7 @@ function check_categories($categories) {
 }
 
 function notify_twitter() {
-	global $twitter, $twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret, $twitter_hashtag;
+	global $twitter, $twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret, $twitter_hashtag, $home_url;
 
 	if(!$twitter) {
 		return;
@@ -234,7 +234,7 @@ function notify_twitter() {
 
 		write_log("Sending notification for disruption(s) " . implode(', ', $disruption['ids']));
 
-		$link = "https://rueckgr.at/wienerlinien/disruptions/?id=" . $disruption['id'];
+		$link = $home_url . "disruptions/?id=" . $disruption['id'];
 
 		$disruption_text = '';
 		if(count($disruption['lines']) > 0) {
