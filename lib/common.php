@@ -463,13 +463,23 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 
 function line_sorter($a, $b) {
 	if(isset($a['name']) && isset($b['name'])) {
-		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a['name'], $matches_a);
-		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b['name'], $matches_b);
+		$a = $a['name'];
+		$b = $b['name'];
 	}
-	else {
-		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a, $matches_a);
-		preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b, $matches_b);
+
+	$parentheses_a = false;
+	$parentheses_b = false;
+	if(substr($a, 0, 1) == '(' && substr($a, strlen($a)-1, 1) == ')') {
+		$a = substr($a, 1, strlen($a)-2);
+		$parentheses_a = true;
 	}
+	if(substr($b, 0, 1) == '(' && substr($b, strlen($b)-1, 1) == ')') {
+		$b = substr($b, 1, strlen($b)-2);
+		$parentheses_b = true;
+	}
+
+	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a, $matches_a);
+	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b, $matches_b);
 
 	if($matches_a[1] != '' && $matches_b[1] == '') { // U1 < 1, U1 < 13A
 		return -1;
@@ -504,6 +514,13 @@ function line_sorter($a, $b) {
 	}
 	if($matches_a[3] > $matches_b[3]) { // 99B > 99A
 		return 1;
+	}
+
+	if($parentheses_a && !$parentheses_b) {
+		return 1;
+	}
+	if(!$parentheses_a && $parentheses_b) {
+		return -1;
 	}
 
 	return 0;
