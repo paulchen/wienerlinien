@@ -442,25 +442,27 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	}
 	$placeholders = implode(', ', $placeholder_array);
 
-	$data = db_query("SELECT til.traffic_info traffic_info, GROUP_CONCAT(DISTINCT l.name SEPARATOR ',') `lines`
-		FROM traffic_info_line til
-			JOIN line l ON (til.line = l.id)
-		WHERE til.traffic_info IN ($placeholders)
-		GROUP BY til.traffic_info", $ids);
 	$lines = array();
-	foreach($data as $row) {
-		$lines[$row['traffic_info']] = explode(',', $row['lines']);
-	}
-
-	$data = db_query("SELECT tip.traffic_info traffic_info, GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') `stations`
-		FROM traffic_info_platform tip
-		JOIN wl_platform p ON (tip.platform = p.id)
-		JOIN station s ON (p.station = s.id)
-		WHERE tip.traffic_info IN ($placeholders)
-		GROUP BY tip.traffic_info", $ids);
 	$stations = array();
-	foreach($data as $row) {
-		$stations[$row['traffic_info']] = explode(',', $row['stations']);
+	if(count($ids) > 0) {
+		$data = db_query("SELECT til.traffic_info traffic_info, GROUP_CONCAT(DISTINCT l.name SEPARATOR ',') `lines`
+			FROM traffic_info_line til
+				JOIN line l ON (til.line = l.id)
+			WHERE til.traffic_info IN ($placeholders)
+			GROUP BY til.traffic_info", $ids);
+		foreach($data as $row) {
+			$lines[$row['traffic_info']] = explode(',', $row['lines']);
+		}
+
+		$data = db_query("SELECT tip.traffic_info traffic_info, GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') `stations`
+			FROM traffic_info_platform tip
+			JOIN wl_platform p ON (tip.platform = p.id)
+			JOIN station s ON (p.station = s.id)
+			WHERE tip.traffic_info IN ($placeholders)
+			GROUP BY tip.traffic_info", $ids);
+		foreach($data as $row) {
+			$stations[$row['traffic_info']] = explode(',', $row['stations']);
+		}
 	}
 
 	foreach($disruptions as $index => &$disruption) {
