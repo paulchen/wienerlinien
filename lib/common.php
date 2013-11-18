@@ -358,45 +358,19 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 
 	$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
 					UNIX_TIMESTAMP(i.end_time) end_time,
-					COALESCE(c.short_name, c.title) category, c.id category_id, i.group `group`, i.deleted deleted,
-					GROUP_CONCAT(DISTINCT l.name ORDER BY l.name ASC SEPARATOR ',') `lines`,
-					GROUP_CONCAT(DISTINCT s.name ORDER BY s.name ASC SEPARATOR ',') `stations`
+					COALESCE(c.short_name, c.title) category, c.id category_id, i.group `group`, i.deleted deleted
 				FROM traffic_info i
-					LEFT JOIN traffic_info_line til ON (i.id = til.traffic_info)
-					LEFT JOIN line l ON (til.line = l.id)
 					LEFT JOIN traffic_info_line til2 ON (i.id = til2.traffic_info)
 					LEFT JOIN line l2 ON (til2.line = l2.id)
-					LEFT JOIN traffic_info_platform tip ON (i.id = tip.traffic_info)
-					LEFT JOIN wl_platform p ON (tip.platform = p.id)
-					LEFT JOIN station s ON (p.station = s.id)
 					JOIN traffic_info_category c ON (i.category = c.id)
 				WHERE $filter_part
-				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, c.title, i.group
+				GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, i.group
 				ORDER BY `group` ASC, start_time ASC", $filter_params);
 
 	foreach($disruptions as $index => &$disruption) {
 		$disruption['ids'] = array($disruption['id']);
-		if($disruption['lines'] == '') {
-			$disruption['lines'] = array();
-		}
-		else {
-			$disruption['lines'] = explode(',', $disruption['lines']);
-			usort($disruption['lines'], 'line_sorter');
-		}
-
-		if($disruption['stations'] == '') {
-			$disruption['stations'] = array();
-		}
-		else {
-			$disruption['stations'] = explode(',', $disruption['stations']);
-		}
 
 		if(isset($previous_disruption) && $disruption['group'] && $disruption['group'] == $disruptions[$previous_disruption]['group']) {
-			$disruptions[$previous_disruption]['stations'] = array_unique(array_merge($disruptions[$previous_disruption]['stations'], $disruption['stations']));
-			sort($disruptions[$previous_disruption]['stations']);
-
-			$disruptions[$previous_disruption]['lines'] = array_unique(array_merge($disruptions[$previous_disruption]['lines'], $disruption['lines']));
-			usort($disruptions[$previous_disruption]['lines'], 'line_sorter');
 
 			$disruptions[$previous_disruption]['ids'][] = $disruption['id'];
 
@@ -457,6 +431,62 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	while(count($disruptions) > $disruptions_per_page) {
 		array_pop($disruptions);
 	}
+
+	$ids = array();
+	$placeholder_array = array();
+	foreach($disruptions as $disruption) {
+		foreach($disruption['ids'] as $id) {
+			$ids[] = $id;
+			$placeholder_array[] = '?';
+		}
+	}
+	$placeholders = implode(', ', $placeholder_array);
+
+	$data = db_query("SELECT til.traffic_info traffic_info, GROUP_CONCAT(DISTINCT l.name SEPARATOR ',') `lines`
+		FROM traffic_info_line til
+			JOIN line l ON (til.line = l.id)
+		WHERE til.traffic_info IN ($placeholders)
+		GROUP BY til.traffic_info", $ids);
+	$lines = array();
+	foreach($data as $row) {
+		$lines[$row['traffic_info']] = explode(',', $row['lines']);
+	}
+
+	$data = db_query("SELECT tip.traffic_info traffic_info, GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') `stations`
+		FROM traffic_info_platform tip
+		JOIN wl_platform p ON (tip.platform = p.id)
+		JOIN station s ON (p.station = s.id)
+		WHERE tip.traffic_info IN ($placeholders)
+		GROUP BY tip.traffic_info", $ids);
+	$stations = array();
+	foreach($data as $row) {
+		$stations[$row['traffic_info']] = explode(',', $row['stations']);
+	}
+
+	foreach($disruptions as $index => &$disruption) {
+		$disruption['lines'] = array();
+		$disruption['stations'] = array();
+
+		foreach($disruption['ids'] as $id) {
+			if(isset($lines[$id])) {
+				foreach($lines[$id] as $line) {
+					$disruption['lines'][] = $line;
+				}
+			}
+			if(isset($stations[$id])) {
+				foreach($stations[$id] as $station) {
+					$disruption['stations'][] = $station;
+				}
+			}
+		}
+
+		$disruption['lines'] = array_unique($disruption['lines']);
+		usort($disruption['lines'], 'line_sorter');
+
+		$disruption['stations'] = array_unique($disruption['stations']);
+		sort($disruption['stations']);
+	}
+	unset($disruption);
 
 	return $disruptions;
 }
