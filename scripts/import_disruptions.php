@@ -268,6 +268,8 @@ function notify_twitter() {
 	}
 
 	if(count($ids) > 0) {
+		$ids = array_unique($ids);
+
 		write_log("Sending notifications completed.");
 
 		$placeholders = array();
