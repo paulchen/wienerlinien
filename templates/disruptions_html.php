@@ -99,6 +99,7 @@
 		<?php endif; ?>
 		<a href="..">Übersicht</a>
 		<br /><br />Letztes Update: <?php echo $last_update ?>
+		<br />Neueste Störung: <?php echo $last_disruption ?>
 		<?php if(isset($pagination_data)): ?>
 			<br /><br />
 			Aktuelle Seite: <?php echo $page ?>.

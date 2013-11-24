@@ -198,7 +198,43 @@ if(count($data) == 0) {
 	$last_update = 'nie';
 }
 else {
-	$last_update = date('d.m.Y H:i:s', $data[0]['value']);
+	$update_time = new DateTime("@{$data[0]['value']}");
+	$now = new DateTime();
+
+	$interval = $now->diff($update_time);
+	if($interval->days > 1) {
+		$formatted_interval = $interval->format('%a Tagen, %H:%I:%S'); 
+	}
+	else if($interval->days > 0) {
+		$formatted_interval = $interval->format('einem Tag, %H:%I:%S'); 
+	}
+	else {
+		$formatted_interval = $interval->format('%H:%I:%S'); 
+	}
+
+	$last_update = date('d.m.Y H:i:s', $data[0]['value']) . " (vor $formatted_interval)";
+}
+
+$data = db_query('SELECT UNIX_TIMESTAMP(MAX(timestamp_created)) last_disruption FROM traffic_info');
+if(count($data) == 0) {
+	$last_disruption = 'nie';
+}
+else {
+	$disruption_time = new DateTime("@{$data[0]['last_disruption']}");
+	$now = new DateTime();
+
+	$interval = $now->diff($disruption_time);
+	if($interval->days > 1) {
+		$formatted_interval = $interval->format('%a Tagen, %H:%I:%S'); 
+	}
+	else if($interval->days > 0) {
+		$formatted_interval = $interval->format('einem Tag, %H:%I:%S'); 
+	}
+	else {
+		$formatted_interval = $interval->format('%H:%I:%S'); 
+	}
+
+	$last_disruption = date('d.m.Y H:i:s', $data[0]['last_disruption']) . " (vor $formatted_interval)";
 }
 
 require_once("$template_dir/disruptions_html.php");
