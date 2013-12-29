@@ -2,3 +2,4 @@ log/*
 cache/*
 *.swp
 config.php
+misc/last_update
