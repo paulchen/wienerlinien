@@ -29,8 +29,9 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 		}
 	}
 	// see https://bugs.php.net/bug.php?id=40740 and https://bugs.php.net/bug.php?id=44639
-	foreach($parameters as $key => $value) {
-		$stmt->bindValue($key+1, $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+	$index = 0;
+	foreach($parameters as $value) {
+		$stmt->bindValue(++$index, $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
 	}
 	if(!$stmt->execute()) {
 		$error = $stmt->errorInfo();
