@@ -381,6 +381,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 
 		$previous_disruption = $index;
 	}
+	unset($disruption);
 
 	usort($disruptions, function($a, $b) {
 		if($a['deleted'] < $b['deleted']) {
