@@ -118,4 +118,8 @@ last_update > a {
 
 .ui-widget { font-size: .9em; }
 
+span.ok { color: #00cc33; }
+span.warning { color: #ffa500; }
+span.critical { color: #ff3300; }
+span.unknown { color: #e066ff; }
 

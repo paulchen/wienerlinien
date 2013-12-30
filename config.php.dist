@@ -35,3 +35,6 @@ $disruptions_lockfile = '/tmp/wienerlinien_disruptions.lock';
 
 $home_url = 'https://rueckgr.at/wienerlinien/';
 
+$warning_period = 70;
+$critical_period = 140;
+

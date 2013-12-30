@@ -196,6 +196,7 @@ $categories = db_query('SELECT id, title FROM traffic_info_category ORDER BY id 
 $data = db_query('SELECT value FROM settings WHERE `key` = ?', array('last_update'));
 if(count($data) == 0) {
 	$last_update = 'nie';
+	$last_update_css = 'unknown';
 }
 else {
 	$update_time = new DateTime("@{$data[0]['value']}");
@@ -213,6 +214,16 @@ else {
 	}
 
 	$last_update = date('d.m.Y H:i:s', $data[0]['value']) . " (vor $formatted_interval)";
+
+	if(time()-$data[0]['value'] > $critical_period) {
+		$last_update_css = 'critical';
+	}
+	else if(time()-$data[0]['value'] > $warning_period) {
+		$last_update_css = 'warning';
+	}
+	else {
+		$last_update_css = 'ok';
+	}
 }
 
 $data = db_query('SELECT UNIX_TIMESTAMP(MAX(timestamp_created)) last_disruption FROM traffic_info');
