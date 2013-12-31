@@ -215,10 +215,10 @@ else {
 
 	$last_update = date('d.m.Y H:i:s', $data[0]['value']) . " (vor $formatted_interval)";
 
-	if(time()-$data[0]['value'] > $critical_period) {
+	if(time()-$data[0]['value'] > $critical_period*60) {
 		$last_update_css = 'critical';
 	}
-	else if(time()-$data[0]['value'] > $warning_period) {
+	else if(time()-$data[0]['value'] > $warning_period*60) {
 		$last_update_css = 'warning';
 	}
 	else {
