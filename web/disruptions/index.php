@@ -226,7 +226,7 @@ else {
 	}
 }
 
-$data = db_query('SELECT UNIX_TIMESTAMP(MAX(timestamp_created)) last_disruption FROM traffic_info');
+$data = db_query('SELECT id, UNIX_TIMESTAMP(timestamp_created) last_disruption FROM traffic_info ORDER BY id DESC LIMIT 0, 1');
 if(count($data) == 0) {
 	$last_disruption = 'nie';
 }
@@ -245,7 +245,7 @@ else {
 		$formatted_interval = $interval->format('%H:%I:%S'); 
 	}
 
-	$last_disruption = date('d.m.Y H:i:s', $data[0]['last_disruption']) . " (vor $formatted_interval)";
+	$last_disruption = "<a href='?id={$data[0]['id']}'>" . date('d.m.Y H:i:s', $data[0]['last_disruption']) . " (vor $formatted_interval)</a>";
 }
 
 require_once("$template_dir/disruptions_html.php");
