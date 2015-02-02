@@ -12,12 +12,24 @@ $wl_api_key = '';
 $email_from = 'from@example.com';
 $report_email = 'to@example.com';
 
-$twitter = false;
-$twitter_consumer_key = '';
-$twitter_consumer_secret = '';
-$twitter_oauth_token = '';
-$twitter_oauth_token_secret = '';
-$twitter_username = '';
+$twitter = array(
+	1 => array(	'twitter_consumer_key' => '',
+			'twitter_consumer_secret' => '',
+			'twitter_oauth_token' => '',
+			'twitter_oauth_token_secret' => '',
+			'twitter_username' => ''),
+	2 => array(	'twitter_consumer_key' => '',
+			'twitter_consumer_secret' => '',
+			'twitter_oauth_token' => '',
+			'twitter_oauth_token_secret' => '',
+			'twitter_username' => ''),
+	3 => array(	'twitter_consumer_key' => '',
+			'twitter_consumer_secret' => '',
+			'twitter_oauth_token' => '',
+			'twitter_oauth_token_secret' => '',
+			'twitter_username' => ''),
+);
+
 $twitter_hashtag = '#wlvi';
 
 $semaphore_id = '';

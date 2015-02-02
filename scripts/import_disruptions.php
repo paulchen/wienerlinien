@@ -209,22 +209,36 @@ function check_categories($categories) {
 }
 
 function notify_twitter() {
-	global $twitter, $twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret, $twitter_hashtag, $home_url;
-
-	if(!$twitter) {
-		return;
-	}
+	global $twitter, $twitter_hashtag, $home_url;
 
 	$disruptions = array_reverse(get_disruptions(array('twitter' => 0, 'deleted' => 0, 'limit' => -1)));
 	if(count($disruptions) > 0) {
 		write_log("Sending notifications about " . count($disruptions) . " disruptions to twitter.");
 	}
 
-	$connection = new TwitterOAuth($twitter_consumer_key, $twitter_consumer_secret, $twitter_oauth_token, $twitter_oauth_token_secret);
-	$connection->get('account/verify_credentials');
+	$connections = array();
+	foreach($disruptions as $disruption) {
+		$disruption_group = $disruption['category_id'];
+		
+		if(isset($connections[$disruption_group])) {
+			continue;
+		}
+
+		if(!isset($twitter[$disruption_group])) {
+			continue;
+		}
+		$connection = new TwitterOAuth($twitter[$disruption_group]['twitter_consumer_key'], $twitter[$disruption_group]['twitter_consumer_secret'], $twitter[$disruption_group]['twitter_oauth_token'], $twitter[$disruption_group]['twitter_oauth_token_secret']);
+		$connection->get('account/verify_credentials');
+
+		$connections[$disruption_group] = $connection;
+	}
 
 	$ids = array();
 	foreach($disruptions as $disruption) {
+		if(!isset($connections[$disruption['category_id']])) {
+			continue;
+		}
+
 		$data = db_query('SELECT id FROM traffic_info WHERE `group` = ? AND id IN (SELECT id FROM traffic_info_twitter)', array($disruption['group']));
 		if(count($data) > 0) {
 			write_log("Skipping sending notification for disruption(s) " . implode(', ', $disruption['ids']) . " as a notification has already been sent for at least one item in the same group.");
@@ -256,6 +270,7 @@ function notify_twitter() {
 			$disruption_text .= " $twitter_hashtag";
 		}
 
+		$connection = $connections[$disruption['category_id']];
 		$connection->post('statuses/update', array('status' => $disruption_text));
 
 		if ($connection->http_code == 200) {
