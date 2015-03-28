@@ -24,7 +24,6 @@ function calculate_hash($row, $fields) {
 	return md5($string);
 }
 
-
 /* STEP 1: fetch data about existing groups; iterate each group and compare their hashes;
  * if the hashes differ, add the group to $kill_groups */
 $data = db_query('SELECT id, category, priority, owner, title, description, `group`, deleted
@@ -87,7 +86,8 @@ foreach($data as &$row) {
 			/* however, it will only be added to an existing group if its start time
 			 * corresponds to the start times of the other items in the group
 			 */
-			if(abs(strtotime($timestamp)-strtotime($row['start_time'])) < $time_difference) {
+			$item_time = get_item_time($row);
+			if(abs(strtotime($timestamp)-get_item_time($row)) < $time_difference) {
 				if(!isset($add_to_existing_groups[$group_id])) {
 					$add_to_existing_groups[$group_id] = array();
 				}
@@ -130,13 +130,8 @@ $groups_modified = true;
 while($groups_modified) {
 	$groups_modified = false;
 	foreach($groups as $index => &$group) {
-		if(count($group) == 1) { // delete empty groups
-			unset($groups[$index]);
-			$groups_modified = true;
-			continue 2;
-		}
 		foreach($group as $index2 => $item) {
-			if($index2 > 0 && strtotime($item['start_time'])-strtotime($group[$index2-1]['start_time']) > $time_difference) {
+			if($index2 > 0 && get_item_time($item)-get_item_time($group[$index2-1]) > $time_difference) {
 				/* split the group by moving all items from $index2 to the end into a new group
 				 * and deleting them from the current group */
 
