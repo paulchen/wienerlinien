@@ -2,6 +2,8 @@
 
 // TODO check: only run as standalone script from command line
 
+$use_transaction = true;
+
 require_once(dirname(__FILE__) . '/../lib/common.php');
 require_once(dirname(__FILE__) . '/../lib/twitteroauth/twitteroauth.php');
 
@@ -39,6 +41,7 @@ if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfo
 }
 
 log_query_stats();
+$db->commit();
 
 function process_traffic_infos($infos) {
 	global $imported_disruptions;

@@ -9,6 +9,10 @@ require_once('Mail.php');
 $db = new PDO("mysql:dbname=$db_name;host=$db_host", $db_user, $db_pass);
 db_query('SET NAMES UTF8');
 
+if(isset($use_transaction) && $use_transaction) {
+	$db->beginTransaction();
+}
+
 $template_dir = dirname(__FILE__) . '/../templates/';
 
 $memcached = new Memcached();
