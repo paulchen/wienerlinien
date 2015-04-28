@@ -27,7 +27,7 @@ if(!preg_match('/^[0-9]+$/', $page)) {
 $filtered_archive = false;
 if(isset($_REQUEST['id'])) {
 	$data = db_query('SELECT `group` FROM traffic_info WHERE id = ?', array($_REQUEST['id']));
-	if($data[0]['group']) {
+	if(count($data) == 1 && $data[0]['group']) {
 		$disruptions = get_disruptions(array('group' => $data[0]['group']));
 	}
 	else {
