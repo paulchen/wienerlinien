@@ -26,7 +26,7 @@ function calculate_hash($row, $fields) {
 
 /* STEP 1: fetch data about existing groups; iterate each group and compare their hashes;
  * if the hashes differ, add the group to $kill_groups */
-$data = db_query('SELECT id, category, priority, owner, title, description, `group`, deleted
+$data = db_query('SELECT id, category, COALESCE(priority, 0) priority, owner, title, description, `group`, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
 		ORDER BY `group` ASC');
