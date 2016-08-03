@@ -26,12 +26,12 @@ function calculate_hash($row, $fields) {
 
 /* STEP 1: fetch data about existing groups; iterate each group and compare their hashes;
  * if the hashes differ, add the group to $kill_groups */
-$data = db_query('SELECT id, category, COALESCE(priority, 0) priority, owner, title, description, `group`, deleted
+$data = db_query_resultset('SELECT id, category, COALESCE(priority, 0) priority, owner, title, description, `group`, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
 		ORDER BY `group` ASC');
 $kill_groups = array();
-foreach($data as $row) {
+while($row = $data->fetch(PDO::FETCH_ASSOC)) {
 	$hash = calculate_hash($row, $comparison_fields);
 	if(isset($previous_group) && $previous_group == $row['group'] && $previous_hash != $hash) {
 		if(!in_array($row['group'], $kill_groups)) {
@@ -42,6 +42,8 @@ foreach($data as $row) {
 	$previous_group = $row['group'];
 	$previous_hash = $hash;
 }
+db_stmt_close($data);
+
 /* eliminate all groups named in $kill_groups */
 if(count($kill_groups) > 0) {
 	write_log('Killing group(s): ' . implode(', ', $kill_groups));
@@ -58,27 +60,28 @@ if(count($kill_groups) > 0) {
  * the values of this array are in turn arrays, having the group ID as key and the timestamp
  * of one item of the group as value
  */
-$data = db_query('SELECT id, category, priority, owner, title, description, `group`, start_time, deleted
+$data = db_query_resultset('SELECT id, category, priority, owner, title, description, `group`, start_time, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
 		ORDER BY `group` ASC');
 $existing_hashes = array();
-foreach($data as $row) {
+while($row = $data->fetch(PDO::FETCH_ASSOC)) {
 	$hash = calculate_hash($row, $comparison_fields);
 	if(!isset($existing_hashes[$hash])) {
 		$existing_hashes[$hash] = array();
 	}
 	$existing_hashes[$hash][$row['group']] = $row['start_time'];
 }
+db_stmt_close($data);
 
 /* Process all items that currently do not belong to any group */
-$data = db_query('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time, deleted
+$data = db_query_resultset('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time, deleted
 		FROM traffic_info
 		WHERE `group` IS NULL
 		ORDER BY start_time ASC');
 $groups = array();
 $add_to_existing_groups = array();
-foreach($data as &$row) {
+while($row = $data->fetch(PDO::FETCH_ASSOC)) {
 	$hash = calculate_hash($row, $comparison_fields);
 	if(isset($existing_hashes[$hash])) {
 		/* if the hash of this item is already known, it may be added to an existing group */
@@ -103,6 +106,7 @@ foreach($data as &$row) {
 	}
 	$groups[$hash][] = $row;
 }
+db_stmt_close($data);
 unset($row); // this is necessary as $row is used as a reference in the above foreach loop
 
 /* now, add items to existing groups */

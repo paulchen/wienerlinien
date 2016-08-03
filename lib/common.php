@@ -60,6 +60,48 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 	return $data;
 }
 
+/* TODO
+function db_query($query, $parameters = array()) {
+	$stmt = db_query_resultset($query, $parameters);
+	$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	db_stmt_close($stmt);
+	return $data;
+}
+ */
+
+function db_stmt_close($stmt) {
+	if(!$stmt->closeCursor()) {
+		$error = $stmt->errorInfo();
+		db_error($error[2], debug_backtrace(), $query, $parameters);
+	}
+}
+
+function db_query_resultset($query, $parameters = array()) {
+	global $db;
+
+	$query_start = microtime(true);
+	if(!($stmt = $db->prepare($query))) {
+		$error = $db->errorInfo();
+		db_error($error[2], debug_backtrace(), $query, $parameters);
+	}
+	// see https://bugs.php.net/bug.php?id=40740 and https://bugs.php.net/bug.php?id=44639
+	foreach($parameters as $key => $value) {
+		$stmt->bindValue($key+1, $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+	}
+	if(!$stmt->execute()) {
+		$error = $stmt->errorInfo();
+		db_error($error[2], debug_backtrace(), $query, $parameters);
+	}
+	$query_end = microtime(true);
+
+	if(!isset($db_queries)) {
+		$db_queries = array();
+	}
+	$db_queries[] = array('timestamp' => time(), 'query' => $query, 'parameters' => serialize($parameters), 'execution_time' => $query_end-$query_start);
+
+	return $stmt;
+}
+
 function db_error($error, $stacktrace, $query, $parameters) {
 	global $report_email, $email_from;
 
