@@ -5,9 +5,9 @@
 require_once(dirname(__FILE__) . '/../lib/common.php');
 require_once(dirname(__FILE__) . '/../lib/Csv.class.php');
 
-$url_lines = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
-$url_stations = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
-$url_station_ids = 'http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:HALTESTELLEWLOGD&srsName=EPSG:4326&outputFormat=json';
+$url_lines = 'http://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
+$url_stations = 'http://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
+$url_station_ids = 'http://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:HALTESTELLEWLOGD&srsName=EPSG:4326&outputFormat=json';
 $url_wl_lines = 'http://data.wien.gv.at/csv/wienerlinien-ogd-linien.csv';
 $url_wl_stations = 'http://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv';
 $url_wl_platforms = 'http://data.wien.gv.at/csv/wienerlinien-ogd-steige.csv';
