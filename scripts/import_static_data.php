@@ -500,4 +500,5 @@ function import_lines($data, $check_only = false) {
 	write_log("Lines successfully imported.");
 }
 
+touch(dirname(__FILE__) . '/../log/last_data_update');
 
