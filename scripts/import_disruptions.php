@@ -260,13 +260,13 @@ function notify_twitter() {
 		$disruption_text .= '[' . $disruption['category'] . '] ';
 
 		$title = str_replace("\n", " ", $disruption['title']);
-		foreach($disruption['lines'] as $line) {
-			$title = str_replace("$line ", '', $title);
-		}
+//		foreach($disruption['lines'] as $line) {
+//			$title = str_replace("$line ", '', $title);
+//		}
 		$disruption_text .= $title;
 
-		if(mb_strlen($disruption_text, 'UTF-8') > 110) {
-			$disruption_text = mb_substr($disruption_text, 0, 109, 'UTF-8') . '…';
+		if(mb_strlen($disruption_text, 'UTF-8') > 250) {
+			$disruption_text = mb_substr($disruption_text, 0, 249, 'UTF-8') . '…';
 		}
 		$disruption_text .= " $link";
 		if(isset($twitter_hashtag) && trim($twitter_hashtag) != '') {
