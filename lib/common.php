@@ -154,7 +154,7 @@ function send_mail($template, $subject, $parameters = array(), $fatal = false, $
 			'Subject' => $subject,
 		);
 
-	$mime = &new Mail_Mime(array('text_charset' => 'UTF-8'));
+	$mime = new Mail_Mime(array('text_charset' => 'UTF-8'));
 	$mime->setTXTBody($message);
 	$finfo = finfo_open(FILEINFO_MIME_TYPE);
 	foreach($attachments as $attachment) {
