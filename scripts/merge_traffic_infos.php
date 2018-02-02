@@ -24,6 +24,8 @@ function calculate_hash($row, $fields) {
 	return md5($string);
 }
 
+write_log("merge step 1");
+
 /* STEP 1: fetch data about existing groups; iterate each group and compare their hashes;
  * if the hashes differ, add the group to $kill_groups */
 $data = db_query_resultset('SELECT id, category, COALESCE(priority, 0) priority, owner, title, description, `group`, deleted
@@ -56,6 +58,8 @@ if(count($kill_groups) > 0) {
 	db_query("UPDATE traffic_info SET `group` = NULL WHERE `group` IN ($placeholder_string)", $kill_groups);
 }
 
+write_log("merge step 2");
+
 /* create the array $existing_hashes, containing the hashes of all existing groups as keys;
  * the values of this array are in turn arrays, having the group ID as key and the timestamp
  * of one item of the group as value
@@ -73,6 +77,8 @@ while($row = $data->fetch(PDO::FETCH_ASSOC)) {
 	$existing_hashes[$hash][$row['group']] = $row['start_time'];
 }
 db_stmt_close($data);
+
+write_log("merge step 3");
 
 /* Process all items that currently do not belong to any group */
 $data = db_query_resultset('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time, deleted
@@ -109,6 +115,8 @@ while($row = $data->fetch(PDO::FETCH_ASSOC)) {
 db_stmt_close($data);
 unset($row); // this is necessary as $row is used as a reference in the above foreach loop
 
+write_log("merge step 4");
+
 /* now, add items to existing groups */
 foreach($add_to_existing_groups as $group_id => $group) {
 	write_log("Adding items to group $group_id: " . implode(', ', $group));
@@ -121,6 +129,8 @@ foreach($add_to_existing_groups as $group_id => $group) {
 	array_unshift($group, $group_id);
 	db_query("UPDATE traffic_info SET `group` = ? WHERE id IN ($placeholder_string)", $group);
 }
+
+write_log("merge step 5");
 
 /* Now, process the array $groups:
  * 1) delete empty groups
@@ -155,6 +165,8 @@ while($groups_modified) {
 	}
 }
 unset($group); // this is necessary to avoid problems regarding the above foreach loop where &$group is used
+
+write_log("merge step 6");
 
 /* now, store the new groups in the database */
 $data = db_query('SELECT COALESCE(MAX(`group`), 0) max_group FROM traffic_info');
