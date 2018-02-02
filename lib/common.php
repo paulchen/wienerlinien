@@ -292,7 +292,7 @@ function write_log($message) {
 	fputs($file, "[$timestamp] - $message\n");
 	fclose($file);
 
-	db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
+	// db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
 	if($debug) {
 		echo "[$timestamp] - $message\n";
