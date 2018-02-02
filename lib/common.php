@@ -323,6 +323,8 @@ function check_outdated($current_ids, $table) {
 			db_query("UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?", array($row['id']));
 		}
 	}
+
+	write_log("Searched for outdated entries in table '$table'...");
 }
 
 function log_query_stats() {
