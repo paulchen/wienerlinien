@@ -93,12 +93,12 @@ function import_wl_lines($data, $check_only = false) {
 	}
 
 	foreach($data as $row) {
-		$line_data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($row['BEZEICHNUNG']));
+		$type = $types[$row['VERKEHRSMITTEL']];
+		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0', array($row['BEZEICHNUNG'], $type));
 		if(count($line_data) == 1) {
 			$id = $line_data[0]['id'];
 		}
 		else {
-			$type = $types[$row['VERKEHRSMITTEL']];
 			db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($row['BEZEICHNUNG'], $type));
 			$id = db_last_insert_id();
 
