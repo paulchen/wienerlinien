@@ -829,6 +829,10 @@ function get_line_id($name) {
 		}
 	}
 
+	if(!isset($line_id_list[$name])) {
+		write_log("Line $name not found in line_id_list");
+	}
+
 	return $line_id_list[$name];
 }
 
@@ -853,7 +857,7 @@ function process_rbl_data($data) {
 	foreach($data as $row) {
 		foreach($row as $line) {
 			foreach($line->departures->departure as $departure) {
-				$line_name = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->name : $line->name;
+				$line_name = (isset($departure->vehicle) && $departure->vehicle->towards && isset($departure->vehicle->name)) ? $departure->vehicle->name : $line->name;
 				$towards = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards;
 				$line_id = get_line_id($line_name);
 
