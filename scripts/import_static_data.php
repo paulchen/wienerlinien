@@ -93,16 +93,19 @@ function import_wl_lines($data, $check_only = false) {
 	}
 
 	foreach($data as $row) {
+		if($row['BEZEICHNUNG'] == '9A' && $row['REIHENFOLGE'] > 200) {
+			continue;
+		}
 		$type = $types[$row['VERKEHRSMITTEL']];
-		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0', array($row['BEZEICHNUNG'], $type));
-		if(count($line_data) == 1) {
+		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0 ORDER BY id ASC', array($row['BEZEICHNUNG'], $type));
+		if(count($line_data) > 0) {
 			$id = $line_data[0]['id'];
 		}
 		else {
 			db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($row['BEZEICHNUNG'], $type));
 			$id = db_last_insert_id();
 
-			write_log("Added line {$row['BEZEICHNUNG']}");
+			write_log("Added line {$row['BEZEICHNUNG']} (type $type)");
 		}
 
 		$timestamp = strtotime($row['STAND']);
@@ -287,15 +290,19 @@ function fetch_line($name) {
 function process_line($name, $type) {
 	global $imported_lines;
 
-	$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($name));
-	if(count($data) == 1) {
+	if($type == 5 && preg_match('/^S[0-9]+$/', $name)) {
+		$type = 7;
+	}
+
+	$data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0 ORDER BY id ASC', array($name, $type));
+	if(count($data) == 0) {
+		$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0 ORDER BY id ASC', array($name));
+	}
+
+	if(count($data) > 0) {
 		$id = $data[0]['id'];
 	}
 	else {
-		if($type == 5 && preg_match('/^S[0-9]+$/', $name)) {
-			$type = 7;
-		}
-
 		db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type));
 		$id = db_last_insert_id();
 
