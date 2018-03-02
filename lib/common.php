@@ -751,6 +751,10 @@ function fetch_rbls($rbls) {
 			$input_encoding = 'UTF-8';
 			$data = download_json($url, 'rbl_' . implode('.', $not_fetched_ids));
 
+			if(!$data) {
+				// TODO error
+				die();
+			}
 			$rbl_data = array();
 			foreach($data->data->monitors as $monitor) {
 				$rbl = $monitor->locationStop->properties->attributes->rbl;
