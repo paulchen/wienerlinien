@@ -23,7 +23,7 @@ $platforms = db_query("SELECT s.name station_name, p.rbl rbl, GROUP_CONCAT(DISTI
 		WHERE s.id = ?
 		GROUP BY p.rbl
 		ORDER BY wl_order ASC", array($_REQUEST['id']));
-if(count($platforms) != 1) {
+if(count($platforms) < 1) {
 	http_response_code(404);
 	die('Not found');
 }
