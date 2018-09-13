@@ -22,6 +22,8 @@ foreach($memcached_servers as $server) {
 
 $retry_download = true;
 
+$correlation_id = uniqid();
+
 function db_query($query, $parameters = array(), $ignore_errors = false) {
 	global $db, $db_queries;
 
@@ -283,19 +285,19 @@ function download($url, $prefix, $extension, $return_filename = false) {
 }
 
 function write_log($message) {
-	global $debug;
+	global $debug, $correlation_id;
 
 	$logfile = dirname(__FILE__) . '/../log/log';
 	$timestamp = date('Y-m-d H:i:s');
 
 	$file = fopen($logfile, 'a');
-	fputs($file, "[$timestamp] - $message\n");
+	fputs($file, "[$timestamp] - $correlation_id - $message\n");
 	fclose($file);
 
 	// db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
 	if($debug) {
-		echo "[$timestamp] - $message\n";
+		echo "[$timestamp] - $correlation_id - $message\n";
 	}
 }
 
