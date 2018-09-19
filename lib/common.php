@@ -566,6 +566,18 @@ function line_sorter($a, $b) {
 	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $a, $matches_a);
 	preg_match('/^([A-Z]*)([0-9]*)([A-Z]*)$/', $b, $matches_b);
 
+	if(count($matches_a) == 0 && count($matches_b) > 0) {
+		return -1;
+	}
+
+	if(count($matches_a) > 0 && count($matches_b) == 0) {
+		return 1;
+	}
+
+	if(count($matches_a) == 0 && count($matches_b) == 0) {
+		return strcmp($matches_a, $matches_b);
+	}
+
 	if($matches_a[1] != '' && $matches_b[1] == '') { // U1 < 1, U1 < 13A
 		return -1;
 	}
