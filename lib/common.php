@@ -875,13 +875,25 @@ function process_rbl_data($data) {
 				$towards = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards;
 				$line_id = get_line_id($line_name);
 
+				if (isset($departure->vehicle) && isset($departure->vehicle->barrierFree)) {
+					$barrier_free = $departure->vehicle->barrierFree;
+				}
+				else {
+					$barrier_free = $line->barrierFree;
+				}
+
+				$countdown = '';
+				if (isset($departure->departureTime->countdown)) {
+					$countdown = $departure->departureTime->countdown;
+				}
+
 				$departures[] = array(
 					'line' => $line_name,
 					'line_id' => $line_id,
 					'towards' => $towards,
 					'towards_id' => possible_destination($line_id, $towards),
-					'barrier_free' => (isset($departure->vehicle) && $departure->vehicle->barrierFree) ? $departure->vehicle->barrierFree : $line->barrierFree,
-					'time' => $departure->departureTime->countdown
+					'barrier_free' => $barrier_free,
+					'time' => $countdown
 				); 
 			}
 		}
