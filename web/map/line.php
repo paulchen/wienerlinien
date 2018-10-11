@@ -32,6 +32,15 @@ foreach($data as $row) {
 	$stations[] = $row;
 }
 
+if(count($stations) == 0) {
+	$line_data = db_query('SELECT l.name line_name FROM line l where l.id = ? AND l.deleted = 0', array($line_id));
+	if(count($line_data) == 0) {
+		header('HTTP/1.1 404 Not Found');
+		die('Not found');
+	}
+	$line_name = $line_data[0]['line_name'];
+}
+
 $directions_difference = false;
 for($a=0; $a<count($data)/2; $a++) {
 	if($data[$a]['id'] != $data[count($data)-1-$a]['id']) {

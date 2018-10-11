@@ -6,6 +6,9 @@
 </head>
 <body class="line">
 	<h1>Linie <?php echo htmlentities($line_name, ENT_QUOTES, 'UTF-8') ?> &ndash; Details</h1>
+	<?php if(count($stations) == 0): ?>
+		Zu dieser Linie gibt es keine Detailinformationen.
+	<?php endif; ?>
 	<?php foreach($routes as $index => $route): ?>
 		<?php if(count($routes) > 1): ?>
 			<div>Richtung <?php echo $index+1 ?>:</div>
