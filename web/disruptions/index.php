@@ -159,12 +159,6 @@ else if(isset($_REQUEST['archive'])) {
 else {
 	$disruptions = get_disruptions(array('page' => $page), $pagination_data);
 }
-foreach($disruptions as &$disruption) {
-	foreach($disruption['lines'] as $line) {
-		$disruption['title'] = str_replace("$line ", '', $disruption['title']);
-	}
-}
-unset($disruption);
 
 if(isset($pagination_data)) {
 	$pagination_names = array(

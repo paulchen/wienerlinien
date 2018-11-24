@@ -5,10 +5,6 @@ $disruptions = get_disruptions(array('limit' => -1));
 $feed_date = 0;
 foreach($disruptions as &$disruption) {
 	$feed_date = max($feed_date, $disruption['start_time']);
-
-	foreach($disruption['lines'] as $line) {
-		$disruption['title'] = str_replace("$line ", '', $disruption['title']);
-	}
 }
 unset($disruption);
 
