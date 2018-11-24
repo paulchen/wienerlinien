@@ -45,6 +45,8 @@ $db->commit();
 
 function process_traffic_infos($infos) {
 	global $imported_disruptions;
+	
+	$now = date('H:i');
 
 	foreach($infos as $info) {
 		$priority = isset($info->priority) ? $info->priority : null;
@@ -53,16 +55,31 @@ function process_traffic_infos($infos) {
 		$end_time = (isset($info->time) && isset($info->time->end)) ? strtotime($info->time->end) : null;
 		$resume_time = (isset($info->time) && isset($info->time->resume)) ? strtotime($info->time->resume) : null;
 
-		$data = db_query('SELECT id FROM traffic_info WHERE wl_id = ? AND deleted = 0', array($info->name));
+		$data = db_query('SELECT id, description, last_description, timestamp_created FROM traffic_info WHERE wl_id = ? AND deleted = 0', array($info->name));
 		if(count($data) == 0) {
-			db_query('INSERT INTO traffic_info (wl_id, category, priority, owner, title, description, start_time, end_time, resume_time) VALUES (?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), FROM_UNIXTIME(?))', array($info->name, $info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $start_time, $end_time, $resume_time));
+			db_query('INSERT INTO traffic_info (wl_id, category, priority, owner, title, description, last_description, start_time, end_time, resume_time) VALUES (?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), FROM_UNIXTIME(?))', array($info->name, $info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $info->description, $start_time, $end_time, $resume_time));
 			$id = db_last_insert_id();
 
 			write_log("Added disruption $id");
 		}
 		else {
 			$id = $data[0]['id'];
-			db_query('UPDATE traffic_info SET category = ?, priority = ?, owner = ?, title = ?, description = ?, start_time = FROM_UNIXTIME(?), end_time = FROM_UNIXTIME(?), resume_time = FROM_UNIXTIME(?), deleted = 0, timestamp_deleted = NULL WHERE id = ?', array($info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $start_time, $end_time, $resume_time, $id));
+			$last_description = $data[0]['last_description'];
+			$old_full_description = $data[0]['description'];
+			$new_description = $info->description;
+			if($last_description == $new_description) {
+				$full_description = $old_full_description;
+			}
+			else {
+				$full_description = $old_full_description;
+				if(mb_strpos($old_full_description, 'Ursprüngliche Meldung', 0, 'UTF-8') === false) {
+					$timestamp = date('H:i', $data[0]['timestamp_created']);
+					$full_description = "Ursprüngliche Meldung ($timestamp): $full_description";
+				}
+				$full_description .= "\n\nUpdate ($now): $new_description";
+			}
+
+			db_query('UPDATE traffic_info SET category = ?, priority = ?, owner = ?, title = ?, description = ?, last_description = ?, start_time = FROM_UNIXTIME(?), end_time = FROM_UNIXTIME(?), resume_time = FROM_UNIXTIME(?), deleted = 0, timestamp_deleted = NULL WHERE id = ?', array($info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $full_description, $info->description, $start_time, $end_time, $resume_time, $id));
 
 			write_log("Updated disruption $id");
 		}

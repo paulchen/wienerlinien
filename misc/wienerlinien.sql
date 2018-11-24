@@ -266,6 +266,7 @@ CREATE TABLE IF NOT EXISTS `traffic_info` (
   `owner` text,
   `title` text NOT NULL,
   `description` text NOT NULL,
+  `last_description` text NOT NULL,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
   `resume_time` datetime DEFAULT NULL,
