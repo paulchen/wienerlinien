@@ -242,5 +242,14 @@ else {
 	$last_disruption = "<a href='?id={$data[0]['id']}'>" . date('d.m.Y H:i:s', $data[0]['last_disruption']) . " (vor $formatted_interval)</a>";
 }
 
+foreach($disruptions as &$disruption) {
+	$text = $disruption['description'];
+	$text = htmlentities($text, ENT_QUOTES, 'UTF-8');
+	$text = nl2br($text);
+	$text = str_replace(array('Update (', 'Urspr&uuml;ngliche Meldung ('), array('<b>Update</b> (', '<b>Urspr&uuml;ngliche Meldung</b> ('), $text);
+	$disruption['description'] = $text;
+}
+unset($disruption);
+
 require_once("$template_dir/disruptions_html.php");
 
