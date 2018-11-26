@@ -1,4 +1,4 @@
-<?php echo htmlentities($disruption['description'], ENT_QUOTES, 'UTF-8') ?><br /><br />
+<?php echo $disruption['description'] ?><br /><br />
 <?php if(count($disruption['lines']) > 0): ?>
 	<?php if(count($disruption['lines']) > 1): ?>
 		<b>Betroffene Linien</b>:<br />

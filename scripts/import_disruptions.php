@@ -55,7 +55,7 @@ function process_traffic_infos($infos) {
 		$end_time = (isset($info->time) && isset($info->time->end)) ? strtotime($info->time->end) : null;
 		$resume_time = (isset($info->time) && isset($info->time->resume)) ? strtotime($info->time->resume) : null;
 
-		$data = db_query('SELECT id, description, last_description, UNIX_TIMESTAMP(timestamp_created) timestamp_created FROM traffic_info WHERE wl_id = ? AND deleted = 0', array($info->name));
+		$data = db_query('SELECT id, description, last_description, UNIX_TIMESTAMP(COALESCE(start_time, timestamp_created)) timestamp_created FROM traffic_info WHERE wl_id = ? AND deleted = 0', array($info->name));
 		if(count($data) == 0) {
 			db_query('INSERT INTO traffic_info (wl_id, category, priority, owner, title, description, last_description, start_time, end_time, resume_time) VALUES (?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?), FROM_UNIXTIME(?))', array($info->name, $info->refTrafficInfoCategoryId, $priority, $owner, $info->title, $info->description, $info->description, $start_time, $end_time, $resume_time));
 			$id = db_last_insert_id();
