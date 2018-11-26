@@ -438,6 +438,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	if($disruption_count > 0 && count($group_ids) > 0) {
 		$disruptions = db_query("SELECT i.id id, i.title title, i.description description, UNIX_TIMESTAMP(COALESCE(i.start_time, i.timestamp_created)) start_time,
 						UNIX_TIMESTAMP(i.end_time) end_time,
+						UNIX_TIMESTAMP(i.resume_time) resume_time,
 						COALESCE(c.short_name, c.title) category, c.id category_id, i.group `group`, i.deleted deleted
 					FROM traffic_info i
 						LEFT JOIN traffic_info_line til2 ON (i.id = til2.traffic_info)

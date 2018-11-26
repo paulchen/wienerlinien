@@ -29,4 +29,7 @@
 <?php if($disruption['end_time']): ?>
 	<b>Bis</b>: <?php echo date('d.m.Y H:i', $disruption['end_time']) ?><br />
 <?php endif; ?>
+<?php if($disruption['resume_time']): ?>
+	<b>Verkehrsaufnahme</b>: <?php echo date('d.m.Y H:i', $disruption['resume_time']) ?><br />
+<?php endif; ?>
 
