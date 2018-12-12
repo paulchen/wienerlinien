@@ -1,4 +1,12 @@
-<?php echo $disruption['description'] ?><br /><br />
+<?php if($disruption['timestamp_deleted'] && mb_strpos($disruption['description'], 'ngliche Meldung', 0, 'UTF-8') === false): ?>
+<b>Urspr&uuml;ngliche Meldung</b> (<?php echo date('H:i', $disruption['start_time']) ?>): 
+<?php endif; ?>
+<?php echo $disruption['description'] ?>
+<?php if($disruption['timestamp_deleted']): ?>
+<br /><br />
+<b>Update</b> (<?php echo date('H:i', $disruption['timestamp_deleted']) ?>): Die Störung ist zu Ende.
+<?php endif; ?>
+<br /><br />
 <?php if(count($disruption['lines']) > 0): ?>
 	<?php if(count($disruption['lines']) > 1): ?>
 		<b>Betroffene Linien</b>:<br />
