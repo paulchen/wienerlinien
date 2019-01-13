@@ -849,6 +849,9 @@ function get_line_id($name) {
 		write_log("Line $name not found in line_id_list");
 	}
 
+	if(!isset($line_id_list[$name])) {
+		return null;
+	}
 	return $line_id_list[$name];
 }
 
