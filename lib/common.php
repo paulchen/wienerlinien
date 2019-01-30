@@ -183,7 +183,7 @@ function db_last_insert_id() {
 function download_json($url, $prefix) {
 	global $input_encoding;
 
-	$download = download($url, $prefix, 'json');
+	$download = download($url, $prefix, 'json', false, 'application/json');
 	if($download == null) {
 		return null;
 	}
@@ -198,7 +198,7 @@ function download_json($url, $prefix) {
 }
 
 function download_csv($url, $prefix) {
-	$csv_file = download($url, $prefix, 'csv', true);
+	$csv_file = download($url, $prefix, 'csv', true, 'text/csv');
 	if($csv_file == null) {
 		return null;
 	}
@@ -211,7 +211,23 @@ function download_csv($url, $prefix) {
 	return $csv->rows;
 }
 
-function download($url, $prefix, $extension, $return_filename = false) {
+function check_content_type($mime, $curl_info) {
+	if($mime == '') {
+		return true;
+	}
+	if(!isset($curl_info['content_type'])) {
+		return false;
+	}
+
+	// split application/json;charset=UTF-8
+	$content_type = $curl_info['content_type'];
+	$parts = explode(';', $content_type);
+	$content_type = $parts[0];
+
+	return $content_type == $mime;
+}
+
+function download($url, $prefix, $extension, $return_filename = false, $mime = '') {
 	global $cache_expiration, $retry_download, $download_failure_wait_time;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
@@ -259,7 +275,7 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	while($attempts < 3) {
 		$data = curl_exec($curl);
 		$info = curl_getinfo($curl);
-		if($info['http_code'] == 200 || !$retry_download) {
+		if(($info['http_code'] == 200 && check_content_type($mime, $info)) || !$retry_download) {
 			break;
 		}
 		write_log("Fetching failed, retrying in $download_failure_wait_time seconds...");
@@ -268,7 +284,7 @@ function download($url, $prefix, $extension, $return_filename = false) {
 	}
 	curl_close($curl);
 
-	if(isset($info) && isset($info['http_code']) && $info['http_code'] == 200) {
+	if(isset($info) && isset($info['http_code']) && $info['http_code'] == 200 && check_content_type($mime, $info)) {
 		file_put_contents($filename, $data);
 
 		write_log("Fetching completed");
