@@ -181,34 +181,32 @@ function db_last_insert_id() {
 }
 
 function download_json($url, $prefix) {
-	global $input_encoding;
+	$convert_function = function($filename, $data) {
+		global $input_encoding;
 
-	$download = download($url, $prefix, 'json', false, 'application/json');
-	if($download == null) {
-		return null;
-	}
+		if(!isset($input_encoding)) {
+			return json_decode(iconv('ISO-8859-15', 'UTF-8', $data));
+		}
+		if($input_encoding != 'UTF-8') {
+			return json_decode(iconv($input_encoding, 'UTF-8', $data));
+		}
+		return json_decode($data);
+	};
 
-	if(!isset($input_encoding)) {
-		return json_decode(iconv('ISO-8859-15', 'UTF-8', $download));
-	}
-	if($input_encoding != 'UTF-8') {
-		return json_decode(iconv($input_encoding, 'UTF-8', $download));
-	}
-	return json_decode($download);
+	return download($url, $prefix, 'json', $convert_function, 'application/json');
 }
 
 function download_csv($url, $prefix) {
-	$csv_file = download($url, $prefix, 'csv', true, 'text/csv');
-	if($csv_file == null) {
-		return null;
-	}
+	$convert_function = function($filename, $data) {
+		$csv = new Csv();
+		$csv->separator = ';';
+		$csv->parse($filename);
+		$csv->first_row_headers();
 
-	$csv = new Csv();
-	$csv->separator = ';';
-	$csv->parse($csv_file);
-	$csv->first_row_headers();
+		return $csv->rows;
+	};
 
-	return $csv->rows;
+	return download($url, $prefix, 'csv', $convert_function, 'text/csv');
 }
 
 function check_content_type($mime, $curl_info) {
@@ -227,7 +225,7 @@ function check_content_type($mime, $curl_info) {
 	return $content_type == $mime;
 }
 
-function download($url, $prefix, $extension, $return_filename = false, $mime = '') {
+function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	global $cache_expiration, $retry_download, $download_failure_wait_time;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
@@ -259,10 +257,7 @@ function download($url, $prefix, $extension, $return_filename = false, $mime = '
 	if($found_file != null) {
 		write_log("Using cached file $found_file");
 
-		if($return_filename) {
-			return $filename;
-		}
-		return remove_bom(file_get_contents("$cache_dir$found_file"));
+		return $convert_function($filename, remove_bom(file_get_contents("$cache_dir$found_file")));
 	}
 
 	write_log("Fetching $url to $filename...");
@@ -289,10 +284,7 @@ function download($url, $prefix, $extension, $return_filename = false, $mime = '
 
 		write_log("Fetching completed");
 
-		if($return_filename) {
-			return $filename;
-		}
-		return remove_bom($data);
+		return $convert_function($filename, remove_bom($data));
 	}
 
 	write_log('Fetching failed');
