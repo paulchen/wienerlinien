@@ -255,9 +255,17 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	closedir($dir);
 
 	if($found_file != null) {
-		write_log("Using cached file $found_file");
+		$full_name = "$cache_dir$found_file";
+		$data = $convert_function($filename, remove_bom(file_get_contents($full_name)));
+		if($data) {
+			write_log("Using cached file $found_file");
 
-		return $convert_function($filename, remove_bom(file_get_contents("$cache_dir$found_file")));
+			return $data;
+		}
+
+		write_log("Cached file $found_file contains garbage and will be deleted now");
+
+		unlink($full_name);
 	}
 
 	write_log("Fetching $url to $filename...");
@@ -267,10 +275,21 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	curl_setopt($curl, CURLOPT_URL, $url);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+	$retval = null;
 	while($attempts < 3) {
 		$data = curl_exec($curl);
 		$info = curl_getinfo($curl);
-		if(($info['http_code'] == 200 && check_content_type($mime, $info)) || !$retry_download) {
+		if($info['http_code'] == 200 && check_content_type($mime, $info)) {
+			file_put_contents($filename, $data);
+			$retval = $convert_function($filename, remove_bom($data));
+
+			if($retval) {
+				write_log("Fetching completed");
+				break;
+			}
+			unlink($filename);
+		}
+		if(!$retry_download) {
 			break;
 		}
 		write_log("Fetching failed, retrying in $download_failure_wait_time seconds...");
@@ -279,17 +298,11 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	}
 	curl_close($curl);
 
-	if(isset($info) && isset($info['http_code']) && $info['http_code'] == 200 && check_content_type($mime, $info)) {
-		file_put_contents($filename, $data);
-
-		write_log("Fetching completed");
-
-		return $convert_function($filename, remove_bom($data));
+	if(!$retval) {
+		write_log('Fetching failed');
 	}
 
-	write_log('Fetching failed');
-
-	return null;
+	return $retval;
 }
 
 function write_log($message) {
