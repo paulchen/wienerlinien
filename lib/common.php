@@ -163,7 +163,7 @@ function send_mail($template, $subject, $parameters = array(), $fatal = false, $
 		$mime->addAttachment($attachment, finfo_file($finfo, $attachment));
 	}
 
-	$mail =& Mail::factory('smtp');
+	$mail = Mail::factory('smtp');
 	$mail->send($report_email, $mime->headers($headers), $mime->get());
 
 	if($fatal) {
@@ -355,6 +355,9 @@ function log_query_stats() {
 
 	$end_time = microtime(true);
 	$total_time = round($end_time-$start_time, 2);
+	if($total_time == 0) {
+		$total_time = .01;
+	}
 	$queries = count($db_queries);
 	$queries_per_sec = round($queries/$total_time, 2);
 	write_log("$queries queries in $total_time seconds ($queries_per_sec queries/sec)");
