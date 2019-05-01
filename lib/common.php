@@ -6,6 +6,11 @@ require_once(dirname(__FILE__) . '/bom.php');
 require_once('Mail/mime.php');
 require_once('Mail.php');
 
+if(!isset($long_running_queries)) {
+	# avoid PHP notice
+	$long_running_queries = false;
+}
+
 $db = new PDO(
 	"mysql:dbname=$db_name;host=$db_host;charset=utf8",
 	$long_running_queries ? $db_user_long : $db_user,
