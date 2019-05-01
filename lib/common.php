@@ -6,8 +6,15 @@ require_once(dirname(__FILE__) . '/bom.php');
 require_once('Mail/mime.php');
 require_once('Mail.php');
 
-$db = new PDO("mysql:dbname=$db_name;host=$db_host", $db_user, $db_pass);
-db_query('SET NAMES UTF8');
+$db = new PDO(
+	"mysql:dbname=$db_name;host=$db_host;charset=utf8",
+	$db_user,
+	$db_pass,
+	array(
+		PDO::ATTR_TIMEOUT => 10,
+		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+	)
+);
 
 if(isset($use_transaction) && $use_transaction) {
 	$db->beginTransaction();
@@ -45,7 +52,12 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 			db_error($error[2], debug_backtrace(), $query, $parameters);
 		}
 	}
-	$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	if(preg_match('/^\s*SELECT/i', $query)) {
+		$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+	else {
+		$data = array();
+	}
 	if(!$stmt->closeCursor()) {
 		$error = $stmt->errorInfo();
 		if(!$ignore_errors) {
