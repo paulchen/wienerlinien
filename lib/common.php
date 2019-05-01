@@ -8,8 +8,8 @@ require_once('Mail.php');
 
 $db = new PDO(
 	"mysql:dbname=$db_name;host=$db_host;charset=utf8",
-	$db_user,
-	$db_pass,
+	$long_running_queries ? $db_user_long : $db_user,
+	$long_running_queries ? $db_pass_long : $db_pass,
 	array(
 		PDO::ATTR_TIMEOUT => 10,
 		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION

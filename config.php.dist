@@ -4,6 +4,9 @@ $db_user = 'wienerlinien';
 $db_pass = '';
 $db_name = 'wienerlinien';
 
+$db_user_long = 'wienerlinien_dev_long';
+$db_pass_long = '';
+
 $cache_expiration = 79200;
 $cache_expiration_disruptions = 50;
 $debug = false;

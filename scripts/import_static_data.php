@@ -2,6 +2,8 @@
 
 // TODO check: only run as standalone script from command line
 
+$long_running_queries = true;
+
 require_once(dirname(__FILE__) . '/../lib/common.php');
 require_once(dirname(__FILE__) . '/../lib/Csv.class.php');
 

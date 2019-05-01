@@ -3,6 +3,7 @@
 // TODO check: only run as standalone script from command line
 
 $use_transaction = true;
+$long_running_queries = true;
 
 require_once(dirname(__FILE__) . '/../lib/common.php');
 require_once(dirname(__FILE__) . '/../lib/twitteroauth/twitteroauth.php');
