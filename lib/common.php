@@ -384,24 +384,34 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	$filter_part = '1=1';
 	$filter_params = array();
 
-	$twitter_query = 'SELECT DISTINCT `group` FROM traffic_info WHERE id IN (SELECT id FROM traffic_info_twitter)';
+	// $twitter_query = 'SELECT DISTINCT `group` FROM traffic_info WHERE id IN (SELECT id FROM traffic_info_twitter)';
 	$page = 1;
+	$table = 'traffic_info_group';
+	$line_table = 'traffic_info_group_line';
+	$group_time = 'i.start_time group_time';
+	$group_by = '';
 	if(isset($filter['id'])) {
 		$filter_part .= ' AND i.id = ?';
 		$filter_params[] = $filter['id'];
+		$table = 'traffic_info';
+		$line_table = 'traffic_info_line';
+		$group_time = 'MAX(i.start_time) group_time';
+		$group_by = 'GROUP BY `id`';
 	}
 
 	if(isset($filter['group'])) {
-		$filter_part .= ' AND i.group = ?';
+		$filter_part .= ' AND i.id = ?';
 		$filter_params[] = $filter['group'];
 	}
 
+	/*
 	if(isset($filter['twitter']) && $filter['twitter'] == '0') {
 		$filter_part .= " AND i.group NOT IN ($twitter_query)";
 	}
 	else if(isset($filter['twitter']) && $filter['twitter'] == '1') {
 		$filter_part .= " AND i.group IN ($twitter_query)";
 	}
+	 */
 
 	if(isset($filter['deleted'])) {
 		$filter_part .= ' AND i.deleted = ?';
@@ -413,6 +423,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	}
 	
 	if(isset($filter['archive']) && $filter['archive'] == 1) {
+		/*
 		if(isset($filter['lines'])) {
 			$parameters = array();
 			foreach($filter['lines'] as $line) {
@@ -422,6 +433,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$parameters_string = implode(',', $parameters);
 			$filter_part .= " AND l2.id IN ($parameters_string)";
 		}
+		 */
 		if(isset($filter['from'])) {
 			$filter_part .= ' AND (i.timestamp_deleted > FROM_UNIXTIME(?) OR i.deleted = 0)';
 			$filter_params[] = $filter['from'];
@@ -449,13 +461,18 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$page = $filter['page'];
 	}
 
-	$query = "SELECT i.group `group`, MAX(COALESCE(i.start_time, i.timestamp_created)) group_time
-					FROM traffic_info i
-					LEFT JOIN traffic_info_line til2 ON (i.id = til2.traffic_info)
+	$query = "SELECT i.id `group`, $group_time
+					FROM $table i
+					LEFT JOIN $line_table til2 ON (i.id = til2.traffic_info)
 					LEFT JOIN line l2 ON (til2.line = l2.id)
 					JOIN traffic_info_category c ON (i.category = c.id)
 				WHERE $filter_part
-				GROUP BY i.group";
+				$group_by";
+/*
+	print_r($query);
+	print_r($filter_params);
+	die();
+ */
 	$result = db_query("SELECT COUNT(*) disruptions FROM ($query) a", $filter_params);
 	$disruption_count = $result[0]['disruptions'];
 
