@@ -396,7 +396,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$table = 'traffic_info';
 		$line_table = 'traffic_info_line';
 		$group_time = 'MAX(i.start_time) group_time';
-		$group_by = 'GROUP BY `id`';
+		$group_by = 'GROUP BY i.id';
 	}
 
 	if(isset($filter['group'])) {
