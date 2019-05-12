@@ -423,7 +423,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	}
 	
 	if(isset($filter['archive']) && $filter['archive'] == 1) {
-		/*
 		if(isset($filter['lines'])) {
 			$parameters = array();
 			foreach($filter['lines'] as $line) {
@@ -433,7 +432,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$parameters_string = implode(',', $parameters);
 			$filter_part .= " AND l2.id IN ($parameters_string)";
 		}
-		 */
 		if(isset($filter['from'])) {
 			$filter_part .= ' AND (i.timestamp_deleted > FROM_UNIXTIME(?) OR i.deleted = 0)';
 			$filter_params[] = $filter['from'];
