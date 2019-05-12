@@ -187,3 +187,22 @@ foreach($groups as $group) {
 	db_query("UPDATE traffic_info SET `group` = ? WHERE id IN ($placeholder_string)", $parameters);
 }
 
+write_log("merge step 7");
+
+/* remove groups from traffic_info_group that don't exist anymore */
+db_query('DELETE FROM traffic_info_group WHERE id NOT IN (SELECT `group` FROM traffic_info)');
+
+/* populate table traffic_info_group */
+
+$data = db_query('SELECT `group`, category, priority, owner, title, description, deleted FROM traffic_info WHERE `group` IN (SELECT id FROM traffic_info_group) GROUP BY `group`, category, priority, owner, title, description, deleted');
+foreach($data as $group) {
+	$query = 'UPDATE traffic_info_group SET category = ?, priority = `, owner = ?, title = ?, description = ?, deleted = ? WHERE id = ?';
+	db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['group']));
+}
+
+$data = db_query('SELECT `group`, category, priority, owner, title, description, deleted FROM traffic_info WHERE `group` NOT IN (SELECT id FROM traffic_info_group) GROUP BY `group`, category, priority, owner, title, description, deleted');
+foreach($data as $group) {
+	$query = 'INSERT INTO traffic_info_group (category, priority, owner, title, description, deleted, id) VALUES (?, ?, ?, ?, ?, ?, ?)';
+	db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['group']));
+}
+
