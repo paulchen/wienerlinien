@@ -421,8 +421,10 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$filter_part .= ' AND i.deleted = ?';
 		$filter_params[] = 0;
 	}
-	
+
+	$disruptions_per_page = 1000000;
 	if(isset($filter['archive']) && $filter['archive'] == 1) {
+		$disruptions_per_page = 20;
 		if(isset($filter['lines'])) {
 			$parameters = array();
 			foreach($filter['lines'] as $line) {
@@ -474,7 +476,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 	$result = db_query("SELECT COUNT(*) disruptions FROM ($query) a", $filter_params);
 	$disruption_count = $result[0]['disruptions'];
 
-	$disruptions_per_page = 20;
 	if($disruption_count > 0) {
 		$offset = ($page-1)*$disruptions_per_page;
 		if(isset($filter['limit'])) {

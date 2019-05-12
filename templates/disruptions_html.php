@@ -102,7 +102,7 @@
 		<br />Neueste Störung: <?php echo $last_disruption ?>
 		<?php if(isset($pagination_data)): ?>
 			<br /><br />
-			Aktuelle Seite: <?php echo $page ?>.
+			Aktuelle Seite: <?php echo $page ?>/<?php echo $pagination_data['last']['page'] ?>.
 			<?php foreach($pagination_data as $item): ?>
 				<a href="<?php echo $item['url'] ?>"><?php echo htmlentities($item['name'], ENT_QUOTES, 'UTF-8') ?></a>
 			<?php endforeach; ?>
