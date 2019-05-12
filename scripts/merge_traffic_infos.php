@@ -259,7 +259,6 @@ db_query('DELETE FROM traffic_info_group_line WHERE traffic_info NOT IN (SELECT 
 db_query('DELETE FROM traffic_info_group WHERE id NOT IN (SELECT `group` FROM traffic_info)');
 
 $data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` IN (SELECT id FROM traffic_info_group) GROUP BY `group`, category, priority, owner, title, description, deleted");
-print(count($data) . "\n");
 $line_params = array();
 foreach($data as $group) {
 	if(!in_array($group['group'], $modified_groups)) {
