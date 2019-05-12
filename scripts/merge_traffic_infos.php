@@ -207,7 +207,7 @@ function fill_group_line_table($line_params, $group, $force = false) {
 			return $line_params;
 		}
 
-		$lines = array_unique(explode(',', $group['lines']));
+		$lines = explode(',', $group['lines']);
 		foreach($lines as $line) {
 			$line_params[] = $group['group'];
 			$line_params[] = $line;
@@ -229,9 +229,6 @@ function fill_group_line_table($line_params, $group, $force = false) {
 		$query .= '(?,?)';
 	}
 	db_query($query, $line_params);
-
-	$db->commit();
-	$db->beginTransaction();
 
 	return array();
 }
@@ -262,6 +259,7 @@ $data = db_query("SELECT `group`, category, priority, owner, title, description,
 $line_params = array();
 foreach($data as $group) {
 	if(!in_array($group['group'], $modified_groups)) {
+		// for initial import/recovery, comment this line out and truncate the table traffic_info_group_line
 		continue;
 	}
 
