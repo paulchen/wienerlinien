@@ -497,8 +497,6 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 						COALESCE(c.short_name, c.title) category, c.id category_id, i.group `group`, i.deleted deleted,
 						UNIX_TIMESTAMP(i.timestamp_deleted) timestamp_deleted
 					FROM traffic_info i
-						LEFT JOIN traffic_info_line til2 ON (i.id = til2.traffic_info)
-						LEFT JOIN line l2 ON (til2.line = l2.id)
 						JOIN traffic_info_category c ON (i.category = c.id)
 					WHERE i.group IN ($groups_filter)
 					GROUP BY i.id, i.title, i.description, i.start_time, i.end_time, i.timestamp_created, i.group
