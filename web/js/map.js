@@ -22,6 +22,10 @@ function initialize() {
 }
 
 function update_current_view_info() {
+	if(!googleMap) {
+		return;
+	}
+
 	var latLon = googleMap.getCenter();
 	var zoom = googleMap.getZoom();
 
