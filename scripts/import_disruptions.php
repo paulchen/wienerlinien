@@ -26,7 +26,7 @@ if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfo
 
 		require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
 
-		notify_twitter();
+		// notify_twitter();
 
 		flock($lockfile, LOCK_UN);
 		fclose($lockfile);
