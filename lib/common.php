@@ -1,6 +1,8 @@
 <?php
 $start_time = microtime(true);
 
+error_reporting(E_ALL);
+
 require_once(dirname(__FILE__) . '/../config.php');
 require_once(dirname(__FILE__) . '/bom.php');
 require_once('Mail/mime.php');
@@ -49,10 +51,9 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 			db_error($error[2], debug_backtrace(), $query, $parameters);
 		}
 	}
-	// see https://bugs.php.net/bug.php?id=40740 and https://bugs.php.net/bug.php?id=44639
 	$index = 0;
 	foreach($parameters as $value) {
-		$stmt->bindValue(++$index, $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+		$stmt->bindValue(++$index, $value);
 	}
 	if(!$stmt->execute()) {
 		$error = $stmt->errorInfo();
