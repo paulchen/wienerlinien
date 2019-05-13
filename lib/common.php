@@ -321,19 +321,24 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 }
 
 function write_log($message) {
-	global $debug, $correlation_id;
+	global $debug, $correlation_id, $db_queries;
 
 	$logfile = dirname(__FILE__) . '/../log/log';
 	$timestamp = date('Y-m-d H:i:s');
 
+	$db_query_count = 0;
+	if(isset($db_queries)) {
+		$db_query_count = count($db_queries);
+	}
+
 	$file = fopen($logfile, 'a');
-	fputs($file, "[$timestamp] - $correlation_id $message\n");
+	fputs($file, "[$timestamp] - $correlation_id - $db_query_count database queries - $message\n");
 	fclose($file);
 
 	// db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
 	if($debug) {
-		echo "[$timestamp] - $correlation_id $message\n";
+		echo "[$timestamp] - $correlation_id - $message\n";
 	}
 }
 
