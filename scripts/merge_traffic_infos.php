@@ -261,9 +261,28 @@ db_query('DELETE FROM traffic_info_group WHERE id NOT IN (SELECT `group` FROM tr
 $placeholders = implode(',', array_fill(0, count($modified_groups), '?'));
 $data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` IN (SELECT id FROM traffic_info_group) AND `group` IN ($placeholders) GROUP BY `group`, category, priority, owner, title, description, deleted", $modified_groups);
 $line_params = array();
+
+$data2 = db_query("SELECT id, category, priority, owner, title, description, deleted, start_time, end_time, resume_time, timestamp_deleted FROM traffic_info_group WHERE id IN ($placeholders)", $modified_groups);
+$data3 = array();
+foreach($data2 as $row) {
+	$data3[$row['id']] = $row;
+}
+
 foreach($data as $group) {
-	$query = 'UPDATE traffic_info_group SET category = ?, priority = ?, owner = ?, title = ?, description = ?, deleted = ?, start_time = ?, end_time = ?, resume_time = ?, timestamp_deleted = ? WHERE id = ?';
-	db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['start_time'], $group['end_time'], $group['resume_time'], $group['timestamp_deleted'], $group['group']));
+	$stored_group = $data3[$group['group']];
+	$equal = true;
+	foreach(array('category', 'priority', 'owner', 'title', 'description', 'deleted', 'start_time', 'end_time', 'resume_time', 'timestamp_deleted') as $key) {
+		if($group[$key] != $stored_group[$key]) {
+			write_log("$key: {$group[$key]} - {$stored_group[$key]}");
+			$equal = false;
+			break;
+		}
+	}
+
+	if(!$equal) {
+		$query = 'UPDATE traffic_info_group SET category = ?, priority = ?, owner = ?, title = ?, description = ?, deleted = ?, start_time = ?, end_time = ?, resume_time = ?, timestamp_deleted = ? WHERE id = ?';
+		db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['start_time'], $group['end_time'], $group['resume_time'], $group['timestamp_deleted'], $group['group']));
+	}
 
 	$lines = db_query('SELECT line FROM traffic_info_group_line WHERE traffic_info = ?', array($group['group']));
 	$lines = array_map(function($a) { return $a['line']; }, $lines);
