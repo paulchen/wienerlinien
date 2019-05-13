@@ -258,14 +258,10 @@ if(count($imported_disruptions) > 0) {
 db_query('DELETE FROM traffic_info_group_line WHERE traffic_info NOT IN (SELECT `group` FROM traffic_info)');
 db_query('DELETE FROM traffic_info_group WHERE id NOT IN (SELECT `group` FROM traffic_info)');
 
-$data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` IN (SELECT id FROM traffic_info_group) GROUP BY `group`, category, priority, owner, title, description, deleted");
+$placeholders = implode(',', array_fill(0, count($modified_groups), '?'));
+$data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` IN (SELECT id FROM traffic_info_group) AND `group` IN ($placeholders) GROUP BY `group`, category, priority, owner, title, description, deleted", $modified_groups);
 $line_params = array();
 foreach($data as $group) {
-	if(!in_array($group['group'], $modified_groups)) {
-		// for initial import/recovery, comment this line out and truncate the table traffic_info_group_line
-		continue;
-	}
-
 	$query = 'UPDATE traffic_info_group SET category = ?, priority = ?, owner = ?, title = ?, description = ?, deleted = ?, start_time = ?, end_time = ?, resume_time = ?, timestamp_deleted = ? WHERE id = ?';
 	db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['start_time'], $group['end_time'], $group['resume_time'], $group['timestamp_deleted'], $group['group']));
 
@@ -286,7 +282,7 @@ foreach($data as $group) {
 	$line_params = fill_group_line_table($line_params, $group);
 }
 
-$data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` NOT IN (SELECT id FROM traffic_info_group) GROUP BY `group`, category, priority, owner, title, description, deleted");
+$data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` NOT IN (SELECT id FROM traffic_info_group) AND `group` IN ($placeholders) GROUP BY `group`, category, priority, owner, title, description, deleted", $modified_groups);
 foreach($data as $group) {
 	$query = 'INSERT INTO traffic_info_group (category, priority, owner, title, description, deleted, start_time, end_time, resume_time, timestamp_deleted, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 	db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['start_time'], $group['end_time'], $group['resume_time'], $group['timestamp_deleted'], $group['group']));
