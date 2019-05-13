@@ -268,6 +268,15 @@ foreach($data2 as $row) {
 	$data3[$row['id']] = $row;
 }
 
+$data4 = db_query("SELECT traffic_info, line FROM traffic_info_group_line WHERE traffic_info IN ($placeholders)", $modified_groups);
+$data5 = array();
+foreach($data4 as $row) {
+	if(!isset($data5[$row['traffic_info']])) {
+		$data5[$row['traffic_info']] = array();
+	}
+	$data5[$row['traffic_info']][] = $row['line'];
+}
+
 foreach($data as $group) {
 	$stored_group = $data3[$group['group']];
 	$equal = true;
@@ -284,8 +293,7 @@ foreach($data as $group) {
 		db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['start_time'], $group['end_time'], $group['resume_time'], $group['timestamp_deleted'], $group['group']));
 	}
 
-	$lines = db_query('SELECT line FROM traffic_info_group_line WHERE traffic_info = ?', array($group['group']));
-	$lines = array_map(function($a) { return $a['line']; }, $lines);
+	$lines = $data5[$group['group']];
 	sort($lines);
 
 	$stored_lines = explode(',', $group['lines']);
