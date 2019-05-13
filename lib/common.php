@@ -40,6 +40,8 @@ $correlation_id = uniqid();
 function db_query($query, $parameters = array(), $ignore_errors = false) {
 	global $db, $db_queries;
 
+	write_log($query);
+
 	$query_start = microtime(true);
 	if(!($stmt = $db->prepare($query))) {
 		$error = $db->errorInfo();
@@ -339,7 +341,7 @@ function write_log($message) {
 
 	// db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
-	if($debug) {
+	if($debug && php_sapi_name() === 'cli') {
 		echo $output;
 	}
 }
