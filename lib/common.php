@@ -20,6 +20,7 @@ $db = new PDO(
 		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 	)
 );
+$db_queries = array();
 
 if(isset($use_transaction) && $use_transaction) {
 	$db->beginTransaction();
@@ -71,9 +72,6 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 	}
 	$query_end = microtime(true);
 
-	if(!isset($db_queries)) {
-		$db_queries = array();
-	}
 	$db_queries[] = array('timestamp' => time(), 'query' => $query, 'parameters' => serialize($parameters), 'execution_time' => $query_end-$query_start);
 
 	return $data;
@@ -329,13 +327,13 @@ function write_log($message) {
 	$timestamp = date('Y-m-d H:i:s');
 
 	$file = fopen($logfile, 'a');
-	fputs($file, "[$timestamp] - $correlation_id - $message\n");
+	fputs($file, "[$timestamp] - $correlation_id $message\n");
 	fclose($file);
 
 	// db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
 	if($debug) {
-		echo "[$timestamp] - $correlation_id - $message\n";
+		echo "[$timestamp] - $correlation_id $message\n";
 	}
 }
 
