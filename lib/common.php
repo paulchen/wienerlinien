@@ -331,14 +331,16 @@ function write_log($message) {
 		$db_query_count = count($db_queries);
 	}
 
+	$output = "[$timestamp] - $correlation_id - $db_query_count database queries - $message\n";
+
 	$file = fopen($logfile, 'a');
-	fputs($file, "[$timestamp] - $correlation_id - $db_query_count database queries - $message\n");
+	fputs($file, $output);
 	fclose($file);
 
 	// db_query('INSERT INTO log (text) VALUES (?)', array($message), true);
 
 	if($debug) {
-		echo "[$timestamp] - $correlation_id - $message\n";
+		echo $output;
 	}
 }
 
