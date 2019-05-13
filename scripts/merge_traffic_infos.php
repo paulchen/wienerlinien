@@ -217,6 +217,9 @@ function fill_group_line_table($line_params, $group, $force = false) {
 	if(count($line_params) < 1000 && !$force) {
 		return $line_params;
 	}
+	if(count($line_params) == 0) {
+		return $line_params;
+	}
 
 	$query = 'INSERT INTO traffic_info_group_line (traffic_info, line) VALUES ';
 	$params = array();
@@ -265,6 +268,18 @@ foreach($data as $group) {
 
 	$query = 'UPDATE traffic_info_group SET category = ?, priority = ?, owner = ?, title = ?, description = ?, deleted = ?, start_time = ?, end_time = ?, resume_time = ?, timestamp_deleted = ? WHERE id = ?';
 	db_query($query, array($group['category'], $group['priority'], $group['owner'], $group['title'], $group['description'], $group['deleted'], $group['start_time'], $group['end_time'], $group['resume_time'], $group['timestamp_deleted'], $group['group']));
+
+	$lines = db_query('SELECT line FROM traffic_info_group_line WHERE traffic_info = ?', array($group['group']));
+	$lines = array_map(function($a) { return $a['line']; }, $lines);
+	sort($lines);
+
+	$stored_lines = explode(',', $group['lines']);
+	sort($stored_lines);
+
+	if($lines == $stored_lines) {
+		continue;
+	}
+	write_log("Updating lines of group {$group['group']}");
 
 	db_query('DELETE FROM traffic_info_group_line WHERE traffic_info = ?', array($group['group']));
 
