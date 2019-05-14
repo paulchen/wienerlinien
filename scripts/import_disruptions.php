@@ -22,7 +22,7 @@ if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfo
 		check_category_groups($data->data->trafficInfoCategoryGroups);
 		check_categories($data->data->trafficInfoCategories);
 		process_traffic_infos($data->data->trafficInfos);
-		check_outdated($imported_disruptions, 'traffic_info');
+		$outdated_disruptions = check_outdated($imported_disruptions, 'traffic_info');
 
 		require_once(dirname(__FILE__) . '/merge_traffic_infos.php');
 

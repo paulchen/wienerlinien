@@ -33,6 +33,7 @@ write_log("merge step 1");
 $data = db_query_resultset('SELECT id, category, COALESCE(priority, 0) priority, owner, title, description, `group`, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
+			AND (deleted = 0 OR timestamp_deleted > DATE_SUB(NOW(), INTERVAL 100 DAY))
 		ORDER BY `group` ASC');
 $kill_groups = array();
 while($row = $data->fetch(PDO::FETCH_ASSOC)) {
@@ -69,6 +70,7 @@ write_log("merge step 2");
 $data = db_query_resultset('SELECT id, category, priority, owner, title, description, `group`, start_time, deleted
 		FROM traffic_info
 		WHERE NOT `group` IS NULL
+			AND (deleted = 0 OR timestamp_deleted > DATE_SUB(NOW(), INTERVAL 100 DAY))
 		ORDER BY `group` ASC');
 $existing_hashes = array();
 while($row = $data->fetch(PDO::FETCH_ASSOC)) {
@@ -86,6 +88,7 @@ write_log("merge step 3");
 $data = db_query_resultset('SELECT id, timestamp_created, category, priority, owner, title, description, start_time, end_time, resume_time, deleted
 		FROM traffic_info
 		WHERE `group` IS NULL
+			AND (deleted = 0 OR timestamp_deleted > DATE_SUB(NOW(), INTERVAL 100 DAY))
 		ORDER BY start_time ASC');
 $groups = array();
 $add_to_existing_groups = array();
@@ -236,6 +239,7 @@ function fill_group_line_table($line_params, $group, $force = false) {
 	return array();
 }
 
+$imported_disruptions = array_merge($imported_disruptions, $outdated_disruptions);
 if(count($imported_disruptions) > 0) {
 	$query = 'SELECT `group` FROM traffic_info WHERE id IN (';
 	$first = true;

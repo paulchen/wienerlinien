@@ -364,15 +364,22 @@ function report_problem($message, $stacktrace) {
 function check_outdated($current_ids, $table) {
 	write_log("Searching for outdated entries in table '$table'...");
 
+	$outdated_disruptions = array();
 	$result = db_query("SELECT id FROM $table WHERE deleted = 0");
 	foreach($result as $row) {
 		if(!in_array($row['id'], $current_ids)) {
 			write_log("Found outdated item with id {$row['id']}");
 			db_query("UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?", array($row['id']));
+
+			if(!in_array($row['id'], $outdated_disruptions)) {
+				$outdated_disruptions[] = $row['id'];
+			}
 		}
 	}
 
 	write_log("Searched for outdated entries in table '$table'...");
+
+	return $outdated_disruptions;
 }
 
 function log_query_stats() {
