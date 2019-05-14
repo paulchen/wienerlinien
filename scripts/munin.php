@@ -7,6 +7,8 @@ if(!isset($argv)) {
 
 require_once(dirname(__FILE__) . '/../lib/common.php');
 
+$debug = false;
+
 $lockfile = fopen($disruptions_lockfile, 'w');
 if(!flock($lockfile, LOCK_EX + LOCK_NB)) {
 	$categories = cache_get('disruptions_munin');
