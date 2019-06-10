@@ -42,7 +42,7 @@ $correlation_id = uniqid();
 function db_query($query, $parameters = array(), $ignore_errors = false) {
 	global $db, $db_queries;
 
-	write_log($query);
+//	write_log($query);
 
 	$query_start = microtime(true);
 	if(!($stmt = $db->prepare($query))) {
