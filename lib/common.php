@@ -99,7 +99,7 @@ function db_stmt_close($stmt) {
 function db_query_resultset($query, $parameters = array()) {
 	global $db;
 
-	write_log($query);
+//	write_log($query);
 
 	$query_start = microtime(true);
 	if(!($stmt = $db->prepare($query))) {
