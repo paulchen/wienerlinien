@@ -106,9 +106,8 @@ function db_query_resultset($query, $parameters = array()) {
 		$error = $db->errorInfo();
 		db_error($error[2], debug_backtrace(), $query, $parameters);
 	}
-	// see https://bugs.php.net/bug.php?id=40740 and https://bugs.php.net/bug.php?id=44639
 	foreach($parameters as $key => $value) {
-		$stmt->bindValue($key+1, $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+		$stmt->bindValue($key+1, $value);
 	}
 	if(!$stmt->execute()) {
 		$error = $stmt->errorInfo();
