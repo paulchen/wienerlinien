@@ -323,3 +323,5 @@ foreach($data as $group) {
 
 fill_group_line_table($line_params, null, true);
 
+db_query("UPDATE traffic_info_group SET deleted=1 WHERE deleted=0 AND id IN (SELECT `group` FROM traffic_info WHERE deleted=1)");
+
