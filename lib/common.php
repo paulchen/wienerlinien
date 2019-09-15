@@ -433,7 +433,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 		$filter_part .= ' AND i.deleted = ?';
 		$filter_params[] = $filter['deleted'];
 	}
-	else if(!isset($filter['twitter']) && !isset($filter['id']) && !isset($filter['group']) && (!isset($filter['archive']) || $filter['archive'] == 0)) {
+	else if(!isset($filter['twitter']) && !isset($filter['id']) && !isset($filter['group']) && (!isset($filter['archive']) || $filter['archive'] != 1)) {
 		$filter_part .= ' AND i.deleted = ?';
 		$filter_params[] = 0;
 	}
