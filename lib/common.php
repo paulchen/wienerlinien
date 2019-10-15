@@ -838,7 +838,7 @@ function fetch_rbls($rbls) {
 			$input_encoding = 'UTF-8';
 			$data = download_json($url, 'rbl_' . implode('.', $not_fetched_ids));
 
-			if(!$data) {
+			if(!$data || !isset($data->data) || !isset($data->data->monitors)) {
 				// TODO error
 				die();
 			}
