@@ -233,6 +233,7 @@ function check_content_type($mime, $curl_info) {
 		return true;
 	}
 	if(!isset($curl_info['content_type'])) {
+		write_log('No Content-Type header found');
 		return false;
 	}
 
@@ -241,7 +242,12 @@ function check_content_type($mime, $curl_info) {
 	$parts = explode(';', $content_type);
 	$content_type = $parts[0];
 
-	return $content_type == $mime;
+	if($content_type == $mime) {
+		return true;
+	}
+
+	write_log("Content-Type is $content_type, but $mime was expected");
+	return false;
 }
 
 function download($url, $prefix, $extension, $convert_function, $mime = '') {
@@ -308,10 +314,18 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 			}
 			unlink($filename);
 		}
+
+		write_log('Fetching failed');
+		write_log('Download status info: ' . dump_var($info));
+		write_log("Data fetched: $data");
+
 		if(!$retry_download) {
+			write_log('Not retrying download');
 			break;
 		}
-		write_log("Fetching failed, retrying in $download_failure_wait_time seconds...");
+
+		write_log("Retrying download in $download_failure_wait_time seconds...");
+
 		sleep($download_failure_wait_time);
 		$attempts++;
 	}
@@ -322,6 +336,14 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	}
 
 	return $retval;
+}
+
+function dump_var($info) {
+	ob_start();
+	print_r($info);
+	$data = ob_get_clean();
+	print_r($data);
+	return $data;
 }
 
 function write_log($message) {
