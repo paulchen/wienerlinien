@@ -156,7 +156,7 @@ function process_traffic_infos($infos) {
 					db_query("INSERT INTO traffic_info_platform (traffic_info, platform) VALUES $placeholder_string", $parameters);
 				}
 				foreach($missing_rbls as $rbl => $value) {
-					report_problem("Unknown RBL number $rbl for disruption $id. Disruption data:\n\n" . var_dump($info), debug_backtrace());
+					report_problem("Unknown RBL number $rbl for disruption $id. Disruption data:\n\n" . dump_var($info), debug_backtrace());
 				}
 			}
 
