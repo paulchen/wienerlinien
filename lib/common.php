@@ -251,7 +251,7 @@ function check_content_type($mime, $curl_info) {
 }
 
 function download($url, $prefix, $extension, $convert_function, $mime = '') {
-	global $cache_expiration, $retry_download, $download_failure_wait_time;
+	global $cache_expiration, $retry_download, $download_failure_wait_times;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
@@ -301,7 +301,7 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 	$retval = null;
-	while($attempts < 3) {
+	while($attempts < count($download_failure_wait_times)) {
 		$data = curl_exec($curl);
 		$info = curl_getinfo($curl);
 		if($info['http_code'] == 200 && check_content_type($mime, $info)) {
@@ -324,10 +324,12 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 			break;
 		}
 
-		write_log("Retrying download in $download_failure_wait_time seconds...");
-
-		sleep($download_failure_wait_time);
+		$wait_time = $download_failure_wait_times[$attempts];
 		$attempts++;
+
+		write_log("Retrying download in $wait_time seconds (attempt $attempts)...");
+
+		sleep($wait_time);
 	}
 	curl_close($curl);
 
