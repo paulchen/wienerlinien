@@ -970,6 +970,9 @@ function process_rbl_data($data) {
 	$departures = array();
 	foreach($data as $row) {
 		foreach($row as $line) {
+			if(!isset($line->departures) || !isset($line->departures->departure)) {
+				continue;
+			}
 			foreach($line->departures->departure as $departure) {
 				$line_name = (isset($departure->vehicle) && $departure->vehicle->towards && isset($departure->vehicle->name)) ? $departure->vehicle->name : $line->name;
 				$towards = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards;
