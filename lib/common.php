@@ -672,7 +672,7 @@ function line_sorter($a, $b) {
 	}
 
 	if(count($matches_a) == 0 && count($matches_b) == 0) {
-		return strcmp($matches_a, $matches_b);
+		return strcmp($a, $b);
 	}
 
 	if($matches_a[1] != '' && $matches_b[1] == '') { // U1 < 1, U1 < 13A
