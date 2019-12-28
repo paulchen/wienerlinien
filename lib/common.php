@@ -496,6 +496,9 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$filter_params[] = '%' . $filter['text'] . '%';
 		}
 	}
+	else {
+		$filter_part .= ' AND i.start_time < NOW()';
+	}
 
 	if(isset($filter['page'])) {
 		$page = $filter['page'];
