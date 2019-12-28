@@ -21,6 +21,9 @@ $platforms = db_query("SELECT s.name station_name, p.rbl rbl, GROUP_CONCAT(DISTI
 			JOIN wl_platform p ON (s.id = p.station)
 			JOIN line l ON (p.line = l.id)
 		WHERE s.id = ?
+			AND s.deleted = 0
+			AND l.deleted = 0
+			AND p.deleted = 0
 		GROUP BY p.rbl
 		ORDER BY wl_order ASC", array($_REQUEST['id']));
 if(count($platforms) < 1) {

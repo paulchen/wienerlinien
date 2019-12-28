@@ -42,6 +42,7 @@ foreach($line_ids as $line_id) {
 				JOIN segment_point sp1 ON (s.point1 = sp1.id)
 				JOIN segment_point sp2 ON (s.point2 = sp2.id)
 			WHERE l.id = ?
+				AND l.deleted = 0
 				AND ls.deleted = 0', array($line_id));
 	$segments = array();
 	foreach($data as $row) {

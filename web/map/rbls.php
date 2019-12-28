@@ -11,7 +11,7 @@ foreach($ids as $id) {
 	$placeholders[] = '?';
 }
 $placeholder_string = implode(',', $placeholders);
-$data = db_query("SELECT DISTINCT(rbl) FROM wl_platform WHERE rbl in ($placeholder_string)", $ids);
+$data = db_query("SELECT DISTINCT(rbl) FROM wl_platform WHERE rbl in ($placeholder_string) AND deleted = 0", $ids);
 if(count($data) != count($ids)) {
 	// TODO
 	die();
