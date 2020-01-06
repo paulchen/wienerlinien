@@ -421,6 +421,8 @@ CREATE TABLE IF NOT EXISTS `data_problem` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+create index `idx_data_problem_timestamp` on data_problem(timestamp);
+
 --
 -- Table structure for table `log`
 --
