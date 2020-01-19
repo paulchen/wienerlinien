@@ -45,34 +45,42 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 //	write_log($query);
 
 	$query_start = microtime(true);
-	if(!($stmt = $db->prepare($query))) {
-		$error = $db->errorInfo();
-		if(!$ignore_errors) {
-			db_error($error[2], debug_backtrace(), $query, $parameters);
+	try {
+		if(!($stmt = $db->prepare($query))) {
+			$error = $db->errorInfo();
+			if(!$ignore_errors) {
+				db_error($error[2], debug_backtrace(), $query, $parameters);
+			}
+		}
+		$index = 0;
+		foreach($parameters as $value) {
+			$stmt->bindValue(++$index, $value);
+		}
+		if(!$stmt->execute()) {
+			$error = $stmt->errorInfo();
+			if(!$ignore_errors) {
+				db_error($error[2], debug_backtrace(), $query, $parameters);
+			}
+		}
+		if(preg_match('/^\s*SELECT/i', $query)) {
+			$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+		else {
+			$data = array();
+		}
+		if(!$stmt->closeCursor()) {
+			$error = $stmt->errorInfo();
+			if(!$ignore_errors) {
+				db_error($error[2], debug_backtrace(), $query, $parameters);
+			}
 		}
 	}
-	$index = 0;
-	foreach($parameters as $value) {
-		$stmt->bindValue(++$index, $value);
-	}
-	if(!$stmt->execute()) {
-		$error = $stmt->errorInfo();
+	catch (PDOException $e) {
 		if(!$ignore_errors) {
-			db_error($error[2], debug_backtrace(), $query, $parameters);
+			db_error($e->getMessage(), $e->getTraceAsString(), $query, $parameters);
 		}
 	}
-	if(preg_match('/^\s*SELECT/i', $query)) {
-		$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	}
-	else {
-		$data = array();
-	}
-	if(!$stmt->closeCursor()) {
-		$error = $stmt->errorInfo();
-		if(!$ignore_errors) {
-			db_error($error[2], debug_backtrace(), $query, $parameters);
-		}
-	}
+
 	$query_end = microtime(true);
 
 	$db_queries[] = array('timestamp' => time(), 'query' => $query, 'parameters' => serialize($parameters), 'execution_time' => $query_end-$query_start);
