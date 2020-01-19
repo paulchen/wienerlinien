@@ -77,6 +77,9 @@ function db_query($query, $parameters = array(), $ignore_errors = false) {
 	}
 	catch (PDOException $e) {
 		if(!$ignore_errors) {
+			if(strpos($e->getMessage(), 'max_statement_time') !== false) {
+				die();
+			}
 			db_error($e->getMessage(), $e->getTraceAsString(), $query, $parameters);
 		}
 	}
