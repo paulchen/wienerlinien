@@ -384,7 +384,7 @@ CREATE TABLE IF NOT EXISTS `wl_platform` (
   `wl_id` int(11) NOT NULL,
   `direction` tinyint(4) NOT NULL,
   `pos` int(11) NOT NULL,
-  `rbl` int(11) NOT NULL,
+  `rbl` int(11) NULL,
   `area` text NOT NULL,
   `Platform` text NOT NULL,
   `lat` decimal(17,15) NOT NULL,
