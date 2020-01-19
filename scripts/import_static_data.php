@@ -110,10 +110,9 @@ function import_wl_lines($data, $check_only = false) {
 			write_log("Added line {$row['BEZEICHNUNG']} (type $type)");
 		}
 
-		$timestamp = strtotime($row['STAND']);
-		$data = db_query('SELECT wl_id, wl_order, realtime, UNIX_TIMESTAMP(wl_updated) wl_updated FROM line WHERE id = ?', array($id));
-		if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT'] || $data[0]['wl_updated'] != $timestamp) {
-			db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ?, wl_updated = FROM_UNIXTIME(?) WHERE id = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $timestamp, $id));
+		$data = db_query('SELECT wl_id, wl_order, realtime FROM line WHERE id = ?', array($id));
+		if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT']) {
+			db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ? WHERE id = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $id));
 
 			write_log("Updated line {$row['BEZEICHNUNG']}");
 		}
@@ -175,16 +174,15 @@ function import_wl_stations($data, $check_only = false) {
 		}
 
 		// TODO avoid this query in case the station already exists
-		$existing_station = db_query('SELECT wl_id, wl_diva, wl_lat, wl_lon, TIMESTAMP(wl_updated) wl_updated FROM station WHERE id = ?', array($id));
+		$existing_station = db_query('SELECT wl_id, wl_diva, wl_lat, wl_lon FROM station WHERE id = ?', array($id));
 		$station = $existing_station[0];
 
 		$timestamp = strtotime($row['STAND']);
 		if($station['wl_id'] != $row['HALTESTELLEN_ID']
 				|| $station['wl_diva'] != $row['DIVA']
 				|| $station['wl_lat'] != $row['WGS84_LAT']
-				|| $station['wl_lon'] != $row['WGS84_LON']
-				|| strtotime($station['wl_updated']) != $timestamp) {
-			db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ?, wl_updated = FROM_UNIXTIME(?) WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $timestamp, $id));
+				|| $station['wl_lon'] != $row['WGS84_LON']) {
+			db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $id));
 
 			write_log("Updated station $id ({$row['NAME']}, {$row['GEMEINDE']})");
 		}
@@ -226,12 +224,11 @@ function import_wl_platforms($data, $check_only = false) {
 		$platform = $row['STEIG'];
 		$lat = $row['STEIG_WGS84_LAT'];
 		$lon = $row['STEIG_WGS84_LON'];
-		$updated = strtotime($row['STAND']);
 
 		foreach($rbls as $rbl) {
-			$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND wl_updated = FROM_UNIXTIME(?) AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+			$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
 			if(count($data3) == 0) {
-				db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon, wl_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?))', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+				db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
 				$id = db_last_insert_id();
 
 				$imported_platforms[] = $id;
