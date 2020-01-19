@@ -233,7 +233,12 @@ function import_wl_platforms($data, $check_only = false) {
 		foreach($rbls as $rbl) {
 			$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
 			if(count($data3) == 0) {
-				db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
+				if(!$rbl) {
+					db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $area, $platform, $lat, $lon));
+				}
+				else {
+					db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
+				}
 				$id = db_last_insert_id();
 
 				$imported_platforms[] = $id;
