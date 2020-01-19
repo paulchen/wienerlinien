@@ -182,7 +182,12 @@ function import_wl_stations($data, $check_only = false) {
 				|| $station['wl_diva'] != $row['DIVA']
 				|| $station['wl_lat'] != $row['WGS84_LAT']
 				|| $station['wl_lon'] != $row['WGS84_LON']) {
-			db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $id));
+			if(!$row['WGS84_LAT'] || !$row['WGS84_LON']) {
+				db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = NULL, wl_lon = NULL WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $id));
+			}
+			else {
+				db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $id));
+			}
 
 			write_log("Updated station $id ({$row['NAME']}, {$row['GEMEINDE']})");
 		}
@@ -226,7 +231,7 @@ function import_wl_platforms($data, $check_only = false) {
 		$lon = $row['STEIG_WGS84_LON'];
 
 		foreach($rbls as $rbl) {
-			$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon, $updated));
+			$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
 			if(count($data3) == 0) {
 				db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
 				$id = db_last_insert_id();
