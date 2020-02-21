@@ -1044,4 +1044,35 @@ function get_item_time($row) {
 	return strtotime($row['timestamp_created']);
 }
 
+function get_station_data($id) {
+	$data = db_query('SELECT station_id, name FROM station WHERE id = ?', array($id));
+	if(count($data) != 1) {
+		return null;
+	}
+	$station_id = $data[0]['station_id'];
+	$station_name = $data[0]['name'];
+
+	$platforms = db_query("SELECT p.rbl rbl, GROUP_CONCAT(DISTINCT p.platform ORDER BY platform ASC SEPARATOR '/') platform,
+				GROUP_CONCAT(DISTINCT l.name ORDER BY wl_order ASC SEPARATOR ',') line_names,
+				GROUP_CONCAT(DISTINCT l.id ORDER BY wl_order ASC SEPARATOR ',') line_ids
+			FROM station s
+				JOIN wl_platform p ON (s.id = p.station)
+				JOIN line l ON (p.line = l.id)
+			WHERE s.id = ?
+				AND s.deleted = 0
+				AND l.deleted = 0
+				AND p.deleted = 0
+			GROUP BY p.rbl
+			ORDER BY wl_order ASC", array($id));
+	if(count($platforms) < 1) {
+		http_response_code(404);
+		die('Not found');
+	}
+	foreach($platforms as &$platform) {
+		$platform['line_names'] = explode(',', $platform['line_names']);
+		$platform['line_ids'] = explode(',', $platform['line_ids']);
+	}
+	unset($platform);
+	return array('name' => $station_name, 'platforms' => $platforms);
+}
 
