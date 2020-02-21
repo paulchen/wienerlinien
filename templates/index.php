@@ -22,6 +22,7 @@
 				<?php endif; ?>
 				<li><a href="disruptions/?archive=1">Störungsarchiv</a></li>
 				<li><a href="map">Karte</a></li>
+				<li><a href="departure-monitor">Abfahrsmonitor</a></li>
 			</ul>
 		</div>
 		<hr />
