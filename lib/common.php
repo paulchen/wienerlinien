@@ -998,6 +998,13 @@ function process_rbl_data($data) {
 				else {
 					$barrier_free = $line->barrierFree;
 				}
+				$realtime_supported = false;
+				if (isset($departure->vehicle) && isset($departure->vehicle->realtimeSupported)) {
+					$realtime_supported = $departure->vehicle->realtimeSupported;
+				}
+				else if(isset($line->realtimeSupported)) {
+					$realtime_supported = $line->realtimeSupported;
+				}
 
 				$countdown = '';
 				if (isset($departure->departureTime->countdown)) {
@@ -1010,6 +1017,7 @@ function process_rbl_data($data) {
 					'towards' => $towards,
 					'towards_id' => possible_destination($line_id, $towards),
 					'barrier_free' => $barrier_free,
+					'realtime_supported' => $realtime_supported,
 					'time' => $countdown
 				); 
 			}
