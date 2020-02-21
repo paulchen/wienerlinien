@@ -386,7 +386,7 @@ function write_log($message) {
 function report_problem($message, $stacktrace) {
 	write_log($message);
 
-	db_query('INSERT INTO data_problem (description) VALUES (?)', array($message));
+//	db_query('INSERT INTO data_problem (description) VALUES (?)', array($message));
 
 	$params = array(
 			'MESSAGE' => $message,
