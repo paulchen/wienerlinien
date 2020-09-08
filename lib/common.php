@@ -327,7 +327,7 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 		}
 
 		write_log('Fetching failed');
-		write_log('Download status info: ' . dump_var($info));
+		write_log('Download status info: ' . dump_r($info));
 		write_log("Data fetched: $data");
 
 		if(!$retry_download) {
@@ -349,14 +349,6 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	}
 
 	return $retval;
-}
-
-function dump_var($info) {
-	ob_start();
-	print_r($info);
-	$data = ob_get_clean();
-	print_r($data);
-	return $data;
 }
 
 function write_log($message) {
@@ -876,18 +868,16 @@ function fetch_rbls($rbls) {
 			$input_encoding = 'UTF-8';
 			$data = download_json($url, 'rbl_' . implode('.', $not_fetched_ids));
 
-			if(!$data || !isset($data->data) || !isset($data->data->monitors)) {
-				// TODO error
-				die();
-			}
 			$rbl_data = array();
-			foreach($data->data->monitors as $monitor) {
-				$rbl = $monitor->locationStop->properties->attributes->rbl;
-				$lines = $monitor->lines;
-				if(!isset($rbl_data[$rbl])) {
-					$rbl_data[$rbl] = array();
+			if($data && isset($data->data) && isset($data->data->monitors)) {
+				foreach($data->data->monitors as $monitor) {
+					$rbl = $monitor->locationStop->properties->attributes->rbl;
+					$lines = $monitor->lines;
+					if(!isset($rbl_data[$rbl])) {
+						$rbl_data[$rbl] = array();
+					}
+					$rbl_data[$rbl][] = $lines;
 				}
-				$rbl_data[$rbl][] = $lines;
 			}
 
 			// process the data and make it available to other instances of the application
