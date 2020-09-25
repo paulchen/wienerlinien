@@ -1,4 +1,4 @@
-html {
+btml {
 	height: 100%;
 }
 body {
@@ -47,9 +47,10 @@ div.rbl {
 table.rbl_info {
 	width: 500px;
 	background-color: gray;
-	padding: 10px;
+	padding: 12px;
 	font-weight: bold;
 	font-family: monospace;
+	border-spacing: 0;
 }
 table.rbl_info tr > td {
 	width: 70%;
@@ -57,6 +58,11 @@ table.rbl_info tr > td {
 	color: yellow;
 	background-color: black;
 	padding: 3px;
+	border-right: solid 2px gray;
+	border-bottom: solid 2px gray;
+}
+table.rbl_info tr:last-child > td {
+	border-bottom: none;
 }
 table.rbl_info tr > td a {
 	color: yellow;
@@ -64,9 +70,15 @@ table.rbl_info tr > td a {
 table.rbl_info tr > td:first-child {
 	width: 15%;
 }
-table.rbl_info tr > td:last-child {
-	width: 15%;
+table.rbl_info tr > td:nth-last-child(2) {
+	width: 10%;
 	text-align: right;
+	border-right: none;
+}
+table.rbl_info tr > td:last-child {
+	width: 5%;
+	text-align: center;
+	border-right: none;
 }
 div.route {
 	display: inline-block;

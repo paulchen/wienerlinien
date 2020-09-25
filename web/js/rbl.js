@@ -40,7 +40,13 @@ function update_rbls() {
 						var towards = row['towards'];
 						var time = row['time'];
 						var line_link = 'line.htm?id=' + row['line_id'];
-						var barrier_free = row['barrier_free'] ? '&#x267f;' : '<span style="visibility: hidden;">&#x267f;</span>';
+						var barrier_free = '<span style="visibility: hidden;">&#x267f;</span>';
+						if(row['folding_ramp']) {
+							barrier_free = '&#x2581;';
+						}
+						else if(row['barrier_free']) {
+							barrier_free = '&#x267f;';
+						}
 
 						content += '<tr>';
 						if(line == null) {
@@ -59,10 +65,10 @@ function update_rbls() {
 							content += '<td><a href="station.htm?id=' + row['towards_id'] + '">' + towards + '</a></td>';
 						}
 						if(time == null) {
-							content += '<td></td>';
+							content += '<td></td><td></td>';
 						}
 						else {
-							content += '<td>' +  time + ' ' + barrier_free + '</td>';
+							content += '<td>' +  time + '</td><td>' + barrier_free + '</td>';
 						}
 						content += '</tr>';
 					});
