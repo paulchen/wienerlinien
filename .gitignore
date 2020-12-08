@@ -3,3 +3,4 @@ cache/*
 *.swp
 config.php
 misc/last_update
+scripts/last_cache_cleanup
