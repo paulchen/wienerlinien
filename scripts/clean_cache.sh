@@ -9,6 +9,14 @@ YEAR=$START
 
 CURRENT=`date "+%Y%m"`
 
+log() {
+	message="$1"
+	date=`date "+[%Y-%m-%d %H:%M:%S]"`
+	echo "$date $message"
+}
+
+log "Starting clean_cache.sh"
+
 FAIL=0
 while true; do
 	MONTH=$((MONTH+1))
@@ -33,26 +41,26 @@ while true; do
 		mkdir -p ${YEAR}/${FULL_MONTH} || FAIL=1
 
 		if [ "$FAIL" -eq "1" ]; then
-			echo "Error creating directory ${YEAR}/${FULL_MONTH}"
+			log "Error creating directory ${YEAR}/${FULL_MONTH}"
 			break
 		fi
 	
-		echo Archiving ${FILENAME_PART}...
+		log "Archiving ${FILENAME_PART}..."
 		find . -maxdepth 1 -name "*_${FILENAME_PART}*" -exec mv {} ${YEAR}/${FULL_MONTH} \; || FAIL=1
 		if [ "$FAIL" -eq "1" ]; then
-			echo Error during archiving
+			log "Error during archiving"
 			break
 		fi
 
 		cd ${YEAR}
 		tar cjf ${FULL_MONTH}.tar.bz2 ${FULL_MONTH} || FAIL=1
 		if [ "$FAIL" -eq "1" ]; then
-			echo Error archiving ${FULL_MONTH} to ${FULL_MONTH}.tar.bz2
+			log "Error archiving ${FULL_MONTH} to ${FULL_MONTH}.tar.bz2"
 			break
 		fi
 		rm -rf ${FULL_MONTH} || FAIL=1
 		if [ "$FAIL" -eq "1" ]; then
-			echo Error deleting ${FULL_MONTH}
+			log "Error deleting ${FULL_MONTH}"
 			break
 		fi
 		cd ..
@@ -63,5 +71,7 @@ if [ "$FAIL" -eq "0" ]; then
 	cd "$1"
 	touch last_cache_cleanup
 fi
+
+log "Finished clean_cache.sh"
 
 exit $FAIL
