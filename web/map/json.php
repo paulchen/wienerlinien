@@ -79,6 +79,7 @@ foreach($line_ids as $line_id) {
 			JOIN station s ON (p.station = s.id)
 		WHERE p.line = ?
 			AND p.deleted = 0
+			AND s.deleted = 0
 		ORDER BY p.direction ASC, p.pos ASC', array($line_id));
 	$stations = array();
 	$known_station_ids = array();
