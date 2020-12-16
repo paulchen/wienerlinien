@@ -123,9 +123,6 @@ function import_wl_lines($data, $check_only = false) {
 	write_log("Import lines data from Wiener Linien...");
 
 	foreach($data as $row) {
-		if($row['BEZEICHNUNG'] == '9A' && $row['REIHENFOLGE'] > 200) {
-			continue;
-		}
 		if(is_ignored_line($row['LINIEN_ID'])) {
 			continue;
 		}
@@ -170,9 +167,6 @@ function import_wl_stations($data, $check_only = false) {
 	foreach($data as $row) {
 		$municipality = check_municipality($row['GEMEINDE_ID'], $row['GEMEINDE']);
 
-		if($row['TYP'] != 'stop') {
-			continue;
-		}
 		if(is_ignored_station($row['HALTESTELLEN_ID'])) {
 			continue;
 		}
