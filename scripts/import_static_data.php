@@ -40,13 +40,20 @@ if(!$wl_platforms_data = download_csv($url_wl_platforms, 'wl_platforms')) {
 	die();
 }
 
-import_lines($lines_data, true);
-import_station_ids($station_id_data, true);
-import_stations($stations_data, true);
+write_log('Validating input data...');
 
-import_wl_lines($wl_lines_data, true);
-import_wl_stations($wl_stations_data, true);
-import_wl_platforms($wl_platforms_data, true);
+$data_ok = import_lines($lines_data, true);
+$data_ok &= import_station_ids($station_id_data, true);
+$data_ok &= import_stations($stations_data, true);
+
+$data_ok &= import_wl_lines($wl_lines_data, true);
+$data_ok &= import_wl_stations($wl_stations_data, true);
+$data_ok &= import_wl_platforms($wl_platforms_data, true);
+
+if(!$data_ok) {
+	write_log('Unable to import data, aborting now');
+	die(1);
+}
 
 write_log("Starting import script...");
 
