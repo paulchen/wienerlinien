@@ -97,21 +97,30 @@ function is_ignored_station($wl_station_id) {
 function import_wl_lines($data, $check_only = false) {
 	global $imported_lines;
 
-	if($check_only) {
-		if(count($data) == 0) {
-			write_log('Error: Lines data from Wiener Linien cannot be imported.');
-			return false;
-		}
-		return true;
-	}
-
-	write_log("Import lines data from Wiener Linien...");
-
 	$types_data = db_query('SELECT id, wl_name FROM line_type');
 	$types = array();
 	foreach($types_data as $row) {
 		$types[$row['wl_name']] = $row['id'];
 	}
+
+	if($check_only) {
+		if(count($data) == 0) {
+			write_log('Error: Lines data from Wiener Linien cannot be imported.');
+			return false;
+		}
+
+		foreach($data as $row) {
+			$type = $row['VERKEHRSMITTEL'];
+			if(!isset($types[$type])) {
+				write_log("Unknown means of transport: $type");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	write_log("Import lines data from Wiener Linien...");
 
 	foreach($data as $row) {
 		if($row['BEZEICHNUNG'] == '9A' && $row['REIHENFOLGE'] > 200) {
