@@ -62,6 +62,24 @@ CREATE TABLE `wl_line` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `wl_station`
+--
+
+CREATE TABLE `wl_station` (
+  `id` int(11) NOT NULL,
+  `station` int(11) NOT NULL,
+  `wl_id` int(11) DEFAULT NULL,
+  `wl_diva` int(11) DEFAULT NULL,
+  `wl_lat` decimal(17,15) DEFAULT NULL,
+  `wl_lon` decimal(17,15) DEFAULT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT 0,
+  `timestamp_created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `timestamp_deleted` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `line_color`
 --
 
@@ -488,6 +506,13 @@ ALTER TABLE `wl_line`
   ADD KEY `line` (`line`);
 
 --
+-- Indizes für die Tabelle `wl_station`
+--
+ALTER TABLE `wl_station`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `station` (`station`);
+
+--
 -- AUTO_INCREMENT für exportierte Tabellen
 --
 
@@ -495,6 +520,12 @@ ALTER TABLE `wl_line`
 -- AUTO_INCREMENT für Tabelle `wl_line`
 --
 ALTER TABLE `wl_line`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT für Tabelle `wl_station`
+--
+ALTER TABLE `wl_station`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -512,6 +543,12 @@ ALTER TABLE `line`
 --
 ALTER TABLE `wl_line`
   ADD CONSTRAINT `wl_line_ibfk_1` FOREIGN KEY (`line`) REFERENCES `line` (`id`);
+
+--
+-- Constraints der Tabelle `wl_station`
+--
+ALTER TABLE `wl_station`
+  ADD CONSTRAINT `wl_station_ibfk_1` FOREIGN KEY (`station`) REFERENCES `station` (`id`);
 
 --
 -- Constraints for table `line_color`

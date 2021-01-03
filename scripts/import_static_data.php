@@ -61,6 +61,7 @@ $imported_lines = array();
 $imported_wl_lines = array();
 $imported_stations = array();
 $imported_station_ids = array();
+$imported_wl_stations = array();
 $imported_line_station = array();
 $imported_line_segment = array();
 $imported_platforms = array();
@@ -74,6 +75,7 @@ import_wl_platforms($wl_platforms_data);
 
 check_outdated($imported_wl_lines, 'wl_line');
 check_outdated($imported_lines, 'line');
+check_outdated($imported_wl_stations, 'wl_station');
 check_outdated($imported_stations, 'station');
 check_outdated($imported_station_ids, 'station_id');
 check_outdated($imported_line_station, 'line_station');
@@ -153,7 +155,7 @@ function import_wl_lines($data, $check_only = false) {
 
 			// to make sure these rows don't get deleted by the check_outdated() function
 			foreach($data as $row) {
-				$imported_wl_lines[] = $data['id'];
+				$imported_wl_lines[] = $row['id'];
 			}
 		}
 
@@ -167,7 +169,7 @@ function import_wl_lines($data, $check_only = false) {
 }
 
 function import_wl_stations($data, $check_only = false) {
-	global $imported_stations;
+	global $imported_stations, $imported_wl_stations;
 
 	if($check_only) {
 		if(count($data) == 0) {
@@ -181,58 +183,80 @@ function import_wl_stations($data, $check_only = false) {
 
 	foreach($data as $row) {
 		$municipality = check_municipality($row['GEMEINDE_ID'], $row['GEMEINDE']);
+		$name = $row['NAME'];
+		$wl_id = $row['HALTESTELLEN_ID'];
 
 		if(is_ignored_station($row['HALTESTELLEN_ID'])) {
 			continue;
 		}
 
-		$existing_station = db_query('SELECT wl_id, id FROM station WHERE name = ? AND deleted = 0', array($row['NAME']));
-		$create_station = false;
+		$existing_station = db_query('SELECT s.id station_id, ws.id wl_station_id
+			FROM station s
+				JOIN wl_station ws ON (ws.station = s.id)
+			WHERE s.name = ?
+				AND s.deleted = 0
+				AND ws.deleted = 0
+				AND ws.wl_id = ?', array($name, $wl_id));
 		if(count($existing_station) == 0) {
-			$create_station = true;
-		}
-		else {
-			if(count($existing_station) == 1) {
-				$id = $existing_station[0]['id'];
-			}
-			else {
-				$found = false;
-				foreach($existing_station as $station) {
-					if($station['wl_id'] == $row['HALTESTELLEN_ID']) {
-						$found = true;
-						$id = $station['id'];
-						break;
-					}
-				}
-				if(!$found) {
-					$create_station = true;
-				}
-			}
-		}
-		if($create_station) {
-			db_query('INSERT INTO station (name, municipality) VALUES (?, ?)', array($row['NAME'], $municipality));
+			db_query('INSERT INTO station (name, municipality) VALUES (?, ?)', array($name, $municipality));
 			$id = db_last_insert_id();
 
-			write_log("Added station $id ({$row['NAME']}, {$row['GEMEINDE']})");
+			write_log("Added station $id ($name, {$row['GEMEINDE']})");
+		}
+		else if(count($existing_station) == 1) {
+			$id = $existing_station[0]['station_id'];
+		}
+		else {
+			write_log("Not updating table wl_station, multiple rows for station $name and wl_id $wl_id exist");
+
+			// to make sure these rows don't get deleted by the check_outdated() function
+			foreach($existing_station as $row) {
+				$imported_stations[] = $row['station_id'];
+				$imported_wl_stations[] = $row['wl_station_id'];
+			}
+
+			continue;
 		}
 
-		// TODO avoid this query in case the station already exists
-		$existing_station = db_query('SELECT wl_id, wl_diva, wl_lat, wl_lon FROM station WHERE id = ?', array($id));
-		$station = $existing_station[0];
+		$existing_wl_station = db_query('SELECT id, station, wl_diva, wl_lat, wl_lon FROM wl_station WHERE wl_id = ? AND deleted = 0', array($wl_id));
+		if(count($existing_wl_station) == 0) {
+			db_query('INSERT INTO wl_station (station, wl_id, wl_diva, wl_lat, wl_lon) VALUES (?, ?, ?, ?, ?)', array($id, $wl_id, $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON']));
+			$new_id = db_last_insert_id();
 
-		$timestamp = strtotime($row['STAND']);
-		if($station['wl_id'] != $row['HALTESTELLEN_ID']
-				|| $station['wl_diva'] != $row['DIVA']
-				|| $station['wl_lat'] != $row['WGS84_LAT']
-				|| $station['wl_lon'] != $row['WGS84_LON']) {
-			if(!$row['WGS84_LAT'] || !$row['WGS84_LON']) {
-				db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = NULL, wl_lon = NULL WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $id));
-			}
-			else {
-				db_query('UPDATE station SET wl_id = ?, wl_diva = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($row['HALTESTELLEN_ID'], $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $id));
+			$imported_wl_stations[] = $new_id;
+
+			write_log("Added wl_station $new_id ($name, {$row['GEMEINDE']}), wl_id $wl_id");
+		}
+		else if(count($existing_wl_station) == 1) {
+			$station = $existing_wl_station[0];
+			$wl_station_id = $station['id'];
+
+			if($station['station'] != $id
+					|| $station['wl_diva'] != $row['DIVA']
+					|| $station['wl_lat'] != $row['WGS84_LAT']
+					|| $station['wl_lon'] != $row['WGS84_LON']) {
+				if(!$row['WGS84_LAT'] || !$row['WGS84_LON']) {
+					db_query('UPDATE wl_station SET station = ?, wl_diva = ?, wl_lat = NULL, wl_lon = NULL WHERE id = ?', array($id, $row['DIVA'], $wl_station_id));
+				}
+				else {
+					db_query('UPDATE wl_station SET station = ?, wl_diva = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($id, $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $wl_station_id));
+				}
+
+				write_log("Updated wl_station $wl_station_id ($name, {$row['GEMEINDE']}), wl_id $wl_id");
 			}
 
-			write_log("Updated station $id ({$row['NAME']}, {$row['GEMEINDE']})");
+			$imported_wl_stations[] = $station['id'];
+		}
+		else {
+			write_log("Not updating table wl_station, multiple rows for wl_id $wl_id exist");
+
+			// to make sure these rows don't get deleted by the check_outdated() function
+			foreach($existing_wl_station as $row) {
+				$imported_stations[] = $row['station'];
+				$imported_wl_stations[] = $row['id'];
+			}
+
+			continue;
 		}
 
 		$imported_stations[] = $id;
@@ -263,8 +287,22 @@ function import_wl_platforms($data, $check_only = false) {
 			continue;
 		}
 
-		$data1 = db_query('SELECT id, name FROM station WHERE wl_id = ? AND deleted = 0 ORDER BY id DESC LIMIT 0, 1', array($station_wl_id));
-		$data2 = db_query('SELECT l.id, l.name FROM line l JOIN wl_line w ON (l.id = w.line) WHERE w.wl_id = ? AND w.deleted = 0 AND l.deleted = 0 ORDER BY l.id DESC LIMIT 0, 1', array($line_wl_id));
+		$data1 = db_query('SELECT s.id id, s.name name
+			FROM station s
+				JOIN wl_station ws ON (s.id = ws.station)
+			WHERE ws.wl_id = ?
+				AND s.deleted = 0
+				AND ws.deleted = 0
+			ORDER BY id DESC
+			LIMIT 0, 1', array($station_wl_id));
+		$data2 = db_query('SELECT l.id, l.name
+			FROM line l
+				JOIN wl_line w ON (l.id = w.line)
+			WHERE w.wl_id = ?
+				AND w.deleted = 0
+				AND l.deleted = 0
+			ORDER BY l.id DESC
+			LIMIT 0, 1', array($line_wl_id));
 
 		$station_id = isset($data1[0]) ? $data1[0]['id'] : null;
 		$line_id = isset($data2[0]) ? $data2[0]['id'] : null;
