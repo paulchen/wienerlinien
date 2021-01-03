@@ -86,12 +86,6 @@ write_log("Import script successfully completed.");
 
 log_query_stats();
 
-function is_ignored_station($wl_station_id) {
-	$ignored_stations = array(214461280);
-
-	return in_array($wl_station_id, $ignored_stations);
-}
-
 function import_wl_lines($data, $check_only = false) {
 	global $imported_lines, $imported_wl_lines;
 
@@ -186,10 +180,6 @@ function import_wl_stations($data, $check_only = false) {
 		$name = $row['NAME'];
 		$wl_id = $row['HALTESTELLEN_ID'];
 
-		if(is_ignored_station($row['HALTESTELLEN_ID'])) {
-			continue;
-		}
-
 		$existing_station = db_query('SELECT s.id station_id, ws.id wl_station_id
 			FROM station s
 				JOIN wl_station ws ON (ws.station = s.id)
@@ -282,10 +272,6 @@ function import_wl_platforms($data, $check_only = false) {
 		$line_wl_id = $row['FK_LINIEN_ID'];
 		$station_wl_id = $row['FK_HALTESTELLEN_ID'];
 		$wl_id = $row['STEIG_ID'];
-
-		if(is_ignored_station($station_wl_id)) {
-			continue;
-		}
 
 		$data1 = db_query('SELECT s.id id, s.name name
 			FROM station s
