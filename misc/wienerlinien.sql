@@ -30,9 +30,6 @@ CREATE TABLE IF NOT EXISTS `line` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `type` int(11) NOT NULL,
-  `wl_id` int(11) DEFAULT NULL,
-  `wl_order` int(11) DEFAULT NULL,
-  `realtime` tinyint(4) DEFAULT '0',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `timestamp_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `timestamp_deleted` timestamp NULL DEFAULT NULL,
@@ -44,6 +41,23 @@ CREATE TABLE IF NOT EXISTS `line` (
 --
 -- Dumping data for table `line`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `wl_line`
+--
+
+CREATE TABLE `wl_line` (
+  `id` int(11) NOT NULL,
+  `line` int(11) NOT NULL,
+  `wl_id` int(11) NOT NULL,
+  `wl_order` int(11) NOT NULL,
+  `realtime` tinyint(4) NOT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT 0,
+  `timestamp_created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `timestamp_deleted` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -463,6 +477,27 @@ CREATE TABLE IF NOT EXISTS `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Indizes der exportierten Tabellen
+--
+
+--
+-- Indizes für die Tabelle `wl_line`
+--
+ALTER TABLE `wl_line`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `line` (`line`);
+
+--
+-- AUTO_INCREMENT für exportierte Tabellen
+--
+
+--
+-- AUTO_INCREMENT für Tabelle `wl_line`
+--
+ALTER TABLE `wl_line`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -471,6 +506,12 @@ CREATE TABLE IF NOT EXISTS `settings` (
 --
 ALTER TABLE `line`
   ADD CONSTRAINT `line_ibfk_1` FOREIGN KEY (`type`) REFERENCES `line_type` (`id`);
+
+--
+-- Constraints der Tabelle `wl_line`
+--
+ALTER TABLE `wl_line`
+  ADD CONSTRAINT `wl_line_ibfk_1` FOREIGN KEY (`line`) REFERENCES `line` (`id`);
 
 --
 -- Constraints for table `line_color`

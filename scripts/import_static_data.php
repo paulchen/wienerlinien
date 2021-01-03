@@ -58,6 +58,7 @@ if(!$data_ok) {
 write_log("Starting import script...");
 
 $imported_lines = array();
+$imported_wl_lines = array();
 $imported_stations = array();
 $imported_station_ids = array();
 $imported_line_station = array();
@@ -71,6 +72,7 @@ import_wl_lines($wl_lines_data);
 import_wl_stations($wl_stations_data);
 import_wl_platforms($wl_platforms_data);
 
+check_outdated($imported_wl_lines, 'wl_line');
 check_outdated($imported_lines, 'line');
 check_outdated($imported_stations, 'station');
 check_outdated($imported_station_ids, 'station_id');
@@ -95,7 +97,7 @@ function is_ignored_station($wl_station_id) {
 }
 
 function import_wl_lines($data, $check_only = false) {
-	global $imported_lines;
+	global $imported_lines, $imported_wl_lines;
 
 	$types_data = db_query('SELECT id, wl_name FROM line_type');
 	$types = array();
@@ -123,29 +125,51 @@ function import_wl_lines($data, $check_only = false) {
 	write_log("Import lines data from Wiener Linien...");
 
 	foreach($data as $row) {
-		if(is_ignored_line($row['LINIEN_ID'])) {
+		$wl_id = $row['LINIEN_ID'];
+		if(is_ignored_line($wl_id)) {
 			continue;
 		}
 		$type = $types[$row['VERKEHRSMITTEL']];
-		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0 ORDER BY id ASC', array($row['BEZEICHNUNG'], $type));
+		$name = $row['BEZEICHNUNG'];
+		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0 ORDER BY id ASC', array($name, $type));
 		if(count($line_data) > 0) {
-			$id = $line_data[0]['id'];
+			$line_id = $line_data[0]['id'];
 		}
 		else {
-			db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($row['BEZEICHNUNG'], $type));
-			$id = db_last_insert_id();
+			db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type));
+			$line_id = db_last_insert_id();
 
-			write_log("Added line {$row['BEZEICHNUNG']} (type $type)");
+			write_log("Added line $name (type $type)");
 		}
 
-		$data = db_query('SELECT wl_id, wl_order, realtime FROM line WHERE id = ?', array($id));
-		if($data[0]['wl_id'] != $row['LINIEN_ID'] || $data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT']) {
-			db_query('UPDATE line SET wl_id = ?, wl_order = ?, realtime = ? WHERE id = ?', array($row['LINIEN_ID'], $row['REIHENFOLGE'], $row['ECHTZEIT'], $id));
+		$data = db_query('SELECT id, wl_order, realtime FROM wl_line WHERE line = ? AND wl_id = ? AND deleted = 0', array($line_id, $wl_id));
+		if(count($data) == 0) {
+			db_query('INSERT INTO wl_line (line, wl_id, wl_order, realtime) VALUES (?, ?, ?, ?)', array($line_id, $wl_id, $row['REIHENFOLGE'], $row['ECHTZEIT']));
+			$wl_line_id = db_last_insert_id();
 
-			write_log("Updated line {$row['BEZEICHNUNG']}");
+			write_log("Inserted wl_line item with line $name and wl_id $wl_id");
+		}
+		else if(count($data) == 1) {
+			$wl_line_id = $data[0]['id'];
+			if($data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT']) {
+				db_query('UPDATE line SET wl_order = ?, realtime = ? WHERE id = ?', array($row['REIHENFOLGE'], $row['ECHTZEIT'], $wl_line_id));
+
+				write_log("Inserted wl_line item with line $name and wl_id $wl_id");
+			}
+		}
+		else {
+			write_log("Not updating table wl_line, multiple rows for line $line_id and wl_id $wl_id exist");
+
+			// to make sure these rows don't get deleted by the check_outdated() function
+			foreach($data as $row) {
+				$imported_wl_lines[] = $data['id'];
+			}
 		}
 
-		$imported_lines[] = $id;
+		$imported_lines[] = $line_id;
+		if(isset($wl_line_id)) {
+			$imported_wl_lines[] = $wl_line_id;
+		}
 	}
 
 	write_log("Line data successfully imported.");
@@ -249,7 +273,7 @@ function import_wl_platforms($data, $check_only = false) {
 		}
 
 		$data1 = db_query('SELECT id, name FROM station WHERE wl_id = ? AND deleted = 0 ORDER BY id DESC LIMIT 0, 1', array($station_wl_id));
-		$data2 = db_query('SELECT id, name FROM line WHERE wl_id = ? AND deleted = 0 ORDER BY id DESC LIMIT 0, 1', array($line_wl_id));
+		$data2 = db_query('SELECT l.id, l.name FROM line l JOIN wl_line w ON (l.id = w.line) WHERE w.wl_id = ? AND w.deleted = 0 AND l.deleted = 0 ORDER BY l.id DESC LIMIT 0, 1', array($line_wl_id));
 
 		$station_id = isset($data1[0]) ? $data1[0]['id'] : null;
 		$line_id = isset($data2[0]) ? $data2[0]['id'] : null;
