@@ -84,12 +84,6 @@ write_log("Import script successfully completed.");
 
 log_query_stats();
 
-function is_ignored_line($wl_line_id) {
-	$ignored_lines = array(406201907);
-
-	return in_array($wl_line_id, $ignored_lines);
-}
-
 function is_ignored_station($wl_station_id) {
 	$ignored_stations = array(214461280);
 
@@ -126,9 +120,6 @@ function import_wl_lines($data, $check_only = false) {
 
 	foreach($data as $row) {
 		$wl_id = $row['LINIEN_ID'];
-		if(is_ignored_line($wl_id)) {
-			continue;
-		}
 		$type = $types[$row['VERKEHRSMITTEL']];
 		$name = $row['BEZEICHNUNG'];
 		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0 ORDER BY id ASC', array($name, $type));
@@ -268,7 +259,7 @@ function import_wl_platforms($data, $check_only = false) {
 		$station_wl_id = $row['FK_HALTESTELLEN_ID'];
 		$wl_id = $row['STEIG_ID'];
 
-		if(is_ignored_line($line_wl_id) || is_ignored_station($station_wl_id)) {
+		if(is_ignored_station($station_wl_id)) {
 			continue;
 		}
 
