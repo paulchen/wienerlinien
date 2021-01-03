@@ -1053,6 +1053,7 @@ function get_station_data($id) {
 			FROM station s
 				JOIN wl_platform p ON (s.id = p.station)
 				JOIN line l ON (p.line = l.id)
+				JOIN wl_line wl ON (l.id = wl.line)
 			WHERE s.id = ?
 				AND s.deleted = 0
 				AND l.deleted = 0
