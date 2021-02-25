@@ -10,7 +10,7 @@ require_once(dirname(__FILE__) . '/../lib/twitteroauth/twitteroauth.php');
 
 $input_encoding = 'UTF-8';
 
-$disruptions_url = "http://www.wienerlinien.at/ogd_realtime/trafficInfoList?sender=$wl_api_key";
+$disruptions_url = "https://www.wienerlinien.at/ogd_realtime/trafficInfoList?sender=$wl_api_key";
 $cache_expiration = $cache_expiration_disruptions;
 $data = download_json($disruptions_url, 'disruptions');
 
