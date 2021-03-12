@@ -139,7 +139,7 @@ function import_wl_lines($data, $check_only = false) {
 		else if(count($data) == 1) {
 			$wl_line_id = $data[0]['id'];
 			if($data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT']) {
-				db_query('UPDATE line SET wl_order = ?, realtime = ? WHERE id = ?', array($row['REIHENFOLGE'], $row['ECHTZEIT'], $wl_line_id));
+				db_query('UPDATE wl_line SET wl_order = ?, realtime = ? WHERE wl_id = ?', array($row['REIHENFOLGE'], $row['ECHTZEIT'], $wl_line_id));
 
 				write_log("Inserted wl_line item with line $name and wl_id $wl_id");
 			}
