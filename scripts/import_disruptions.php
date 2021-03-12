@@ -16,6 +16,7 @@ $data = download_json($disruptions_url, 'disruptions');
 
 $imported_disruptions = array();
 
+$release_lock = false;
 if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfoCategoryGroups) && isset($data->data->trafficInfoCategories) && isset($data->data->trafficInfos)) {
 	$lockfile = fopen($disruptions_lockfile, 'w');
 	if(flock($lockfile, LOCK_EX + LOCK_NB)) {
@@ -28,9 +29,7 @@ if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfo
 
 		// notify_twitter();
 
-		flock($lockfile, LOCK_UN);
-		fclose($lockfile);
-		unlink($disruptions_lockfile);
+		$release_lock = true;
 
 		db_query('INSERT INTO settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', array('last_update', time(), time()));
 		touch(dirname(__FILE__) . '/../misc/last_update');
@@ -43,6 +42,12 @@ if(isset($data) && $data && isset($data->data) && isset($data->data->trafficInfo
 
 log_query_stats();
 $db->commit();
+
+if($release_lock) {
+	flock($lockfile, LOCK_UN);
+	fclose($lockfile);
+	unlink($disruptions_lockfile);
+}
 
 function process_traffic_infos($infos) {
 	global $imported_disruptions;
