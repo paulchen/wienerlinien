@@ -4,3 +4,4 @@ cache/*
 config.php
 misc/last_update
 scripts/last_cache_cleanup
+web/departure-monitor
