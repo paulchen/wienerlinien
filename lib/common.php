@@ -467,6 +467,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 
 	$disruptions_per_page = 1000000;
 	if(isset($filter['archive']) && $filter['archive'] == 1) {
+		$filter_part .= ' AND (i.start_time < NOW() OR i.timestamp_deleted IS NULL)';
 		$disruptions_per_page = 20;
 		if(isset($filter['lines'])) {
 			$parameters = array();
