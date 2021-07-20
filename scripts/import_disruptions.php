@@ -168,16 +168,18 @@ function process_traffic_infos($infos) {
 			write_log("Updated platform data for disruption $id");
 		}
 
+		$data = db_query("SELECT id, name FROM line WHERE deleted = 0");
+		$line_mapping = array();
+		foreach($data as $row) {
+			$line_mapping[$row['name']] = $row['id'];
+		}
+
 		$feed_line_ids = array();
-		if(isset($info->relatedLines) && count($info->relatedLines) > 0) {
-			$placeholders = array();
-			foreach($info->relatedLines as $line) {
-				$placeholders[] = '?';
-			}
-			$placeholder_string = implode(', ', $placeholders);
-			$data = db_query("SELECT id FROM line WHERE name IN ($placeholder_string) AND deleted = 0", $info->relatedLines);
-			foreach($data as $row) {
-				$feed_line_ids[] = $row['id'];
+		if(isset($info->relatedLines)) {
+			foreach($info->relatedLines as $relatedLine) {
+				if(isset($line_mapping[$relatedLine])) {
+					$feed_line_ids[] = $line_mapping[$relatedLine];
+				}
 			}
 		}
 
@@ -215,9 +217,9 @@ function process_traffic_infos($infos) {
 }
 
 function check_category_groups($groups) {
+	$db_groups = array_map(function($a) { return $a{'id'}; }, db_query('SELECT id FROM traffic_info_category_group'));
 	foreach($groups as $group) {
-		$data = db_query('SELECT id FROM traffic_info_category_group WHERE id = ?', array($group->id));
-		if(count($data) == 0) {
+		if(!in_array($group->id, $db_groups)) {
 			db_query('INSERT INTO traffic_info_category_group (id, name) VALUES (?, ?)', array($group->id, $group->name));
 			write_log("Added traffic info category group {$group->id} ({$group->name})");
 		}
@@ -225,9 +227,9 @@ function check_category_groups($groups) {
 }
 
 function check_categories($categories) {
+	$db_categories = array_map(function($a) { return $a{'id'}; }, db_query('SELECT id FROM traffic_info_category'));
 	foreach($categories as $category) {
-		$data = db_query('SELECT id FROM traffic_info_category WHERE id = ?', array($category->id));
-		if(count($data) == 0) {
+		if(!in_array($category->id, $db_categories)) {
 			db_query('INSERT INTO traffic_info_category (id, `group`, name, title) VALUES (?, ?, ?, ?)', array($category->id, $category->refTrafficInfoCategoryGroupId, $category->name, $category->title));
 			write_log("Added traffic info category {$category->id} ({$category->title})");
 		}
