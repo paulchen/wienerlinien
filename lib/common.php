@@ -980,7 +980,7 @@ function process_rbl_data($data) {
 			}
 			foreach($line->departures->departure as $departure) {
 				$line_name = (isset($departure->vehicle) && $departure->vehicle->towards && isset($departure->vehicle->name)) ? $departure->vehicle->name : $line->name;
-				$towards = (isset($departure->vehicle) && $departure->vehicle->towards) ? $departure->vehicle->towards : $line->towards;
+				$towards = (isset($departure->vehicle) && $departure->vehicle->towards) ? chop($departure->vehicle->towards) : chop($line->towards);
 				$line_id = get_line_id($line_name);
 
 				if (isset($departure->vehicle) && isset($departure->vehicle->barrierFree)) {
