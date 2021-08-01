@@ -10,7 +10,6 @@ $query = "SELECT s.id, s.name, ROUND(AVG(ws.wl_lat), 4) lat, ROUND(AVG(ws.wl_lon
 	WHERE s.deleted = 0
 		AND p.deleted = 0
 		AND l.deleted = 0
-		AND municipality IN (SELECT id FROM municipality WHERE name = 'Wien')
 	GROUP BY s.id, s.name
 	ORDER BY line_count DESC, s.name ASC";
 $data = db_query($query);
