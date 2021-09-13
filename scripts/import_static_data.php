@@ -210,7 +210,12 @@ function import_wl_stations($data, $check_only = false) {
 
 		$existing_wl_station = db_query('SELECT id, station, wl_diva, wl_lat, wl_lon FROM wl_station WHERE wl_id = ? AND deleted = 0', array($wl_id));
 		if(count($existing_wl_station) == 0) {
-			db_query('INSERT INTO wl_station (station, wl_id, wl_diva, wl_lat, wl_lon) VALUES (?, ?, ?, ?, ?)', array($id, $wl_id, $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON']));
+			if(!$row['WGS84_LAT'] || !$row['WGS84_LON']) {
+				db_query('INSERT INTO wl_station (station, wl_id, wl_diva) VALUES (?, ?, ?)', array($id, $wl_id, $row['DIVA']));
+			}
+			else {
+				db_query('INSERT INTO wl_station (station, wl_id, wl_diva, wl_lat, wl_lon) VALUES (?, ?, ?, ?, ?)', array($id, $wl_id, $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON']));
+			}
 			$new_id = db_last_insert_id();
 
 			$imported_wl_stations[] = $new_id;
