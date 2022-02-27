@@ -719,6 +719,13 @@ function line_sorter($a, $b) {
 		return 1;
 	}
 
+	if($matches_a[3] == '' && $matches_b[3] != '') { // 71 < 13A
+		return -1;
+	}
+	if($matches_a[3] != '' && $matches_b[3] == '') { // 13A > 71
+		return 1;
+	}
+
 	if(intval($matches_a[2]) < intval($matches_b[2])) { // U1 < U3, S1 < S3
 		return -1;
 	}
