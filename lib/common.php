@@ -682,6 +682,22 @@ function line_sorter($a, $b) {
 		return strcmp($a, $b);
 	}
 
+	if($matches_a[1] == 'N' && $matches_b[1] != 'N') { // night buses at the very end
+		return 1;
+	}
+	if($matches_a[1] != 'N' && $matches_b[1] == 'N') { // night buses at the very end
+		return -1;
+	}
+	if($matches_a[1] == 'N' && $matches_b[1] == 'N' && $matches_a[2] == $matches_b[2]) { // N31 == N31
+		return 0;
+	}
+	if($matches_a[1] == 'N' && $matches_b[1] == 'N' && $matches_a[2] < $matches_b[2]) { // N8 < N31
+		return -1;
+	}
+	if($matches_a[1] == 'N' && $matches_b[1] == 'N' && $matches_a[2] > $matches_b[2]) { // N31 > N8
+		return 1;
+	}
+
 	if($matches_a[1] != '' && $matches_b[1] == '') { // U1 < 1, U1 < 13A
 		return -1;
 	}
