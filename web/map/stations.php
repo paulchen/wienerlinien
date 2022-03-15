@@ -20,7 +20,13 @@ foreach ($stations as &$station) {
 unset($station);
 
 $line_types = db_query('SELECT id, color FROM line_type ORDER BY id ASC');
-$lines = db_query('SELECT id, name, type FROM line WHERE deleted = 0 ORDER BY id ASC');
+$lines = db_query('SELECT id, name, type, color FROM line l LEFT JOIN line_color lc ON (l.id = lc.line) WHERE deleted = 0 ORDER BY id ASC');
+foreach($lines as &$line) {
+	if(!$line['color']) {
+		unset($line['color']);
+	}
+}
+unset($line);
 usort($lines, function($a, $b) { return line_sorter($a['name'], $b['name']); });
 
 $data = array(
