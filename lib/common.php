@@ -763,10 +763,11 @@ function cache_set($key, $data, $expiration = 60) {
 }
 
 function fetch_rbls($rbls) {
-	global $wl_api_key, $debug, $input_encoding;
+	global $wl_api_key, $debug, $input_encoding, $cache_expiration;
 
 	$retry_download = false;
 	$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $rbls) . "&sender=$wl_api_key";
+	$cache_expiration = -1;
 	$debug = false;
 	$input_encoding = 'UTF-8';
 	$data = download_json($url, 'rbl_' . implode('.', $rbls));
