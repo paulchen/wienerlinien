@@ -762,8 +762,19 @@ function cache_set($key, $data, $expiration = 60) {
 	$memcached->set("${memcached_prefix}_$key", $data, $expiration);
 }
 
+function log_rbl_request($rbls) {
+	db_query('INSERT INTO rbl_request () VALUES ()');
+	$request_id = db_last_insert_id();
+
+	foreach($rbls as $rbl) {
+		db_query('INSERT INTO rbl_request_item (request_id, item) VALUES (?, ?)', array($request_id, $rbl));
+	}
+}
+
 function fetch_rbls($rbls) {
 	global $wl_api_key, $debug, $input_encoding, $cache_expiration;
+
+	log_rbl_request($rbls);
 
 	$retry_download = false;
 	$url = 'http://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $rbls) . "&sender=$wl_api_key";

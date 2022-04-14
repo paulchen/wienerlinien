@@ -478,6 +478,28 @@ CREATE TABLE IF NOT EXISTS `wl_platform_keep` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `rbl_request`
+--
+
+CREATE TABLE `rbl_request` (
+	  `id` int(11) NOT NULL,
+	  `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `rbl_request_item`
+--
+
+CREATE TABLE `rbl_request_item` (
+	  `request_id` int(11) DEFAULT NULL,
+	  `item` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --
 -- Dumping data for table `wl_platform_keep`
 --
@@ -513,6 +535,18 @@ ALTER TABLE `wl_station`
   ADD KEY `station` (`station`);
 
 --
+-- Indizes für die Tabelle `rbl_request`
+--
+ALTER TABLE `rbl_request`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `rbl_request_item`
+--
+ALTER TABLE `rbl_request_item`
+  ADD KEY `request_id` (`request_id`);
+
+--
 -- AUTO_INCREMENT für exportierte Tabellen
 --
 
@@ -526,6 +560,12 @@ ALTER TABLE `wl_line`
 -- AUTO_INCREMENT für Tabelle `wl_station`
 --
 ALTER TABLE `wl_station`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT für Tabelle `rbl_request`
+--
+ALTER TABLE `rbl_request`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -628,6 +668,12 @@ ALTER TABLE `wl_platform`
 --
 ALTER TABLE `wl_platform_keep`
   ADD CONSTRAINT `wl_platform_keep_ibfk_1` FOREIGN KEY (`id`) REFERENCES `wl_platform` (`id`);
+
+--
+-- Constraints der Tabelle `rbl_request_item`
+--
+ALTER TABLE `rbl_request_item`
+  ADD CONSTRAINT `rbl_request_item_ibfk_1` FOREIGN KEY (`request_id`) REFERENCES `rbl_request` (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
