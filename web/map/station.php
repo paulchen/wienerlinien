@@ -16,5 +16,6 @@ $platforms = $data['platforms'];
 
 $rbls = array_values(array_unique(array_filter(array_map(function($a) { return $a['rbl']; }, $platforms))));
 
+add_static_cache_headers();
 require_once("$template_dir/station.php");
 

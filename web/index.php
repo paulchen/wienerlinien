@@ -9,5 +9,6 @@ foreach($twitter as $item) {
 	}
 }
 
+add_static_cache_headers();
 require_once(dirname(__FILE__) . '/../templates/index.php');
 

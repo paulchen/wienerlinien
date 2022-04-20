@@ -941,3 +941,16 @@ function get_station_data($id) {
 	return array('name' => $station_name, 'platforms' => $platforms);
 }
 
+function add_static_cache_headers() {
+	$data = db_query('SELECT value FROM settings WHERE `key` = ?', array('static_data_expiration'));
+	if(count($data) != 1) {
+		$seconds = 0;
+	}
+	else {
+		$expiration = $data[0]['value'];
+		$seconds = max(0, $expiration - time());
+	}
+
+	header("Cache-Control: public, max-age=$seconds");
+}
+

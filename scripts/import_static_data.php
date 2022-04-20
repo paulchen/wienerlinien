@@ -597,5 +597,7 @@ function import_lines($data, $check_only = false) {
 	write_log("Lines successfully imported.");
 }
 
+$expiration = time() + 86400;
+db_query('INSERT INTO settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', array('static_data_expiration', $expiration, $expiration));
 touch(dirname(__FILE__) . '/../log/last_data_update');
 

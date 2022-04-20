@@ -13,6 +13,7 @@ if(!$data) {
 }
 
 header('Content-Type: application/json');
+add_static_cache_headers();
 echo(json_encode($data));
 
 

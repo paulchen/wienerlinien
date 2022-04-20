@@ -36,5 +36,6 @@ $data = array(
 );
 
 header('Content-Type: application/json');
+add_static_cache_headers();
 echo json_encode($data, JSON_NUMERIC_CHECK);
 

@@ -37,5 +37,6 @@ if(isset($_REQUEST['lines']) && $_REQUEST['lines'] != '') {
 	}
 }
 
+add_static_cache_headers();
 require_once("$template_dir/map.php");
 

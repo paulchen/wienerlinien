@@ -19,5 +19,7 @@ if(count($ids) > 0) {
 	}
 }
 
+header('Content-Type: application/json');
+add_static_cache_headers();
 echo json_encode(fetch_rbls($ids));
 

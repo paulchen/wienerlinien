@@ -93,5 +93,6 @@ foreach($data as $row) {
 // print_r($stations);
 // print_r($data);
 
+add_static_cache_headers();
 require_once("$template_dir/line.php");
 
