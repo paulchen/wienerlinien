@@ -109,7 +109,7 @@
 		<?php endif; ?>
 		<hr />
 	</div>
-	<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1): ?>
+	<?php if(isset($_REQUEST['archive']) && $_REQUEST['archive'] == 1 && isset($lines) && is_array($lines) && isset($selected_types) && is_array($selected_types)): ?>
 		<div>
 			<a href="javascript:show_filter();" id="filter_link">Filter</a>
 			<fieldset id="filter_fieldset"><legend>Filter</legend>
