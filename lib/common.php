@@ -659,23 +659,34 @@ function get_disruptions_for_station($station) {
                                 JOIN traffic_info ti ON (til.traffic_info = ti.id AND ti.deleted = 0)
                         WHERE s.id = ?
                                 AND s.deleted = 0
-                                and ti.category = 2', array($station));
+				and ti.category = 2
+			GROUP BY l.name, ti.id, ti.title, ti.last_description, ti.start_time, ti.end_time', array($station));
 	$data_by_rbls = db_query('SELECT p.rbl rbl, ti.category, ti.title, ti.last_description description, ti.start_time, ti.end_time, tie.status
                         FROM station s
                                 JOIN wl_platform p ON (s.id = p.station AND p.deleted = 0)
                                 JOIN traffic_info_platform tip ON (p.id = tip.platform)
                                 JOIN traffic_info ti ON (tip.traffic_info = ti.id AND ti.deleted = 0)
-                                JOIN traffic_info_elevator tie ON (ti.id = tie.id)
+                                LEFT JOIN traffic_info_elevator tie ON (ti.id = tie.id)
                         WHERE s.id = ?
                                 AND s.deleted = 0
                                 AND ti.category IN (1, 3)
                         GROUP BY p.rbl, ti.category, ti.title, ti.last_description, ti.start_time, ti.end_time', array($station));
 
-	// array transformation: https://stackoverflow.com/a/72379539
 	return array(
-		'lines' => array_combine(array_column($data_by_lines, 'line'), $data_by_lines),
-		'rbls' => array_combine(array_column($data_by_rbls, 'rbl'), $data_by_rbls)
+		'lines' => array_group($data_by_lines, 'line'),
+		'rbls' => array_group($data_by_rbls, 'rbl')
 	);
+}
+
+function array_group($array, $column) {
+	$result = array();
+	foreach($array as $item) {
+		if(!isset($result[$item[$column]])) {
+			$result[$item[$column]] = array();
+		}
+		$result[$item[$column]][] = $item;
+	}
+	return $result;
 }
 
 function line_sorter($a, $b) {
