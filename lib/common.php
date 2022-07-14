@@ -500,7 +500,7 @@ function get_disruptions($filter = array(), &$pagination_data = array()) {
 			$filter_params[] = '%' . $filter['text'] . '%';
 		}
 	}
-	else {
+	else if(!isset($filter['id']) && !isset($filter['group'])) {
 		$filter_part .= ' AND i.start_time < NOW()';
 	}
 
