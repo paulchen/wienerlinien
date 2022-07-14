@@ -665,7 +665,7 @@ function get_disruptions_for_station($station) {
                                 JOIN wl_platform p ON (s.id = p.station AND p.deleted = 0)
                                 JOIN traffic_info_platform tip ON (p.id = tip.platform)
                                 JOIN traffic_info ti ON (tip.traffic_info = ti.id AND ti.deleted = 0)
-                                JOIN traffic_info_elevator tie ON (ti.id = tie.id)
+                                LEFT JOIN traffic_info_elevator tie ON (ti.id = tie.id)
                         WHERE s.id = ?
                                 AND s.deleted = 0
                                 AND ti.category IN (1, 3)
