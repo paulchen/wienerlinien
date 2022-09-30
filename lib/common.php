@@ -394,15 +394,12 @@ function check_outdated($current_ids, $table) {
 
 	$outdated_disruptions = array();
 	$result = db_query("SELECT id FROM $table WHERE deleted = 0");
-	foreach($result as $row) {
-		if(!in_array($row['id'], $current_ids)) {
-			write_log("Found outdated item with id {$row['id']}");
-			db_query("UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?", array($row['id']));
+	$result = array_map(function($a) { return $a['id']; }, $result);
 
-			if(!in_array($row['id'], $outdated_disruptions)) {
-				$outdated_disruptions[] = $row['id'];
-			}
-		}
+	$outdated_disruptions = array_diff($result, $current_ids);
+	foreach($outdated_disruptions as $row) {
+		write_log("Found outdated item with id $row");
+		db_query("UPDATE $table SET deleted = 1, timestamp_deleted = NOW() WHERE id = ?", array($row));
 	}
 
 	write_log("Searched for outdated entries in table '$table'...");
