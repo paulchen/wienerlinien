@@ -2,6 +2,7 @@
 
 // TODO check: only run as standalone script from command line
 
+$use_transaction = true;
 $long_running_queries = true;
 
 require_once(dirname(__FILE__) . '/../lib/common.php');
@@ -85,6 +86,7 @@ check_outdated($imported_platforms, 'wl_platform');
 write_log("Import script successfully completed.");
 
 log_query_stats();
+$db->commit();
 
 function import_wl_lines($data, $check_only = false) {
 	global $imported_lines, $imported_wl_lines;
@@ -436,9 +438,9 @@ function process_point($lat, $lon) {
 }
 
 function process_segment($point1, $point2) {
-	$data = db_query('SELECT id FROM segment WHERE point1 = ? AND point2 = ?', array($point1, $point2));
-	if(count($data) == 1) {
-		return $data[0]['id'];
+	$data = db_query('SELECT id FROM segment WHERE (point1 = ? AND point2 = ?) OR (point1 = ? AND point2 = ?)', array($point1, $point2, $point2, $point1));
+	if(count($data) > 0) {
+		return array_map(function($a) { return $a['id']; }, $data);
 	}
 
 	db_query('INSERT INTO segment (point1, point2) VALUES (?, ?)', array($point1, $point2));
@@ -446,18 +448,23 @@ function process_segment($point1, $point2) {
 
 	write_log("Added segment $id ($point1-$point2)");
 
-	return $id;
+	return array($id);
 }
 
-function process_line_segment($line, $segment) {
+function process_line_segment($line, $segments) {
 	global $imported_line_segment;
 
-	$data = db_query('SELECT id FROM line_segment WHERE deleted = 0 AND segment = ? AND line = ?', array($segment, $line));
+	$question_marks = str_repeat('?, ', count($segments));
+	$question_marks = substr($question_marks, 0, strlen($question_marks) - 2);
+	$params = $segments;
+	$params[] = $line;
+
+	$data = db_query("SELECT id FROM line_segment WHERE deleted = 0 AND segment IN ($question_marks) AND line = ?", $params);
 	if(count($data) == 0) {
-		db_query('INSERT INTO line_segment (segment, line) VALUES (?, ?)', array($segment, $line));
+		db_query('INSERT INTO line_segment (segment, line) VALUES (?, ?)', array($segments[0], $line));
 		$id = db_last_insert_id();
 
-		write_log("Added line/segment association $id ($line/$segment)");
+		write_log("Added line/segment association $id ($line/{$segments[0]})");
 	}
 	else {
 		$id = $data[0]['id'];
@@ -587,9 +594,9 @@ function import_lines($data, $check_only = false) {
 		}
 
 		for($a=0; $a<count($point_ids)-1;$a++) {
-			$segment_id = process_segment($point_ids[$a], $point_ids[$a+1]);
+			$segment_ids = process_segment($point_ids[$a], $point_ids[$a+1]);
 			foreach($line_ids as $line_id) {
-				process_line_segment($line_id, $segment_id);
+				process_line_segment($line_id, $segment_ids);
 			}
 		}
 	}
