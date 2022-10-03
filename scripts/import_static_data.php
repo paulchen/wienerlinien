@@ -86,6 +86,8 @@ check_outdated($imported_line_station, 'line_station');
 check_outdated($imported_line_segment, 'line_segment');
 check_outdated($imported_platforms, 'wl_platform');
 
+cleanup();
+
 write_log("Import script successfully completed.");
 
 log_query_stats();
@@ -699,6 +701,19 @@ function import_lines($data, $check_only = false) {
 	}
 
 	write_log("Lines successfully imported.");
+}
+
+function cleanup() {
+	write_log('Cleaning up table line_segment');
+	db_query('DELETE FROM line_segment WHERE deleted = 1');
+
+	write_log('Cleaning up table segment');
+	db_query('DELETE FROM segment WHERE id NOT IN (SELECT segment FROM line_segment)');
+
+	write_log('Cleaning up table segment_point');
+	db_query('DELETE FROM segment_point WHERE id NOT IN ((SELECT point1 AS point FROM segment) UNION (SELECT point2 AS point FROM segment))');
+
+	write_log('Cleanup completed');
 }
 
 $expiration = time() + 86400;
