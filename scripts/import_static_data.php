@@ -43,12 +43,15 @@ if(!$wl_platforms_data = download_csv($url_wl_platforms, 'wl_platforms')) {
 
 write_log('Validating input data...');
 
+$municipalities = fetch_municipalities();
+$stations = fetch_stations();
+
 $data_ok = import_lines($lines_data, true);
 $data_ok &= import_station_ids($station_id_data, true);
-$data_ok &= import_stations($stations_data, true);
+$data_ok &= import_stations($municipalities, $stations, $stations_data, true);
 
 $data_ok &= import_wl_lines($wl_lines_data, true);
-$data_ok &= import_wl_stations($wl_stations_data, true);
+$data_ok &= import_wl_stations($municipalities, $wl_stations_data, true);
 $data_ok &= import_wl_platforms($wl_platforms_data, true);
 
 if(!$data_ok) {
@@ -69,9 +72,9 @@ $imported_platforms = array();
 
 import_lines($lines_data);
 import_station_ids($station_id_data);
-import_stations($stations_data);
+import_stations($municipalities, $stations, $stations_data);
 import_wl_lines($wl_lines_data);
-import_wl_stations($wl_stations_data);
+import_wl_stations($municipalities, $wl_stations_data);
 import_wl_platforms($wl_platforms_data);
 
 check_outdated($imported_wl_lines, 'wl_line');
@@ -164,7 +167,7 @@ function import_wl_lines($data, $check_only = false) {
 	write_log("Line data successfully imported.");
 }
 
-function import_wl_stations($data, $check_only = false) {
+function import_wl_stations(&$municipalities, $data, $check_only = false) {
 	global $imported_stations, $imported_wl_stations;
 
 	if($check_only) {
@@ -178,7 +181,7 @@ function import_wl_stations($data, $check_only = false) {
 	write_log("Import stations data from Wiener Linien...");
 
 	foreach($data as $row) {
-		$municipality = check_municipality($row['GEMEINDE_ID'], $row['GEMEINDE']);
+		$municipality = check_municipality($municipalities, $row['GEMEINDE_ID'], $row['GEMEINDE']);
 		$name = $row['NAME'];
 		$wl_id = $row['HALTESTELLEN_ID'];
 
@@ -423,10 +426,26 @@ function process_line_station($line, $station) {
 	$imported_line_station[] = $id;
 }
 
-function process_point($lat, $lon) {
-	$data = db_query('SELECT id FROM segment_point WHERE lat = ? AND lon = ?', array($lat, $lon));
-	if(count($data) == 1) {
-		return $data[0]['id'];
+function fetch_points() {
+	$data = db_query('SELECT id, CAST(lat AS DOUBLE) AS lat, CAST(lon AS DOUBLE) AS lon FROM segment_point');
+	$result = array();
+	foreach($data as ['id' => $id, 'lat' => $lat, 'lon' => $lon]) {
+		if(!isset($result[$lat])) {
+			$result[$lat] = array();
+		}
+		$result[$lat][$lon] = $id;
+	}
+	return $result;
+}
+
+function process_point(&$points, $lat, $lon) {
+	if(isset($points[$lat]) && isset($points[$lat][$lon])) {
+		return $points[$lat][$lon];
+	}
+	$lat = "$lat";
+	$lon = "$lon";
+	if(isset($points[$lat]) && isset($points[$lat][$lon])) {
+		return $points[$lat][$lon];
 	}
 
 	db_query('INSERT INTO segment_point (lat, lon) VALUES (?, ?)', array($lat, $lon));
@@ -434,13 +453,36 @@ function process_point($lat, $lon) {
 
 	write_log("Added point $id ($lat, $lon)");
 
+	if(!isset($points[$lat])) {
+		$points[$lat] = array();
+	}
+	$points[$lat][$lon] = $id;
+
 	return $id;
 }
 
-function process_segment($point1, $point2) {
-	$data = db_query('SELECT id FROM segment WHERE (point1 = ? AND point2 = ?) OR (point1 = ? AND point2 = ?)', array($point1, $point2, $point2, $point1));
-	if(count($data) > 0) {
-		return array_map(function($a) { return $a['id']; }, $data);
+function fetch_segments() {
+	$data = db_query('SELECT id, CAST(point1 AS CHAR) AS point1, CAST(point2 AS CHAR) AS point2 FROM segment');
+	$result = array();
+	foreach($data as ['id' => $id, 'point1' => $point1, 'point2' => $point2]) {
+		if(!isset($result[$point1])) {
+			$result[$point1] = array();
+		}
+		$result[$point1][$point2] = $id;
+	}
+	return $result;
+}
+
+function process_segment(&$segments, $point1, $point2) {
+	$existing_segments = array();
+	if(isset($segments[$point1]) && isset($segments[$point1][$point2])) {
+		$existing_segments[] = $segments[$point1][$point2];
+	}
+	if(isset($segments[$point2]) && isset($segments[$point2][$point1])) {
+		$existing_segments[] = $segments[$point2][$point1];
+	}
+	if(count($existing_segments) > 0) {
+		return array_unique($existing_segments);
 	}
 
 	db_query('INSERT INTO segment (point1, point2) VALUES (?, ?)', array($point1, $point2));
@@ -448,54 +490,104 @@ function process_segment($point1, $point2) {
 
 	write_log("Added segment $id ($point1-$point2)");
 
+	if(!isset($segments[$point1])) {
+		$segments[$point1] = array();
+	}
+	$segments[$point1][$point2] = $id;
+
 	return array($id);
 }
 
-function process_line_segment($line, $segments) {
+function fetch_line_segments() {
+	$data = db_query('SELECT id, CAST(line AS CHAR) AS line, CAST(segment AS CHAR) AS segment FROM line_segment WHERE deleted = 0');
+	$result = array();
+	foreach($data as ['id' => $id, 'line' => $line, 'segment' => $segment]) {
+		if(!isset($result[$line])) {
+			$result[$line] = array();
+		}
+		$result[$line][$segment] = $id;
+	}
+	return $result;
+}
+
+function process_line_segment(&$line_segments, $line, $segments) {
 	global $imported_line_segment;
 
-	$question_marks = str_repeat('?, ', count($segments));
-	$question_marks = substr($question_marks, 0, strlen($question_marks) - 2);
-	$params = $segments;
-	$params[] = $line;
-
-	$data = db_query("SELECT id FROM line_segment WHERE deleted = 0 AND segment IN ($question_marks) AND line = ?", $params);
-	if(count($data) == 0) {
+	$found = false;
+	if(isset($line_segments[$line])) {
+		foreach($segments as $segment) {
+			if(isset($line_segments[$line][$segment])) {
+				$found = true;
+				$id = $line_segments[$line][$segment];
+				break;
+			}
+		}
+	}
+	if(!$found) {
 		db_query('INSERT INTO line_segment (segment, line) VALUES (?, ?)', array($segments[0], $line));
 		$id = db_last_insert_id();
 
 		write_log("Added line/segment association $id ($line/{$segments[0]})");
-	}
-	else {
-		$id = $data[0]['id'];
+
+		if(!isset($line_segments[$line])) {
+			$line_segments[$line] = array();
+		}
+		$line_segments[$line][$segments[0]] = $id;
 	}
 
 	$imported_line_segment[] = $id;
 }
 
-function check_municipality($id, $name) {
-	$data = db_query('SELECT id FROM municipality WHERE wl_id = ? AND name = ?', array($id, $name));
-	if(count($data) == 1) {
-		return $data[0]['id'];
+function fetch_municipalities() {
+	$data = db_query('SELECT id, wl_id, name FROM municipality');
+	$result = array();
+	foreach($data as ['id' => $id, 'wl_id' => $wl_id, 'name' => $name]) {
+		if(!isset($result[$wl_id])) {
+			$result[$wl_id] = array();
+		}
+		$result[$wl_id][$name] = $id;
+	}
+	return $result;
+}
+
+function check_municipality(&$municipalities, $id, $name) {
+	if(isset($municipalities[$id]) && isset($municipalities[$id][$name])) {
+		return $municipalities[$id][$name];
 	}
 
 	db_query('INSERT INTO municipality (wl_id, name) VALUES (?, ?)', array($id, $name));
 	$db_id = db_last_insert_id();
 
 	write_log("Added municipality $db_id ($id, $name)");
+
+	if(!isset($municipalities[$id])) {
+		$municipalities[$id] = array();
+	}
+	$municipalities[$id][$name] = $db_id;
+
 	return $db_id;
 }
 
-function process_station($name, $short_name, $lines, $lat, $lon) {
+function fetch_stations() {
+	$data = db_query('SELECT id, name, short_name, CAST(lat AS DOUBLE) AS lat, CAST(lon AS DOUBLE) AS lon, municipality FROM station WHERE deleted = 0');
+	$result = array();
+	foreach($data as ['id' => $id, 'name' => $name, 'short_name' => $short_name, 'lat' => $lat, 'lon' => $lon, 'municipality' => $municipality]) {
+		$key = "$name$short_name$lat$lon$municipality";
+		$result[$key] = $id;
+	}
+	return $result;
+}
+
+function process_station(&$municipalities, &$stations, $name, $short_name, $lines, $lat, $lon) {
 	global $imported_stations;
 
 	$municipality_wl_id = 90000;
 	$municipality_name = 'Wien';
-	$municipality_id = check_municipality($municipality_wl_id, $municipality_name);
+	$municipality_id = check_municipality($municipalities, $municipality_wl_id, $municipality_name);
 
-	$data = db_query('SELECT id FROM station WHERE deleted = 0 AND name = ? AND short_name = ? AND lat = ? AND lon = ? AND municipality = ?', array($name, $short_name, $lat, $lon, $municipality_id));
-	if(count($data) == 1) {
-		$id = $data[0]['id'];
+	$key = "$name$short_name$lat$lon$municipality_id";
+	if(isset($stations[$key])) {
+		$id = $stations[$key];
 	}
 	else {
 		write_log("Added station $name ($municipality_name, $short_name, $lines, $lat, $lon)...");
@@ -509,6 +601,8 @@ function process_station($name, $short_name, $lines, $lat, $lon) {
 			db_query('INSERT INTO station (name, short_name, lat, lon, station_id, municipality) VALUES (?, ?, ?, ?, ?, ?)', array($name, $short_name, $lat, $lon, $station_id, $municipality_id));
 		}
 		$id = db_last_insert_id();
+
+		$stations[$key] = $id;
 	}
 	
 	foreach(explode(', ', $lines) as $line) {
@@ -551,7 +645,7 @@ function import_station_ids($data, $check_only = false) {
 	write_log("Station IDs successfully imported.");
 }
 
-function import_stations($data, $check_only = false) {
+function import_stations(&$municipalities, &$stations, $data, $check_only = false) {
 	if($check_only) {
 		if(!isset($data->features)) {
 			write_log('Error: stations data cannot be imported');
@@ -562,7 +656,7 @@ function import_stations($data, $check_only = false) {
 	write_log("Importing stations...");
 
 	foreach($data->features as $feature) {
-		process_station($feature->properties->HTXT, $feature->properties->HTXTK, $feature->properties->HLINIEN, $feature->geometry->coordinates[1], $feature->geometry->coordinates[0]);
+		process_station($municipalities, $stations, $feature->properties->HTXT, $feature->properties->HTXTK, $feature->properties->HLINIEN, $feature->geometry->coordinates[1], $feature->geometry->coordinates[0]);
 	}
 
 	write_log("Stations successfully imported.");
@@ -578,6 +672,9 @@ function import_lines($data, $check_only = false) {
 
 	write_log("Importing lines...");
 
+	$points = fetch_points();
+	$segments = fetch_segments();
+	$line_segments = fetch_line_segments();
 	foreach($data->features as $feature) {
 		$coordinates = $feature->geometry->coordinates;
 		$lines = $feature->properties->LBEZEICHNUNG;
@@ -590,13 +687,13 @@ function import_lines($data, $check_only = false) {
 
 		$point_ids = array();
 		foreach($coordinates as $point) {
-			$point_ids[] = process_point($point[1], $point[0]);
+			$point_ids[] = process_point($points, $point[1], $point[0]);
 		}
 
 		for($a=0; $a<count($point_ids)-1;$a++) {
-			$segment_ids = process_segment($point_ids[$a], $point_ids[$a+1]);
+			$segment_ids = process_segment($segments, $point_ids[$a], $point_ids[$a+1]);
 			foreach($line_ids as $line_id) {
-				process_line_segment($line_id, $segment_ids);
+				process_line_segment($line_segments, $line_id, $segment_ids);
 			}
 		}
 	}
