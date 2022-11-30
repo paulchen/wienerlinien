@@ -45,10 +45,12 @@ write_log('Validating input data...');
 
 $municipalities = fetch_municipalities();
 $stations = fetch_stations();
+$lines = fetch_lines();
+$line_stations = fetch_line_stations();
 
 $data_ok = import_lines($lines_data, true);
 $data_ok &= import_station_ids($station_id_data, true);
-$data_ok &= import_stations($municipalities, $stations, $stations_data, true);
+$data_ok &= import_stations($municipalities, $stations, $lines, $line_stations, $stations_data, true);
 
 $data_ok &= import_wl_lines($wl_lines_data, true);
 $data_ok &= import_wl_stations($municipalities, $wl_stations_data, true);
@@ -72,7 +74,7 @@ $imported_platforms = array();
 
 import_lines($lines_data);
 import_station_ids($station_id_data);
-import_stations($municipalities, $stations, $stations_data);
+import_stations($municipalities, $stations, $lines, $line_stations, $stations_data);
 import_wl_lines($wl_lines_data);
 import_wl_stations($municipalities, $wl_stations_data);
 import_wl_platforms($wl_platforms_data);
@@ -267,6 +269,34 @@ function import_wl_stations(&$municipalities, $data, $check_only = false) {
 	write_log("Stations data successfully imported.");
 }
 
+function fetch_wl_lines() {
+	$data = db_query('SELECT l.id, l.name, w.wl_id wl_id
+		FROM line l
+			JOIN wl_line w ON (l.id = w.line)
+		WHERE w.deleted = 0
+			AND l.deleted = 0
+		ORDER BY l.id ASC');
+	$result = array();
+	foreach($data as ['id' => $id, 'name' => $name, 'wl_id' => $wl_id]) {
+		$result[$wl_id] = array('id' => $id, 'name' => $name);
+	}
+	return $result;
+}
+
+function fetch_wl_stations() {
+	$data = db_query('SELECT s.id id, s.name name, ws.wl_id wl_id
+		FROM station s
+			JOIN wl_station ws ON (s.id = ws.station)
+		WHERE s.deleted = 0
+			AND ws.deleted = 0
+		ORDER BY id ASC');
+	$result = array();
+	foreach($data as ['id' => $id, 'name' => $name, 'wl_id' => $wl_id]) {
+		$result[$wl_id] = array('id' => $id, 'name' => $name);
+	}
+	return $result;
+}
+
 function import_wl_platforms($data, $check_only = false) {
 	global $imported_platforms;
 
@@ -280,27 +310,16 @@ function import_wl_platforms($data, $check_only = false) {
 
 	write_log("Import platforms data from Wiener Linien...");
 
+	$wl_lines = fetch_wl_lines();
+	$wl_stations = fetch_wl_stations();
+
 	foreach($data as $row) {
 		$line_wl_id = $row['FK_LINIEN_ID'];
 		$station_wl_id = $row['FK_HALTESTELLEN_ID'];
 		$wl_id = $row['STEIG_ID'];
 
-		$data1 = db_query('SELECT s.id id, s.name name
-			FROM station s
-				JOIN wl_station ws ON (s.id = ws.station)
-			WHERE ws.wl_id = ?
-				AND s.deleted = 0
-				AND ws.deleted = 0
-			ORDER BY id DESC
-			LIMIT 0, 1', array($station_wl_id));
-		$data2 = db_query('SELECT l.id, l.name
-			FROM line l
-				JOIN wl_line w ON (l.id = w.line)
-			WHERE w.wl_id = ?
-				AND w.deleted = 0
-				AND l.deleted = 0
-			ORDER BY l.id DESC
-			LIMIT 0, 1', array($line_wl_id));
+		$data1 = isset($wl_stations[$station_wl_id]) ? array($wl_stations[$station_wl_id]) : array();
+		$data2 = isset($wl_lines[$line_wl_id]) ? array($wl_lines[$line_wl_id]) : array();
 
 		$station_id = isset($data1[0]) ? $data1[0]['id'] : null;
 		$line_id = isset($data2[0]) ? $data2[0]['id'] : null;
@@ -359,29 +378,41 @@ function import_wl_platforms($data, $check_only = false) {
 	write_log("Platforms data successfully imported.");
 }
 
-function fetch_line($name) {
+function fetch_lines() {
+	$data = db_query('SELECT id, name FROM line WHERE deleted = 0');
+	$result = array();
+	foreach($data as ['id' => $id, 'name' => $name]) {
+		$result[$name] = $id;
+	}
+	return $result;
+}
+
+function fetch_line(&$existing_lines, $name) {
 	global $imported_lines;
 
-	$data = db_query('SELECT id FROM line WHERE name = ? AND deleted = 0', array($name));
-	if(count($data) == 0) {
-		write_log("Adding unknown line: $name");
-
-		$line_types = db_query('SELECT id, name_pattern FROM line_type WHERE name_pattern IS NOT NULL');
-		foreach($line_types as $type) {
-			if(preg_match($type['name_pattern'], $name)) {
-				db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type['id']));
-				$id = db_last_insert_id();
-				write_log("Added line $name (type {$type['id']})");
-				$imported_lines[] = $id;
-
-				return fetch_line($name);
-			}
-		}
-
-		// TODO we have a problem here...
+	if(isset($existing_lines[$name])) {
+		$id = $existing_lines[$name];
+		$imported_lines[] = $id;
+		return $id;
 	}
-	$imported_lines[] = $data[0]['id'];
-	return $data[0]['id'];
+
+	write_log("Adding unknown line: $name");
+
+	$line_types = db_query('SELECT id, name_pattern FROM line_type WHERE name_pattern IS NOT NULL');
+	foreach($line_types as $type) {
+		if(preg_match($type['name_pattern'], $name)) {
+			db_query('INSERT INTO line (name, type) VALUES (?, ?)', array($name, $type['id']));
+			$id = db_last_insert_id();
+			write_log("Added line $name (type {$type['id']})");
+
+			$imported_lines[] = $id;
+			$existing_lines[$name] = $id;
+
+			return $id;
+		}
+	}
+
+	// TODO we have a problem here...
 }
 
 function process_line($name, $type) {
@@ -411,18 +442,30 @@ function process_line($name, $type) {
 	return $id;
 }
 
-function process_line_station($line, $station) {
+function fetch_line_stations() {
+	$data = db_query('SELECT id, station, line FROM line_station WHERE deleted = 0');
+	$result = array();
+	foreach($data as ['id' => $id, 'station' => $station, 'line' => $line]) {
+		$key = "$station-$line";
+		$result[$key] = $id;
+	}
+	return $result;
+}
+
+function process_line_station(&$line_stations, $line, $station) {
 	global $imported_line_station;
 
-	$data = db_query('SELECT id FROM line_station WHERE deleted = 0 AND station = ? AND line = ?', array($station, $line));
-	if(count($data) == 0) {
+	$key = "$station-$line";
+	if(!isset($line_stations[$key])) {
 		db_query('INSERT INTO line_station (station, line) VALUES (?, ?)', array($station, $line));
 		$id = db_last_insert_id();
 
 		write_log("Added line/station association $id ($line/$station)");
+
+		$line_stations[$key] = $id;
 	}
 	else {
-		$id = $data[0]['id'];
+		$id = $line_stations[$key];
 	}
 
 	$imported_line_station[] = $id;
@@ -577,7 +620,7 @@ function fetch_stations() {
 	return $result;
 }
 
-function process_station(&$municipalities, &$stations, $name, $short_name, $lines, $lat, $lon) {
+function process_station(&$municipalities, &$stations, &$existing_lines, &$line_stations, $name, $short_name, $lines, $lat, $lon) {
 	global $imported_stations;
 
 	$municipality_wl_id = 90000;
@@ -605,8 +648,8 @@ function process_station(&$municipalities, &$stations, $name, $short_name, $line
 	}
 	
 	foreach(explode(', ', $lines) as $line) {
-		$line_id = fetch_line($line);
-		process_line_station($line_id, $id);
+		$line_id = fetch_line($existing_lines, $line);
+		process_line_station($line_stations, $line_id, $id);
 	}
 
 	$imported_stations[] = $id;
@@ -644,7 +687,7 @@ function import_station_ids($data, $check_only = false) {
 	write_log("Station IDs successfully imported.");
 }
 
-function import_stations(&$municipalities, &$stations, $data, $check_only = false) {
+function import_stations(&$municipalities, &$stations, &$existing_lines, &$line_stations, $data, $check_only = false) {
 	if($check_only) {
 		if(!isset($data->features)) {
 			write_log('Error: stations data cannot be imported');
@@ -655,7 +698,7 @@ function import_stations(&$municipalities, &$stations, $data, $check_only = fals
 	write_log("Importing stations...");
 
 	foreach($data->features as $feature) {
-		process_station($municipalities, $stations, $feature->properties->HTXT, $feature->properties->HTXTK, $feature->properties->HLINIEN, $feature->geometry->coordinates[1], $feature->geometry->coordinates[0]);
+		process_station($municipalities, $stations, $existing_lines, $line_stations, $feature->properties->HTXT, $feature->properties->HTXTK, $feature->properties->HLINIEN, $feature->geometry->coordinates[1], $feature->geometry->coordinates[0]);
 	}
 
 	write_log("Stations successfully imported.");
