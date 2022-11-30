@@ -441,9 +441,6 @@ function fetch_points() {
 }
 
 function process_point(&$points, $lat, $lon) {
-	if(isset($points[$lat]) && isset($points[$lat][$lon])) {
-		return $points[$lat][$lon];
-	}
 	$lat = "$lat";
 	$lon = "$lon";
 	if(isset($points[$lat]) && isset($points[$lat][$lon])) {
