@@ -1,4 +1,4 @@
-var googleMap;
+var map;
 var line_data = new Array();
 var segments = new Array();
 var stations = new Array();
@@ -9,27 +9,50 @@ function initialize() {
 	var lon = $.url(true).param('lon') ? $.url(true).param('lon') : 16.37;
 	var zoom = $.url(true).param('zoom') ? $.url(true).param('zoom') : 12;
 
-	var mapOptions = {
-		center: new google.maps.LatLng(lat, lon),
-		zoom: parseInt(zoom),
-		mapTypeId: google.maps.MapTypeId.ROADMAP,
-		streetViewControl: false
+	map = L.map('map_canvas')
+	map.setView([lat, lon], zoom);
+	map.on('moveend', function() { update_current_view_info() });
+	map.on('zoomend', function() { update_current_view_info() });
+
+	var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+		id: 'openstreetmap.org',
+	});
+
+	var basemap = L.tileLayer('https://mapsneu.wien.gv.at/basemap/geolandbasemap/normal/google3857/{z}/{y}/{x}.png', {
+		maxZoom: 20,
+		attribution: '<a href="https://www.basemap.at/" target="_blank">basemap.at</a>',
+		id: 'wien.gv.at',
+	});
+
+	var orthofoto = L.tileLayer('https://mapsneu.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg', {
+		maxZoom: 20,
+		attribution: '<a href="https://www.basemap.at/" target="_blank">basemap.at</a>',
+		id: 'wien.gv.at',
+	});
+
+	var baseLayers = {
+		'OpenStreetMap': osm,
+		'basemap.at': basemap,
+		'basemap.at Orthofoto': orthofoto,
 	};
-	googleMap = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-	google.maps.event.addListener(googleMap, 'center_changed', update_current_view_info);
-	google.maps.event.addListener(googleMap, 'zoom_changed', update_current_view_info);
+
+	var layerControls = L.control.layers(baseLayers).addTo(map);
+	basemap.addTo(map);
+
 	update_current_view_info();
 }
 
 function update_current_view_info() {
-	if(!googleMap) {
+	if(!map) {
 		return;
 	}
 
-	var latLon = googleMap.getCenter();
-	var zoom = googleMap.getZoom();
+	var latLon = map.getCenter();
+	var zoom = map.getZoom();
 
-	$('#current_latlon').html(Math.round(latLon.lat()*100)/100 + " " + Math.round(latLon.lng()*100)/100);
+	$('#current_latlon').html(Math.round(latLon.lat*100)/100 + " " + Math.round(latLon.lng*100)/100);
 	$('#current_zoom').html(zoom);
 
 	var line_names = new Array();
@@ -58,8 +81,8 @@ function update_current_view_info() {
 
 	var permalink = document.location.href;
 	permalink = permalink.substring(0, permalink.lastIndexOf('/')) + '/';
-	permalink += '?lat=' + latLon.lat();
-	permalink += '&lon=' + latLon.lng();
+	permalink += '?lat=' + latLon.lat;
+	permalink += '&lon=' + latLon.lng;
 	permalink += '&zoom=' + zoom;
 	permalink += '&lines=' + line_ids.join(',');
 	
@@ -71,10 +94,10 @@ function update_current_view_info() {
 function hide(ids) {
 	$.each(ids, function(index, id) {
 		$.each(segments[id], function(index, value) {
-			value.setVisible(false);
+			map.removeLayer(value);
 		});
 		$.each(stations[id], function(index, value) {
-			value.setVisible(false);
+			map.removeLayer(value);
 		});
 		shown[id] = false;
 	});
@@ -111,10 +134,11 @@ function show(ids) {
 		shown[id] = true;
 		if(id in segments) {
 			$.each(segments[id], function(index, value) {
-				value.setVisible(true);
+				value.addTo(map);
 			});
 			$.each(stations[id], function(index, value) {
-				value.setVisible(true);
+				value.addTo(map);
+				style_station(id, value);
 			});
 
 			return;
@@ -130,19 +154,18 @@ function show(ids) {
 
 			var coordinates = new Array();
 			$.each(value, function(value_index, lat_lon) {
-				coordinates.push(new google.maps.LatLng(lat_lon[0], lat_lon[1]));
+				coordinates.push([lat_lon[0], lat_lon[1]]);
 			});
-			var segment = new google.maps.Polyline({
-				path: coordinates,
-				strokeColor: '#' + line_data[id]["color"],
-				strokeOpacity: 1.0,
-				strokeWeight: line_data[id]["line_thickness"]
+			var segment = L.polyline(coordinates, {
+				color: '#' + line_data[id]["color"],
+				opacity: 1.0,
+				weight: line_data[id]["line_thickness"],
 			});
-			google.maps.event.addListener(segment, 'click', function() {
+			segment.on('click', function() {
 				line_click(id)
 			});
 
-			segment.setMap(googleMap);
+			segment.addTo(map);
 			segments[id].push(segment);
 
 		});
@@ -150,23 +173,15 @@ function show(ids) {
 			var lat = value["lat"];
 			var lon = value["lon"];
 
-			var point_radius = line_data[id]['line_thickness']*1.5;
-			var path = 'm -X, 0 a X,X 0 1,0 Y,0 a X,X 0 1,0 -Y,0'
-			path = path.replace(/X/g, point_radius);
-			path = path.replace(/Y/g, point_radius*2);
-
-			var station = new google.maps.Marker({
-				position: new google.maps.LatLng(lat, lon),
-				map: googleMap,
-				icon: {
-					path: path,
-					strokeColor: '#' + line_data[id]["color"],
-					fillColor: '#' + line_data[id]["color"],
-					fillOpacity: 1.0
-				},
+			var station = L.marker([lat, lon], {
+				icon: L.divIcon(),
 			    	title: value["name"]
 			});
-			google.maps.event.addListener(station, 'click', function() {
+			station.addTo(map);
+
+			style_station(id, station);
+			
+			station.on('click', function() {
 				station_click(id, index);
 			});
 
@@ -175,6 +190,18 @@ function show(ids) {
 	});
 
 	update_current_view_info();
+}
+
+function style_station(id, station) {
+	var point_radius = line_data[id]['line_thickness']*1.5;
+
+	station.getElement().style.width = point_radius*2 + 'px';
+	station.getElement().style.height = point_radius*2 + 'px';
+	station.getElement().style.marginLeft = -point_radius + 'px';
+	station.getElement().style.marginTop = -point_radius + '-6px';
+	station.getElement().style.borderRadius = point_radius + 'px';
+	station.getElement().style.backgroundColor = '#' + line_data[id]["color"];
+	station.getElement().style.borderColor = '#' + line_data[id]["color"];
 }
 
 function show_overlay(url) {

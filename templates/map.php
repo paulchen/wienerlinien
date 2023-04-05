@@ -22,13 +22,14 @@ function show_lines($lines) {
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<title>Wiener Linien</title>
 	<link rel="stylesheet" type="text/css" href="../css/main.css" />
-	<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyAj4Id5jnWqbSeAm0YcSoep75ujK2h8T70&amp;sensor=false"></script>
 	<script type="text/javascript" src="../js/jquery.min.js"></script>
 	<script type="text/javascript" src="../js/jquery.fancybox.js"></script>
 	<script type="text/javascript" src="../js/purl.js"></script>
 	<link rel="stylesheet" type="text/css" href="../css/jquery.fancybox.css" media="screen" />
 
-	<script type="text/javascript" src="../js/map.js"></script>
+	<link rel="stylesheet" href="../css/leaflet/leaflet.css">
+	<script src="../js/leaflet.js"></script>
+	<script src="../js/map.js"></script>
 	<script type="text/javascript">
 	<!--
 

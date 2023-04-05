@@ -50,6 +50,7 @@ foreach($line_ids as $line_id) {
 	}
 	unset($data);
 
+	/*
 	$changed = true;
 	while($changed) {
 		$changed = false;
@@ -73,6 +74,7 @@ foreach($line_ids as $line_id) {
 			}
 		}
 	}
+	 */
 
 	$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, p.lat, p.lon
 		FROM wl_platform p
