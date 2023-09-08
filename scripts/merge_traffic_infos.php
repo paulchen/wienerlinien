@@ -198,9 +198,6 @@ foreach($groups as $group) {
 
 write_log("merge step 7");
 
-/* remove groups from traffic_info_group that don't exist anymore */
-db_query('DELETE FROM traffic_info_group WHERE id NOT IN (SELECT `group` FROM traffic_info)');
-
 /* populate table traffic_info_group */
 function fill_group_line_table($line_params, $group, $force = false) {
 	global $db;
@@ -259,8 +256,8 @@ if(count($imported_disruptions) > 0) {
 	}
 }
 
-db_query('DELETE FROM traffic_info_group_line WHERE traffic_info NOT IN (SELECT `group` FROM traffic_info)');
-db_query('DELETE FROM traffic_info_group WHERE id NOT IN (SELECT `group` FROM traffic_info)');
+/* remove groups from traffic_info_group that don't exist anymore */
+db_query('DELETE tigl, tig FROM traffic_info_group_line tigl JOIN traffic_info_group tig ON (tigl.traffic_info = tig.id) WHERE tig.id NOT IN (SELECT `group` FROM traffic_info)');
 
 $placeholders = implode(',', array_fill(0, count($modified_groups), '?'));
 $data = db_query("SELECT `group`, category, priority, owner, title, description, deleted, MAX(COALESCE(start_time, timestamp_created)) start_time, MAX(end_time) end_time, MAX(resume_time) resume_time, MAX(timestamp_deleted) timestamp_deleted, GROUP_CONCAT(DISTINCT til.line SEPARATOR ',') AS `lines` FROM traffic_info ti JOIN traffic_info_line til ON (ti.id = til.traffic_info) WHERE `group` IN (SELECT id FROM traffic_info_group) AND `group` IN ($placeholders) GROUP BY `group`, category, priority, owner, title, description, deleted", $modified_groups);
