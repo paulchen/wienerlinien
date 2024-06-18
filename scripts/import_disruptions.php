@@ -55,6 +55,10 @@ function process_traffic_infos($infos) {
 	$now = date('H:i');
 
 	foreach($infos as $info) {
+		if(preg_match('/stau in zufahrt/i', $info->title)) {
+			continue;
+		}
+
 		$priority = isset($info->priority) ? $info->priority : null;
 		$owner = isset($info->owner) ? $info->owner : null;
 		$start_time = (isset($info->time) && isset($info->time->start)) ? strtotime($info->time->start) : null;
