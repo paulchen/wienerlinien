@@ -221,7 +221,7 @@ function process_traffic_infos($infos) {
 }
 
 function check_category_groups($groups) {
-	$db_groups = array_map(function($a) { return $a{'id'}; }, db_query('SELECT id FROM traffic_info_category_group'));
+	$db_groups = array_map(function($a) { return $a['id']; }, db_query('SELECT id FROM traffic_info_category_group'));
 	foreach($groups as $group) {
 		if(!in_array($group->id, $db_groups)) {
 			db_query('INSERT INTO traffic_info_category_group (id, name) VALUES (?, ?)', array($group->id, $group->name));
@@ -231,7 +231,7 @@ function check_category_groups($groups) {
 }
 
 function check_categories($categories) {
-	$db_categories = array_map(function($a) { return $a{'id'}; }, db_query('SELECT id FROM traffic_info_category'));
+	$db_categories = array_map(function($a) { return $a['id']; }, db_query('SELECT id FROM traffic_info_category'));
 	foreach($categories as $category) {
 		if(!in_array($category->id, $db_categories)) {
 			db_query('INSERT INTO traffic_info_category (id, `group`, name, title) VALUES (?, ?, ?, ?)', array($category->id, $category->refTrafficInfoCategoryGroupId, $category->name, $category->title));
