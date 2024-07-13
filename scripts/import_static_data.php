@@ -475,10 +475,10 @@ function fetch_points() {
 	$data = db_query('SELECT id, CAST(lat AS DOUBLE) AS lat, CAST(lon AS DOUBLE) AS lon FROM segment_point');
 	$result = array();
 	foreach($data as ['id' => $id, 'lat' => $lat, 'lon' => $lon]) {
-		if(!isset($result[$lat])) {
-			$result[$lat] = array();
+		if(!isset($result["$lat"])) {
+			$result["$lat"] = array();
 		}
-		$result[$lat][$lon] = $id;
+		$result["$lat"]["$lon"] = $id;
 	}
 	return $result;
 }
