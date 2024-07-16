@@ -13,7 +13,7 @@
 			<ul>
 				<li><a href="disruptions/">Aktuelle Störungen</a></li>
 				<li><a href="disruptions/rss.php">Aktuelle Störungen -- RSS-Feed</a></li>
-				<?php if(isset($twitter_usernames) && count($twitter_usernames) != ''): ?>
+				<?php if(isset($twitter_usernames) && is_array($twitter_usernames) && count($twitter_usernames) > 0): ?>
 					<li>Störungen auf Twitter: 
 					<?php foreach($twitter_usernames as $twitter_username): ?>
 						<a href="https://twitter.com/<?php echo rawurlencode($twitter_username) ?>">@<?php echo htmlentities($twitter_username, ENT_QUOTES, 'UTF-8') ?></a>
