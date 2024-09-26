@@ -262,7 +262,7 @@ function check_content_type($mime, $curl_info) {
 }
 
 function download($url, $prefix, $extension, $convert_function, $mime = '') {
-	global $cache_expiration, $retry_download, $download_failure_wait_times, $memcached;
+	global $cache_expiration, $retry_download, $download_failure_wait_times, $memcached, $memcached_prefix;
 
 	$cache_dir = dirname(__FILE__) . '/../cache/';
 	$timestamp = date('YmdHis');
@@ -344,15 +344,16 @@ function download($url, $prefix, $extension, $convert_function, $mime = '') {
 	}
 	curl_close($curl);
 
+	$memcached_key = "${memcached_prefix}_failed_requests";
 	if(!$retval) {
-		$failures = $memcached->increment("${memcached_prefix}_realtime_failures");
+		$failures = $memcached->increment($memcached_key);
 		if($failures === false) {
-			$memcached->set("${memcached_prefix}_realtime_failures", 1);
+			$memcached->set($memcached_key, 1);
 		}
 		write_log("Fetching failed; current failure count: $failures");
 	}
 	else {
-		$memcached->set("${memcached_prefix}_realtime_failures", 0);
+		$memcached->set($memcached_key, 0);
 	}
 
 	return $retval;
