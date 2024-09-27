@@ -818,7 +818,7 @@ function log_rbl_request($rbls) {
 function fetch_rbls($rbls) {
 	global $wl_api_key, $debug, $input_encoding, $cache_expiration;
 
-	log_rbl_request($rbls);
+	// log_rbl_request($rbls);
 
 	$retry_download = false;
 	$url = 'https://www.wienerlinien.at/ogd_realtime/monitor?rbl=' . implode(',', $rbls) . "&sender=$wl_api_key";
