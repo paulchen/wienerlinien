@@ -6,6 +6,12 @@ if(!isset($_REQUEST['ids'])) {
 	die();
 }
 $ids = array_filter(array_unique(array_map("trim", explode(',', $_REQUEST['ids']))), function($id) { return $id != ''; });
+foreach($ids as $id) {
+	if(!preg_match('/^[0-9]*$/', $id)) {
+		http_response_code(400);
+		die('Bad request');
+	}
+}
 if(count($ids) > 0) {
 	$placeholders = array();
 	foreach($ids as $id) {
@@ -14,8 +20,8 @@ if(count($ids) > 0) {
 	$placeholder_string = implode(',', $placeholders);
 	$data = db_query("SELECT DISTINCT(rbl) FROM wl_platform WHERE rbl in ($placeholder_string) AND deleted = 0", $ids);
 	if(count($data) != count($ids)) {
-		// TODO
-		die();
+		http_response_code(400);
+		die('Bad request');
 	}
 }
 
