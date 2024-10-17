@@ -35,7 +35,7 @@ foreach($data as $row) {
 
 $result = array();
 foreach($line_ids as $line_id) {
-	$data = db_query('SELECT sp1.lat lat1, sp1.lon lon1, sp2.lat lat2, sp2.lon lon2
+	$data = db_query('SELECT TRIM(sp1.lat)+0 lat1, TRIM(sp1.lon)+0 lon1, TRIM(sp2.lat)+0 lat2, TRIM(sp2.lon)+0 lon2
 			FROM line l
 				JOIN line_segment ls ON (l.id = ls.line)
 				JOIN segment s ON (ls.segment = s.id)
@@ -74,7 +74,7 @@ foreach($line_ids as $line_id) {
 		}
 	}
 
-	$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, p.lat, p.lon
+	$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, TRIM(p.lat)+0 lat, TRIM(p.lon)+0 lon
 		FROM wl_platform p
 			JOIN station s ON (p.station = s.id)
 		WHERE p.line = ?
