@@ -50,3 +50,6 @@ $home_url = 'https://rueckgr.at/wienerlinien/';
 $warning_period = 70;
 $critical_period = 140;
 
+$additional_json_headers = array(
+);
+

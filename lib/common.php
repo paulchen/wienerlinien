@@ -998,3 +998,11 @@ function add_static_cache_headers() {
 	header("Cache-Control: public, max-age=$seconds");
 }
 
+function add_additional_json_headers() {
+	global $additional_json_headers;
+
+	foreach($additional_json_headers as $header) {
+		header($header);
+	}
+}
+

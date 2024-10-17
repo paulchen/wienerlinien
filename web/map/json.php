@@ -100,5 +100,6 @@ foreach($line_ids as $line_id) {
 
 header('Content-Type: application/json');
 add_static_cache_headers();
+add_additional_json_headers();
 echo json_encode($result);
 

@@ -27,5 +27,6 @@ if(count($ids) > 0) {
 
 header('Content-Type: application/json');
 header('Cache-Control: max-age=0');
+add_additional_json_headers();
 echo json_encode(fetch_rbls($ids));
 
