@@ -90,7 +90,10 @@ Mit der RBL-Nummer können dann die Live-Abfahrtszeiten abgefragt werden.
             "barrier_free": true,
             "folding_ramp": true,
             "realtime_supported": true,
-            "time": 2
+            "time": 2,
+            "time_planned": "2024-10-23T23:15:34.000+0200",
+            "time_real": "2024-10-23T23:15:34.000+0200",
+            "gate": "2"
         },
         {
             "line": "U2",
@@ -100,7 +103,10 @@ Mit der RBL-Nummer können dann die Live-Abfahrtszeiten abgefragt werden.
             "barrier_free": true,
             "folding_ramp": false,
             "realtime_supported": true,
-            "time": 12
+            "time": 10,
+            "time_planned": "2024-10-23T23:23:34.000+0200",
+            "time_real": "2024-10-23T23:23:34.000+0200",
+            "gate": "2"
         }
     ],
     "4203": [

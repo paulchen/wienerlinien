@@ -828,20 +828,24 @@ function fetch_rbls($rbls) {
 	$data = download_json($url, 'rbl_' . implode('.', $rbls));
 
 	$rbl_data = array();
+	$gates = array();
 	if($data && isset($data->data) && isset($data->data->monitors)) {
 		foreach($data->data->monitors as $monitor) {
 			$rbl = $monitor->locationStop->properties->attributes->rbl;
+			$gate = $monitor->locationStop->properties->gate;
 			$lines = $monitor->lines;
 			if(!isset($rbl_data[$rbl])) {
 				$rbl_data[$rbl] = array();
 			}
 			$rbl_data[$rbl][] = $lines;
+			$gates[$rbl] = $gate;
 		}
 	}
 
 	$result = array();
 	foreach($rbl_data as $index => $value) {
-		$result[$index] = process_rbl_data($value);
+		$gate = isset($gates[$index]) ? $gates[$index] : null;
+		$result[$index] = process_rbl_data($value, $gate);
 	}
 	return $result;
 }
@@ -883,7 +887,7 @@ function possible_destination($line_id, $towards) {
 	return $data[0]['id'];
 }
 
-function process_rbl_data($data) {
+function process_rbl_data($data, $gate) {
 	$departures = array();
 	foreach($data as $row) {
 		foreach($row as $line) {
@@ -918,7 +922,7 @@ function process_rbl_data($data) {
 					$countdown = $departure->departureTime->countdown;
 				}
 
-				$departures[] = array(
+				$item = array(
 					'line' => $line_name,
 					'line_id' => $line_id,
 					'towards' => $towards,
@@ -926,8 +930,17 @@ function process_rbl_data($data) {
 					'barrier_free' => $barrier_free,
 					'folding_ramp' => $folding_ramp,
 					'realtime_supported' => $realtime_supported,
-					'time' => $countdown
-				); 
+					'time' => $countdown,
+					'time_planned' => $departure->departureTime->timePlanned
+				);
+				if (isset($departure->departureTime->timeReal)) {
+					$item['time_real'] = $departure->departureTime->timeReal;
+				}
+				if ($gate) {
+					$item['gate'] = $gate;
+				}
+				$departures[] = $item;
+
 			}
 		}
 	}
