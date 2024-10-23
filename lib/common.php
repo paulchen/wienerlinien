@@ -683,6 +683,37 @@ function get_disruptions_for_station($station) {
 	);
 }
 
+function get_disruptions_for_lines($lines) {
+	$placeholders = implode(', ', array_fill(0, count($lines), '?'));
+	$data_by_lines = db_query("SELECT l.name line, ti.title, ti.last_description description, ti.start_time, ti.end_time
+                        FROM station s
+                                JOIN wl_platform p ON (s.id = p.station AND p.deleted = 0)
+                                JOIN line l ON (p.line = l.id AND l.deleted = 0)
+                                JOIN traffic_info_line til ON (l.id = til.line)
+                                JOIN traffic_info ti ON (til.traffic_info = ti.id AND ti.deleted = 0)
+                        WHERE l.name IN ($placeholders)
+                                AND s.deleted = 0
+				and ti.category = 2
+			GROUP BY l.name, ti.id, ti.title, ti.last_description, ti.start_time, ti.end_time", $lines);
+	$data_by_rbls = db_query("SELECT p.rbl rbl, s.name station, l.name line, ti.category, ti.title, ti.last_description description, ti.start_time, ti.end_time, tie.status
+                        FROM station s
+				JOIN wl_platform p ON (s.id = p.station AND p.deleted = 0)
+                                JOIN traffic_info_platform tip ON (p.id = tip.platform)
+				JOIN traffic_info ti ON (tip.traffic_info = ti.id AND ti.deleted = 0)
+				JOIN traffic_info_line til ON (ti.id = til.traffic_info)
+                                JOIN line l ON (til.line = l.id AND l.deleted = 0)
+                                LEFT JOIN traffic_info_elevator tie ON (ti.id = tie.id)
+                        WHERE l.name IN ($placeholders)
+                                AND s.deleted = 0
+                                AND ti.category IN (1, 3)
+                        GROUP BY p.rbl, ti.category, ti.title, ti.last_description, ti.start_time, ti.end_time", $lines);
+
+	return array(
+		'lines' => array_group($data_by_lines, 'line'),
+		'rbls' => array_group($data_by_rbls, 'rbl')
+	);
+}
+
 function array_group($array, $column) {
 	$result = array();
 	foreach($array as $item) {

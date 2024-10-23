@@ -138,6 +138,7 @@ Mit der RBL-Nummer können dann die Live-Abfahrtszeiten abgefragt werden.
 
 ## Störungsmeldungen
 
+### Stationen
 
 Störungsmeldungen kann man mit der ID einer Station abrufen.
 
@@ -162,6 +163,12 @@ Störungsmeldungen kann man mit der ID einer Station abrufen.
 ```
 
 Die Störungsmeldungen gehören immer zu einer Linie (da ist der Key der Name (!) der Linie) oder zu einem Bahnsteig (da ist der Key die RBL-ID).
+
+### Linien
+
+Ebenfalls ist es möglich, Störungsmeldungen zu einer Liste an Linien abzurufen.
+
+**URL**: [https://rueckgr.at/wienerlinien/map/disruptions.php?lines=1,62](https://rueckgr.at/wienerlinien/map/disruptions.php?lines=1,62)
 
 ## Geographische Daten
 
