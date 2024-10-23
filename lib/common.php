@@ -863,13 +863,16 @@ function fetch_rbls($rbls) {
 	if($data && isset($data->data) && isset($data->data->monitors)) {
 		foreach($data->data->monitors as $monitor) {
 			$rbl = $monitor->locationStop->properties->attributes->rbl;
-			$gate = $monitor->locationStop->properties->gate;
 			$lines = $monitor->lines;
 			if(!isset($rbl_data[$rbl])) {
 				$rbl_data[$rbl] = array();
 			}
 			$rbl_data[$rbl][] = $lines;
-			$gates[$rbl] = $gate;
+
+			if (isset($monitor->locationStop->properties->gate)) {
+				$gate = $monitor->locationStop->properties->gate;
+				$gates[$rbl] = $gate;
+			}
 		}
 	}
 
