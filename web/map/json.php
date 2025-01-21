@@ -50,29 +50,40 @@ foreach($line_ids as $line_id) {
 	}
 	unset($data);
 
-	$changed = true;
-	while($changed) {
-		$changed = false;
+	$startpointMap = array();
+	$endpointMap = array();
+	foreach ($segments as $index => $segment) {
+		$startKey = implode(',', $segment[0]); // "lat,lon" for start point
+		$endKey = implode(',', $segment[1]);   // "lat,lon" for end point
 
-		for($a=0; $a<count($segments); $a++) {
-			for($b=0; $b<count($segments); $b++) {
-				if($a == $b) {
-					continue;
-				}
+		$startpointMap[$startKey] = $index;
+		$endpointMap[$endKey] = $index;
+	}
 
-				if($segments[$a][count($segments[$a])-1][0] == $segments[$b][0][0] && $segments[$a][count($segments[$a])-1][1] == $segments[$b][0][1]) {
-					for($c=1; $c<count($segments[$b]); $c++) {
-						$segments[$a][] = $segments[$b][$c];
-					}
-
-					unset($segments[$b]);
-					$segments = array_values($segments);
-					$changed = true;
-					continue 3;
-				}
-			}
+	$nextSegments = array();
+	$previousSegments = array();
+	foreach($endpointMap as $key => $value) {
+		if(isset($startpointMap[$key])) {
+			$nextSegments[$value] = $startpointMap[$key];
+			$previousSegments[$startpointMap[$key]] = $value;
 		}
 	}
+
+	$mergedSegments = array();
+	foreach ($segments as $index => $segment) {
+		if(!isset($previousSegments[$index])) {
+			$mergedSegment = array($segment[0]);
+			$currentSegment = $segment;
+			$currentIndex = $index;
+			while($currentIndex !== null) {
+				$mergedSegment[] = $currentSegment[1];
+				$currentIndex = $nextSegments[$currentIndex];
+				$currentSegment = $segments[$currentIndex];
+			}
+			$mergedSegments[] = $mergedSegment;
+		}
+	}
+	$segments = $mergedSegments;
 
 	$data = db_query('SELECT s.id id, s.name name, p.direction direction, p.pos pos, TRIM(p.lat)+0 lat, TRIM(p.lon)+0 lon
 		FROM wl_platform p
