@@ -77,8 +77,8 @@ foreach($line_ids as $line_id) {
 			$currentIndex = $index;
 			while($currentIndex !== null) {
 				$mergedSegment[] = $currentSegment[1];
-				$currentIndex = $nextSegments[$currentIndex];
-				$currentSegment = $segments[$currentIndex];
+				$currentIndex = isset($nextSegments[$currentIndex]) ? $nextSegments[$currentIndex] : null;
+				$currentSegment = isset($segments[$currentIndex]) ? $segments[$currentIndex] : null;
 			}
 			$mergedSegments[] = $mergedSegment;
 		}
