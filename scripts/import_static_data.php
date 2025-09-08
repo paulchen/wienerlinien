@@ -11,9 +11,11 @@ require_once(dirname(__FILE__) . '/../lib/Csv.class.php');
 $url_lines = 'https://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFLINIENOGD&srsName=EPSG:4326&outputFormat=json';
 $url_stations = 'https://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json';
 $url_station_ids = 'https://data.wien.gv.at/daten/geo?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:HALTESTELLEWLOGD&srsName=EPSG:4326&outputFormat=json';
-$url_wl_lines = 'https://data.wien.gv.at/csv/wienerlinien-ogd-linien.csv';
-$url_wl_stations = 'https://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv';
-$url_wl_platforms = 'https://data.wien.gv.at/csv/wienerlinien-ogd-steige.csv';
+$url_wl_lines = 'https://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-linien.csv';
+$url_wl_stations = 'https://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-haltestellen.csv';
+$url_wl_haltepunkte = 'https://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-haltepunkte.csv';
+$url_wl_fahrwege = 'https://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-fahrwegverlaeufe.csv';
+$url_wl_steige = 'https://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-steige.csv';
 
 if(!$lines_data = download_json($url_lines, 'lines')) {
 	write_log("Error while fetching $url_lines, aborting now");
@@ -36,8 +38,16 @@ if(!$wl_stations_data = download_csv($url_wl_stations, 'wl_stations')) {
 	write_log("Error while fetching $url_wl_stations, aborting now");
 	die();
 }
-if(!$wl_platforms_data = download_csv($url_wl_platforms, 'wl_platforms')) {
-	write_log("Error while fetching $url_wl_platforms, aborting now");
+if(!$wl_haltepunkte_data = download_csv($url_wl_haltepunkte, 'wl_haltepunkte')) {
+	write_log("Error while fetching $url_wl_haltepunkte, aborting now");
+	die();
+}
+if(!$wl_fahrwege_data = download_csv($url_wl_fahrwege, 'wl_fahrwege')) {
+	write_log("Error while fetching $url_wl_fahrwege, aborting now");
+	die();
+}
+if(!$wl_steige_data = download_csv($url_wl_steige, 'wl_steige')) {
+	write_log("Error while fetching $url_wl_steige, aborting now");
 	die();
 }
 
@@ -54,7 +64,7 @@ $data_ok &= import_stations($municipalities, $stations, $lines, $line_stations, 
 
 $data_ok &= import_wl_lines($wl_lines_data, true);
 $data_ok &= import_wl_stations($municipalities, $wl_stations_data, true);
-$data_ok &= import_wl_platforms($wl_platforms_data, true);
+$data_ok &= import_wl_platforms($wl_haltepunkte_data, $wl_fahrwege_data, $wl_steige_data, true);
 
 if(!$data_ok) {
 	write_log('Unable to import data, aborting now');
@@ -77,7 +87,7 @@ import_station_ids($station_id_data);
 import_stations($municipalities, $stations, $lines, $line_stations, $stations_data);
 import_wl_lines($wl_lines_data);
 import_wl_stations($municipalities, $wl_stations_data);
-import_wl_platforms($wl_platforms_data);
+import_wl_platforms($wl_haltepunkte_data, $wl_fahrwege_data, $wl_steige_data);
 
 check_outdated($imported_wl_lines, 'wl_line');
 check_outdated($imported_lines, 'line');
@@ -111,7 +121,7 @@ function import_wl_lines($data, $check_only = false) {
 		}
 
 		foreach($data as $row) {
-			$type = $row['VERKEHRSMITTEL'];
+			$type = $row['MeansOfTransport'];
 			if(!isset($types[$type])) {
 				write_log("Unknown means of transport: $type");
 				return false;
@@ -124,9 +134,9 @@ function import_wl_lines($data, $check_only = false) {
 	write_log("Import lines data from Wiener Linien...");
 
 	foreach($data as $row) {
-		$wl_id = $row['LINIEN_ID'];
-		$type = $types[$row['VERKEHRSMITTEL']];
-		$name = $row['BEZEICHNUNG'];
+		$wl_id = $row['LineID'];
+		$type = $types[$row['MeansOfTransport']];
+		$name = $row['LineText'];
 		$line_data = db_query('SELECT id FROM line WHERE name = ? AND type = ? AND deleted = 0 ORDER BY id ASC', array($name, $type));
 		if(count($line_data) > 0) {
 			$line_id = $line_data[0]['id'];
@@ -140,15 +150,15 @@ function import_wl_lines($data, $check_only = false) {
 
 		$data = db_query('SELECT id, wl_order, realtime FROM wl_line WHERE line = ? AND wl_id = ? AND deleted = 0', array($line_id, $wl_id));
 		if(count($data) == 0) {
-			db_query('INSERT INTO wl_line (line, wl_id, wl_order, realtime) VALUES (?, ?, ?, ?)', array($line_id, $wl_id, $row['REIHENFOLGE'], $row['ECHTZEIT']));
+			db_query('INSERT INTO wl_line (line, wl_id, wl_order, realtime) VALUES (?, ?, ?, ?)', array($line_id, $wl_id, $row['SortingHelp'], $row['Realtime']));
 			$wl_line_id = db_last_insert_id();
 
 			write_log("Inserted wl_line item with line $name and wl_id $wl_id");
 		}
 		else if(count($data) == 1) {
 			$wl_line_id = $data[0]['id'];
-			if($data[0]['wl_order'] != $row['REIHENFOLGE'] || $data[0]['realtime'] != $row['ECHTZEIT']) {
-				db_query('UPDATE wl_line SET wl_order = ?, realtime = ? WHERE wl_id = ?', array($row['REIHENFOLGE'], $row['ECHTZEIT'], $wl_line_id));
+			if($data[0]['wl_order'] != $row['SortingHelp'] || $data[0]['realtime'] != $row['Realtime']) {
+				db_query('UPDATE wl_line SET wl_order = ?, realtime = ? WHERE wl_id = ?', array($row['SortingHelp'], $row['Realtime'], $wl_line_id));
 
 				write_log("Inserted wl_line item with line $name and wl_id $wl_id");
 			}
@@ -185,9 +195,9 @@ function import_wl_stations(&$municipalities, $data, $check_only = false) {
 	write_log("Import stations data from Wiener Linien...");
 
 	foreach($data as $row) {
-		$municipality = check_municipality($municipalities, $row['GEMEINDE_ID'], $row['GEMEINDE']);
-		$name = $row['NAME'];
-		$wl_id = $row['HALTESTELLEN_ID'];
+		$municipality = check_municipality($municipalities, $row['MunicipalityID'], $row['Municipality']);
+		$name = $row['PlatformText'];
+		$wl_diva = $row['DIVA'];
 
 		$existing_station = db_query('SELECT s.id station_id, ws.id wl_station_id
 			FROM station s
@@ -195,18 +205,18 @@ function import_wl_stations(&$municipalities, $data, $check_only = false) {
 			WHERE s.name = ?
 				AND s.deleted = 0
 				AND ws.deleted = 0
-				AND ws.wl_id = ?', array($name, $wl_id));
+				AND ws.wl_diva = ?', array($name, $wl_diva));
 		if(count($existing_station) == 0) {
 			db_query('INSERT INTO station (name, municipality) VALUES (?, ?)', array($name, $municipality));
 			$id = db_last_insert_id();
 
-			write_log("Added station $id ($name, {$row['GEMEINDE']})");
+			write_log("Added station $id ($name, {$row['Municipality']})");
 		}
 		else if(count($existing_station) == 1) {
 			$id = $existing_station[0]['station_id'];
 		}
 		else {
-			write_log("Not updating table wl_station, multiple rows for station $name and wl_id $wl_id exist");
+			write_log("Not updating table wl_station, multiple rows for station $name and wl_diva $wl_diva exist");
 
 			// to make sure these rows don't get deleted by the check_outdated() function
 			foreach($existing_station as $row) {
@@ -217,42 +227,41 @@ function import_wl_stations(&$municipalities, $data, $check_only = false) {
 			continue;
 		}
 
-		$existing_wl_station = db_query('SELECT id, station, wl_diva, wl_lat, wl_lon FROM wl_station WHERE wl_id = ? AND deleted = 0', array($wl_id));
+		$existing_wl_station = db_query('SELECT id, station, wl_lat, wl_lon FROM wl_station WHERE wl_diva = ? AND deleted = 0', array($wl_diva));
 		if(count($existing_wl_station) == 0) {
-			if(!$row['WGS84_LAT'] || !$row['WGS84_LON']) {
-				db_query('INSERT INTO wl_station (station, wl_id, wl_diva) VALUES (?, ?, ?)', array($id, $wl_id, $row['DIVA']));
+			if(!$row['Latitude'] || !$row['Longitude']) {
+				db_query('INSERT INTO wl_station (station, wl_diva) VALUES (?, ?)', array($id, $wl_diva));
 			}
 			else {
-				db_query('INSERT INTO wl_station (station, wl_id, wl_diva, wl_lat, wl_lon) VALUES (?, ?, ?, ?, ?)', array($id, $wl_id, $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON']));
+				db_query('INSERT INTO wl_station (station, wl_diva, wl_lat, wl_lon) VALUES (?, ?, ?, ?)', array($id, $wl_diva, $row['Latitude'], $row['Longitude']));
 			}
 			$new_id = db_last_insert_id();
 
 			$imported_wl_stations[] = $new_id;
 
-			write_log("Added wl_station $new_id ($name, {$row['GEMEINDE']}), wl_id $wl_id");
+			write_log("Added wl_station $new_id ($name, {$row['Municipality']}), wl_diva $wl_diva");
 		}
 		else if(count($existing_wl_station) == 1) {
 			$station = $existing_wl_station[0];
 			$wl_station_id = $station['id'];
 
 			if($station['station'] != $id
-					|| $station['wl_diva'] != $row['DIVA']
-					|| $station['wl_lat'] != $row['WGS84_LAT']
-					|| $station['wl_lon'] != $row['WGS84_LON']) {
-				if(!$row['WGS84_LAT'] || !$row['WGS84_LON']) {
-					db_query('UPDATE wl_station SET station = ?, wl_diva = ?, wl_lat = NULL, wl_lon = NULL WHERE id = ?', array($id, $row['DIVA'], $wl_station_id));
+					|| $station['wl_lat'] != $row['Latitude']
+					|| $station['wl_lon'] != $row['Longitude']) {
+				if(!$row['Latitude'] || !$row['Longitude']) {
+					db_query('UPDATE wl_station SET station = ?, wl_lat = NULL, wl_lon = NULL WHERE id = ?', array($id, $wl_station_id));
 				}
 				else {
-					db_query('UPDATE wl_station SET station = ?, wl_diva = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($id, $row['DIVA'], $row['WGS84_LAT'], $row['WGS84_LON'], $wl_station_id));
+					db_query('UPDATE wl_station SET station = ?, wl_lat = ?, wl_lon = ? WHERE id = ?', array($id, $row['Latitude'], $row['Longitude'], $wl_station_id));
 				}
 
-				write_log("Updated wl_station $wl_station_id ($name, {$row['GEMEINDE']}), wl_id $wl_id");
+				write_log("Updated wl_station $wl_station_id ($name, {$row['Municipality']}), wl_diva $wl_diva");
 			}
 
 			$imported_wl_stations[] = $station['id'];
 		}
 		else {
-			write_log("Not updating table wl_station, multiple rows for wl_id $wl_id exist");
+			write_log("Not updating table wl_station, multiple rows for wl_diva $wl_diva exist");
 
 			// to make sure these rows don't get deleted by the check_outdated() function
 			foreach($existing_wl_station as $row) {
@@ -284,24 +293,24 @@ function fetch_wl_lines() {
 }
 
 function fetch_wl_stations() {
-	$data = db_query('SELECT s.id id, s.name name, ws.wl_id wl_id
+	$data = db_query('SELECT s.id id, s.name name, ws.wl_diva wl_diva
 		FROM station s
 			JOIN wl_station ws ON (s.id = ws.station)
 		WHERE s.deleted = 0
 			AND ws.deleted = 0
 		ORDER BY id ASC');
 	$result = array();
-	foreach($data as ['id' => $id, 'name' => $name, 'wl_id' => $wl_id]) {
-		$result[$wl_id] = array('id' => $id, 'name' => $name);
+	foreach($data as ['id' => $id, 'name' => $name, 'wl_diva' => $wl_diva]) {
+		$result[$wl_diva] = array('id' => $id, 'name' => $name);
 	}
 	return $result;
 }
 
-function import_wl_platforms($data, $check_only = false) {
+function import_wl_platforms($haltepunkte, $fahrwege, $steige, $check_only = false) {
 	global $imported_platforms;
 
 	if($check_only) {
-		if(count($data) == 0) {
+		if(count($haltepunkte) == 0 || count($fahrwege) == 0) {
 			write_log('Error: Platforms data from Wiener Linien cannot be imported.');
 			return false;
 		}
@@ -313,58 +322,69 @@ function import_wl_platforms($data, $check_only = false) {
 	$wl_lines = fetch_wl_lines();
 	$wl_stations = fetch_wl_stations();
 
-	foreach($data as $row) {
-		$line_wl_id = $row['FK_LINIEN_ID'];
-		$station_wl_id = $row['FK_HALTESTELLEN_ID'];
-		$wl_id = $row['STEIG_ID'];
+	$punkte = array();
+	foreach($haltepunkte as $row) {
+		$punkte[$row['StopID']] = $row;
+	}
 
-		$data1 = isset($wl_stations[$station_wl_id]) ? array($wl_stations[$station_wl_id]) : array();
+	$platforms = array();
+	foreach($steige as $row) {
+		$platforms[$row['StopID']] = $row['Platform'];
+	}
+
+	foreach($fahrwege as $row) {
+		if ($row['PatternID'] > 2) {
+			continue;
+		}
+
+		$line_wl_id = $row['LineID'];
+		$rbl = $row['StopID'];
+
+		if (!isset($punkte[$rbl])) {
+			continue;
+		}
+		$wl_diva = $punkte[$rbl]['DIVA'];
+
+		$data1 = isset($wl_stations[$wl_diva]) ? array($wl_stations[$wl_diva]) : array();
 		$data2 = isset($wl_lines[$line_wl_id]) ? array($wl_lines[$line_wl_id]) : array();
 
 		$station_id = isset($data1[0]) ? $data1[0]['id'] : null;
 		$line_id = isset($data2[0]) ? $data2[0]['id'] : null;
 
-		$direction = ($row['RICHTUNG'] == 'H') ? 1 : 2;
-		$pos = $row['REIHENFOLGE'];
-		$rbls = explode(':', $row['RBL_NUMMER']);
-		$area = $row['BEREICH'];
-		$platform = $row['STEIG'];
-		$lat = $row['STEIG_WGS84_LAT'];
-		$lon = $row['STEIG_WGS84_LON'];
+		$direction = $row['Direction'];
+		if ($line_id && !$direction) {
+			continue;
+		}
+		$pos = $row['StopSeqCount'];
+		$lat = $punkte[$rbl]['Latitude'];
+		$lon = $punkte[$rbl]['Longitude'];
+		$platform = isset($platforms[$rbl]) ? $platforms[$rbl] : $rbl;
 
-		foreach($rbls as $rbl) {
-			if($rbl) {
-				$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl = ? AND area = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
+		$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND direction = ? AND pos = ? AND rbl = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $direction, $pos, $rbl, $platform, $lat, $lon));
+		if(count($data3) == 0) {
+			if (!$line_id && !$direction) {
+				continue;
+			}
+			die();
+			db_query('INSERT INTO wl_platform (station, line, direction, pos, rbl, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $direction, $pos, $rbl, $platform, $lat, $lon));
+			$id = db_last_insert_id();
+
+			$imported_platforms[] = $id;
+			if(isset($data1[0]) && isset($data2[0])) {
+				write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
+			}
+			else if(isset($data1[0])) {
+				write_log("Added platform $id ({$data1[0]['name']}, unknown line)");
+			}
+			else if(isset($data2[0])) {
+				write_log("Added platform $id (unknown station, {$data2[0]['name']})");
 			}
 			else {
-				$data3 = db_query('SELECT id FROM wl_platform WHERE station = ? AND line = ? AND wl_id = ? AND direction = ? AND pos = ? AND rbl IS NULL AND area = ? AND platform = ? AND lat = ? AND lon = ? AND deleted = 0', array($station_id, $line_id, $wl_id, $direction, $pos, $area, $platform, $lat, $lon));
+				write_log("Added platform $id (unknown station, unknown line)");
 			}
-			if(count($data3) == 0) {
-				if(!$rbl) {
-					db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $area, $platform, $lat, $lon));
-				}
-				else {
-					db_query('INSERT INTO wl_platform (station, line, wl_id, direction, pos, rbl, area, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $wl_id, $direction, $pos, $rbl, $area, $platform, $lat, $lon));
-				}
-				$id = db_last_insert_id();
-
-				$imported_platforms[] = $id;
-				if(isset($data1[0]) && isset($data2[0])) {
-					write_log("Added platform $id ({$data1[0]['name']}, {$data2[0]['name']})");
-				}
-				else if(isset($data1[0])) {
-					write_log("Added platform $id ({$data1[0]['name']}, unknown line)");
-				}
-				else if(isset($data2[0])) {
-					write_log("Added platform $id (unknown station, {$data2[0]['name']})");
-				}
-				else {
-					write_log("Added platform $id (unknown station, unknown line)");
-				}
-			}
-			else {
-				$imported_platforms[] = $data3[0]['id'];
-			}
+		}
+		else {
+			$imported_platforms[] = $data3[0]['id'];
 		}
 	}
 

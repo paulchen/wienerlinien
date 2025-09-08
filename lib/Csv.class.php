@@ -60,7 +60,7 @@ class Csv {
 
 		foreach($this->rows as &$row) {
 			foreach($this->column_names as $index => $col) {
-				$row[$col] = $row[$index];
+				$row[$col] = isset($row[$index]) ? $row[$index] : null;
 				unset($row[$index]);
 			}
 		}
