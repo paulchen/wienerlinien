@@ -365,7 +365,6 @@ function import_wl_platforms($haltepunkte, $fahrwege, $steige, $check_only = fal
 			if (!$line_id && !$direction) {
 				continue;
 			}
-			die();
 			db_query('INSERT INTO wl_platform (station, line, direction, pos, rbl, platform, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array($station_id, $line_id, $direction, $pos, $rbl, $platform, $lat, $lon));
 			$id = db_last_insert_id();
 
